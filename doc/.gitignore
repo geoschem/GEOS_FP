@@ -1,0 +1,13 @@
+*.[oax]
+*.mod
+*.MOD
+*~*
+Geos5Driver
+*.aux
+*.dvi
+*.log
+*.ps
+*.pdf
+*.tex
+*.toc
+
