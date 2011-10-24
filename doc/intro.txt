@@ -1,0 +1,10 @@
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOI
+! !TITLE: MerraDriver: Code for processing MERRA met data
+! !AUTHORS: Bob Yantosca
+! !AFFILIATION: School of Engineering and Applied Sciences, Harvard University
+! !DATE: August 2, 2010
+!EOI
+!------------------------------------------------------------------------------
