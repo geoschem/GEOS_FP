@@ -23,11 +23,10 @@
 #  24 Oct 2011 - R. Yantosca - Initial version (based on doGeos5.input)
 
 ==> Login String
-byantosca:NpHh5Qdc
+ADD YOUR LOGIN INFO HERE
 
 ==> Raw Met Data Directory
-/as/scratch-old/2011-08/bmy
-#/as/priv/ftp/gmao/gmao/
+ADD YOUR DIRECTORY HERE
 
 ==> Code Directory
 ../bin
