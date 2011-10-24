@@ -1,5 +1,4 @@
 #EOC
-# $Id: Makefile_header.mk,v 1.1.1.1 2009/08/04 14:52:05 bmy Exp $
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
 #------------------------------------------------------------------------------
@@ -32,9 +31,7 @@
 # to the "outside world".
 #
 # !REVISION HISTORY: 
-#  04 Aug 2009 - R. Yantosca - Initial version
-#  01 Apr 2010 - R. Yantosca - Modified for netCDF-4.0.1 compiled for MPI
-#                              as built with the NASA baselibs.
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS-5
 #EOP
 #------------------------------------------------------------------------------
 #BOC

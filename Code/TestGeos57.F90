@@ -1,4 +1,3 @@
-! $Id: TestNcdfUtilities.F90,v 1.1 2009/08/04 14:52:04 bmy Exp $
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !
 !------------------------------------------------------------------------------
@@ -339,7 +338,7 @@ CONTAINS
     ! Echo info
     WRITE( 6, '(a)' ) '=== Begin netCDF file reading test ==='
     
-    filename = '/as/priv/ftp/gmao/gmao/DAS.ops.asm.tavg1_2d_flx_Nx.GEOS572.20110815_0030.V01.nc4'
+    filename = '/as/scratch-old/2011-08/bmy/DAS.ops.asm.tavg1_2d_flx_Nx.GEOS572.20110815_0030.V01.nc4'
 
     CALL Ncop_Rd( fId, TRIM( fileName ) )
     

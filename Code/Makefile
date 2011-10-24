@@ -1,5 +1,4 @@
 #EOC
-# $Id: Makefile,v 1.2 2009/08/04 17:02:22 bmy Exp $
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
 #------------------------------------------------------------------------------
@@ -33,7 +32,7 @@
 # F90, LD, LINK_NC are included from "Makefile_header.mk"
 #
 # !REVISION HISTORY: 
-#  04 Aug 2009 - R. Yantosca - Initial version
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS-5
 #EOP
 #------------------------------------------------------------------------------
 #BOC
