@@ -1,0 +1,126 @@
+#!/usr/bin/perl -w
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: schedGeos57
+#
+# !DESCRIPTION: schedGeos57 is a Perl script which schedules a GEOS-5.7.x data 
+#  download to happen automatically via the "at" command.  It calls the 
+#  getGeos57 script to schedule the data download, and the sleepGeos57 script
+#  to start the data processing after all of the data has arrived.
+#\\
+#\\
+# !USES:
+#
+  require 5.003;               # Need this version of Perl or newer
+  use strict;                  # Force strict variable declarations
+  use Dates qw( &addDate );    # Routines from "Dates.pm"
+#
+# !CALLING SEQUENCE:
+#  schedGeos5 YYYYMMDD nDays [now]
+#
+# !REMARKS:
+#  Uses the Unix "at" command to schedule jobs.  
+#
+# !REVISION HISTORY: 
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/schedGeos5
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: main
+#
+# !DESCRIPTION: Driver routine for the sleepGeos57 script.
+#\\
+#\\
+# !INTERFACE:
+#
+sub main() {
+#
+# !REVISION HISTORY: 
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/schedGeos5
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+  
+  #==========================================================================
+  # Initialization
+  #==========================================================================
+
+  # Error check # of arguments
+  if ( scalar( @ARGV ) != 3 ) {  
+    print "Usage: schedGeos57 YYYYMMDD nDays when\n"; 
+    exit(1); 
+  }
+
+###############################################################################
+# NOTE: THIS BLOCK OF CODE IS ONLY NECESSARY ON HARVARD MACHINES.
+# USERS OUTSIDE HARVARD CAN COMMENT OUT THIS BLOCK. (bmy, 10/24/11)
+#
+  # Get the name of the machine we are on
+  my $host  = qx( uname -n );
+  chomp( $host );
+
+  # Exit if we are trying to run on Sol
+  if ( $host =~ 'sol.as.harvard.edu' ) {
+    print "schedGeos57 cannot be run on sol.as.harvard.edu!\n";
+    exit(1);
+  }
+
+  # Exit if we are trying to run on Argus
+  if ( $host =~ 'argus.as.harvard.edu' ) {
+    print "schedGeos57 cannot be run on argus.as.harvard.edu!\n";
+    exit(1);
+  }
+###############################################################################
+
+  # Initialize
+  my $start = $ARGV[0];
+  my $nDays = $ARGV[1];
+  my $when  = $ARGV[2];
+  my $date  = "";
+  my $cmd   = "at $when <<EOF\n";
+
+  #==========================================================================
+  # Schedule jobs
+  #==========================================================================
+
+  # Loop over the # of days
+  for ( my $i=0; $i<abs($nDays); $i++ ) {
+
+    # Get the calendar date for the Ith date after start date
+    # NOTE: if nDays is negative, then we'll go back in time!
+    if ( $nDays < 0 ) { $date = &addDate( $start, -$i ); }
+    else              { $date = &addDate( $start,  $i ); }
+
+    # Add commands to the string
+    $cmd .= "./getGeos57 $date\n";
+    $cmd .= "./sleepGeos57 $date\n";
+  }
+
+  # Add the end of file
+  $cmd .= "EOF";
+
+  # For debug -- print the command
+  print "$cmd\n";
+
+  # Execute the command
+  qx( $cmd );
+
+  # Exit normally
+  return( $? );
+}
+#EOC
+
+#------------------------------------------------------------------------------
+
+# Call main program
+main();
+
+# Exit and pass error code back to Unix shell
+exit( $? );

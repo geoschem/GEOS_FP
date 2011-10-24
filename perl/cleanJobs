@@ -1,0 +1,134 @@
+#!/usr/bin/perl -w
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: cleanJobs
+#
+# !DESCRIPTION: This Perl script removes all individual job scripts
+#  from GEOS-5 data processing jobs from the job directory.
+#\\
+#\\
+# !USES:
+#
+  require 5.003;        # Need this version of Perl or newer
+  use strict;           # Force IMPLICIT NONE-style declarations
+#
+# !PUBLIC MEMBER FUNCTIONS:
+#
+# getDefaults($$)
+# &main         
+#
+# !CALLING SEQUENCE:
+#  cleanJobs
+#
+# !REVISION HISTORY: 
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/cleanJobs
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: getDefaults
+#
+# !DESCRIPTION: Routine getDefaults reads the input file and returns the
+#  name of the directory where job files are stored.
+#\\
+#\\
+# !INTERFACE:
+#
+sub getDefaults($) {
+#
+# !INPUT PARAMETERS:
+#
+  # $fileName : File containing default settings to be read
+  my ( $fileName ) = @_;
+#
+# !RETURN VALUE:
+#
+  my $jobDir  = "";  # Directory where job scripts are found
+#
+# !CALLING SEQUENCE:
+#  $jobDir = &getDefaults( $fileName );
+#
+# !REVISION HISTORY:
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/cleanJobs
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  my @file    = "";
+ 
+  # Read the input file
+  open( I, "<$fileName" ) or die "Cannot open $fileName!\n";
+  chomp( @file = <I> );
+  close( I );
+
+  # Parse each line until we find the job directory
+  for ( my $i = 0; $i < scalar( @file ); $i++ ) {
+    if ( $file[$i] =~ "==> Job Directory" ) { $jobDir = $file[++$i]; }
+  }
+
+  # Return to main
+  return( $jobDir );
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: main
+#
+# !DESCRIPTION: Main is the driver program for the cleanJobs script.
+#\\
+#\\
+# !INTERFACE:
+#
+sub main() {
+#
+# !CALLING SEQUENCE:
+#  &main();
+#
+# !REVISION HISTORY:
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/cleanJobs
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  my $cmd    = "";
+  my $file   = "";
+  my @files  = ();
+  my $jobDir = &getDefaults( "doGeos57.input" );
+  
+  # Read all log files in the directory
+  opendir( D, "$jobDir" ) or die "$jobDir is an invalid directory\n";
+  chomp( @files = readdir( D ) );
+  closedir( D );
+
+  # Remove job files only
+  foreach $file ( @files ) {
+    if ( $file =~ m/job.doGeos5/ ) {
+      $cmd = "rm -f $jobDir/$file";
+      print "$cmd\n";
+      qx( $cmd );
+    } 
+  }				
+
+  # Return w/ status
+  return( $? );
+}
+#EOC
+
+# Call main driver routine
+main();
+
+# Exit and pass status code to Unix shell
+exit( $? );

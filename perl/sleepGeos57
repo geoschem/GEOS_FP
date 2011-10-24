@@ -1,0 +1,108 @@
+#!/usr/bin/perl -w
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: sleepGeos57
+#
+# !DESCRIPTION: Starts a GEOS-5.7.x met data processing job only after all 
+#  of the met fields have been downloaded.  Tests every 3 mins to see if 
+#  all the files are present, and if not, continues waiting for the files.  
+#\\
+#\\
+# !USES:
+#
+  require 5.003;                   # Need this version of Perl or newer
+  use strict;                      # Force explicit variable declarations 
+  use Dates qw( &getLocalTime );   # Get local time
+#
+# !PUBLIC MEMBER FUNCTIONS:
+#  &main()       
+#
+# !CALLING SEQUENCE:
+#  sleepGeos5 YYYYMMDD
+#
+# !REVISION HISTORY: 
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/sleepGeos5
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: main
+#
+# !DESCRIPTION: Main is the driver program for the sleepGeos57 script.  
+#\\
+#\\
+# !INTERFACE:
+#
+sub main() {
+#
+# !CALLING SEQUENCE:
+#  sleepGeos5 YYYYMMDD
+#
+# !REVISION HISTORY:
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/sleepGeos5
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !INPUT PARAMETERS:
+#
+  # Exit if wrong # of arguments are passed
+  if ( scalar( @ARGV ) != 1 ) { 
+    print "Usage: sleepGeos57 YYYYMMDD\n";  
+    exit(1); 
+  }
+#
+# !LOCAL VARIABLES:
+#
+  my $cmd    = "";
+  my $time   = "";
+  my $missing = 0;
+ 
+  #-------------------------------------------------------------------------
+  # Infinite loop until GEOS-5 met data files are downloaded
+  #-------------------------------------------------------------------------e
+  
+  # Command for calling checkGeos57
+  $cmd = "./checkGeos57 @ARGV 1";
+
+  # Call checkGeos57; remain in an infinite loop if files are missing
+  while ( ( $missing = qx( $cmd ) ) ne 0 ) { 
+
+    # Get local time string
+    $time = &getLocalTime();
+
+    # Print informative message
+    print "$time: Still waiting for $missing files\n";
+
+    # Sleep for 3 minutes
+    sleep 180;	
+  } 
+
+  #-------------------------------------------------------------------------
+  # Process GEOS-5.7.x data once all files have been downloaded
+  #-------------------------------------------------------------------------
+
+  # Start the GEOS-5 met field processing job
+  $cmd = "./doGeos57 @ARGV";
+  qx( $cmd );
+
+  # Return the error status code
+  return( $? );
+}
+#EOC
+
+#------------------------------------------------------------------------------
+
+# Call main program
+main();
+
+# Exit and pass status code back to Unix shell
+exit( $? );
+
+
