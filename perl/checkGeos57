@@ -214,11 +214,12 @@ sub checkFiles($$) {
 #  &checkFiles( 20110101 );
 #
 # !REMARKS:
-#  There should be 184 total files/day.  We are downloading 5 hourly 
+#  There should be 160 total files/day.  We are downloading 4 hourly 
 #  collections (24 files/day) and 8 3-hourly collections (8 files/day).
 #
 # !REVISION HISTORY:
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/checkGeos5
+#  25 Oct 2011 - R. Yantosca - Now test for 160 files/day (skip D57T1NXOCN)
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -274,7 +275,7 @@ sub checkFiles($$) {
   foreach $GMT ( @GMT3  ) { $found += &verifyFile( $mst_e, $date, $GMT ); }
 
   # Compute the # of missing files and print it to stdout.
-  $missing = 184 - $found;
+  $missing = 160 - $found;
 
   # If QUIET is set, just print the missing # of files
   # Otherwise, print a descriptive error message

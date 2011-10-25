@@ -7,8 +7,8 @@
 #
 # !MODULE: getGeos57
 #
-# !DESCRIPTION: Perl script getGeos5 produces the proper URL's that are
-#  used to request GEOS-5 data downloads from the GES-DISC.  It also
+# !DESCRIPTION: Perl script getGeos57 produces the proper URL's that are
+#  used to request GEOS-5.7.x data downloads from the GES-DISC.  It also
 #  uses the "curl" program to submit the URL's to the GES-DISC data server
 #  using the HTTP protocol.
 #\\
@@ -23,15 +23,18 @@
                 &ymdExtract   );  # Date & time functions
 #
 # !PUBLIC MEMBER FUNCTIONS:
-# &getDefaults($$) 
-# &getGeos5Data($$)
-# &main         
+#  &getDefaults($$) 
+#  &getGeos57Data($$$)
+#  &main()       
 #
 # !CALLING SEQUENCE:
-# getGeos5 20110101              # Gets data for 20110101
-# getGeos5 20110101 20110103     # Gets data for 20110101 - 20110103
-# getGeos5 20110101 20110103 1   # Displays URL's used in data request 
-#                                #  but does not download any data
+#  getGeos57 20110101              # Gets data for 20110101
+#  getGeos57 20110101 20110103     # Gets data for 20110101 - 20110103
+#  getGeos57 20110101 20110103 1   # Displays URL's used in data request 
+#                                 #  but does not download any data
+#
+# !REMARKS:
+#  Validated 10/25/11 by Bob Yantosca
 #
 # !REVISION HISTORY: 
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/getGeos5
@@ -84,9 +87,9 @@ sub getDefaults($$) {
 #  my $d1      = 0;
 ###############################################################################
  
-  #--------------------------------------
-  # Read variable settings from the file
-  #--------------------------------------
+  #--------------------------------------------------------------------------
+  # Read default settings for global variables from the input file
+  #--------------------------------------------------------------------------
 
   # Read input file into an array
   open( I, "<$fileName" ) or die "Cannot open $fileName!\n";
@@ -98,9 +101,9 @@ sub getDefaults($$) {
     if ( $file[$i] =~ "==> Login String" ) { $login = $file[++$i]; }
   }
 
-  #--------------------------------------
+  #--------------------------------------------------------------------------
   # Compute the met field type
-  #--------------------------------------
+  #--------------------------------------------------------------------------
 
   # As of Oct 2011, there is only one met field type (this may change)
   $metType = '&version=5.7.2';
@@ -131,17 +134,17 @@ sub getDefaults($$) {
 #------------------------------------------------------------------------------
 #BOP
 #
-# !IROUTINE: getGeos5Data
+# !IROUTINE: getGeos57Data
 #
-# !DESCRIPTION: Routine getGeos5Data creates the URL's for each of the 
+# !DESCRIPTION: Routine getGeos57Data creates the URL's for each of the 
 #  GEOS-5 met data file types that you can use when requesting data via 
 #  GES-DISC web interface.  The URL's are then submitted via the Unix "curl"
-#  program.
+#  program to schedule the download.
 #\\
 #\\
 # !INTERFACE:
 #
-sub getGeos5Data($$$) {
+sub getGeos57Data($$$) {
 #
 # !INPUT PARAMETERS:
 #
@@ -150,38 +153,38 @@ sub getGeos5Data($$$) {
   my ( $date0, $date1, $printOnly ) = @_;
 #
 # !CALLING SEQUENCE:
-#  &createGeos5Urls( 20080101 20080108 );   
+#  &getGeos57Data( 20080101 20080108 );   
 #
 # !REVISION HISTORY:
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/getGeos5
+#  25 Oct 2011 - R. Yantosca - Remove variables for previous day; unnecessary
+#  25 Oct 2011 - R. Yantosca - Updated comments
 #EOP
 #------------------------------------------------------------------------------
 #BOC
 #
 # !LOCAL VARIABLES:
 #
-  # Variables for today
+  # Year/Month/Day for today
   my $year     = substr( $date0, 0, 4 );
   my $month    = substr( $date0, 4, 2 );
   my $day      = substr( $date0, 6, 2 );
 
-  # Variables for today
-  my $date_p   = &addDate( $date0, -1 );
-  my $year_p   = substr( $date_p, 0, 4 );
-  my $month_p  = substr( $date_p, 4, 2 );
-  my $day_p    = substr( $date_p, 6, 2 );
-
-  # Variables for the last day
+  # Year/Month/Day for tomorrow (or last day of data download period)
   my $date_n   = &addDate( $date1, 1 );
   my $year_n   = substr( $date_n, 0, 4 );
   my $month_n  = substr( $date_n, 4, 2 );
   my $day_n    = substr( $date_n, 6, 2 );
 
+  # Start time & date for downloading data
+  my $d0       = "$year-$month-$day";
+  my $t0       = "00:00:00";
+
+  # End time & date for downloading data
+  my $d1       = "$year_n-$month_n-$day_n";
+  my $t1       = "00:00:00";
+
   # Other variables
-  my $d0       = ""; 
-  my $t0       = ""; 
-  my $d1       = ""; 
-  my $t1       = ""; 
   my $url      = "";
   my $msg      = "";
   my $cmd      = "";
@@ -190,17 +193,9 @@ sub getGeos5Data($$$) {
   # Read the "doGeos5.input" file for the login and version strings
   my ( $login, $vStr ) = &getDefaults( "doGeos57.input", $date0 );
 
-  #-------------------------
-  # tavg1_2d_flx_Nx file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
+  #--------------------------------------------------------------------------
+  # Download tavg1_2d_flx_Nx files (24/day)
+  #--------------------------------------------------------------------------
 
   # Create URL (place single quotes around it)
   $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T1NXFLX$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
@@ -218,17 +213,9 @@ sub getGeos5Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
-  #-------------------------
-  # tavg1_2d_rad_Nx file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
+  #--------------------------------------------------------------------------
+  # Download tavg1_2d_rad_Nx files (24/day)
+  #--------------------------------------------------------------------------
 
   # Create URL (place single quotes around it)
   $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T1NXRAD$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
@@ -246,17 +233,9 @@ sub getGeos5Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
-  #-------------------------
-  # tavg1_2d_lnd_Nx file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
+  #--------------------------------------------------------------------------
+  # Download tavg1_2d_lnd_Nx files (24/day)
+  #--------------------------------------------------------------------------
 
   # Create URL (place single quotes around it)
   $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T1NXLND$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
@@ -274,46 +253,9 @@ sub getGeos5Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
-  #-------------------------
-  # tavg1_2d_ocn_Nx file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
-
-  # Create URL (place single quotes around it)
-  $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T1NXOCN$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
-
-  # Create curl command string
-  $cmd ="curl --silent -u $login $url";
-
-  # Echo info to both stdout and log file
-  print "\nDownload of tavg1_2d_ocn_Nx for $date0 - $date1:\n$msg\n";
-
-  # Issue data transfer request via curl  
-  if ( $printOnly ) { print "   $cmd\n\n"; }
-  else              { $msg = qx( $cmd );   }
-
-  # Increment status flag upon failure
-  if ( $msg =~ "failure" ) { $status++; }
-
-
-  #-------------------------
-  # tavg1_2d_slv_Nx file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
+  #--------------------------------------------------------------------------
+  # Download tavg1_2d_slv_Nx file (24/day)
+  #--------------------------------------------------------------------------
 
   # Create URL (place single quotes around it)
   $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T1NXSLV$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
@@ -331,17 +273,9 @@ sub getGeos5Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
-  #-------------------------
-  # inst3_3d_asm_Nv file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
+  #--------------------------------------------------------------------------
+  # Download inst3_3d_asm_Nv files (8/day)
+  #--------------------------------------------------------------------------
 
   # Create URL (place single quotes around it)
   $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57I3NVASM$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
@@ -359,17 +293,9 @@ sub getGeos5Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
-  #-------------------------
-  # tavg3_3d_cld_Nv file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
+  #--------------------------------------------------------------------------
+  # Download tavg3_3d_cld_Nv file (8/day)
+  #--------------------------------------------------------------------------
 
   # Create URL (place single quotes around it)
   $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T3NVCLD$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
@@ -387,17 +313,9 @@ sub getGeos5Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
-  #-------------------------
-  # tavg3_3d_odt_Nv file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
+  #--------------------------------------------------------------------------
+  # Download tavg3_3d_odt_Nv files (8/day)
+  #--------------------------------------------------------------------------
 
   # Create URL (place single quotes around it)
   $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T3NVODT$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
@@ -415,17 +333,9 @@ sub getGeos5Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
-  #-------------------------
-  # tavg3_3d_qdt_Nv file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
+  #--------------------------------------------------------------------------
+  # Download tavg3_3d_qdt_Nv files (8/day)
+  #--------------------------------------------------------------------------
 
   # Create URL (place single quotes around it)
   $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T3NVQDT$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
@@ -443,17 +353,9 @@ sub getGeos5Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
-  #-------------------------
-  # tavg3_3d_udt_Nv file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
+  #--------------------------------------------------------------------------
+  # Download tavg3_3d_udt_Nv files (8/day)
+  #--------------------------------------------------------------------------
 
   # Create URL (place single quotes around it)
   $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T3NVUDT$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
@@ -471,17 +373,9 @@ sub getGeos5Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
-  #-------------------------
-  # tavg3_3d_rad_Nv file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
+  #--------------------------------------------------------------------------
+  # Download tavg3_3d_rad_Nv files (8/day)
+  #--------------------------------------------------------------------------
 
   # Create URL (place single quotes around it)
   $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T3NVRAD$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
@@ -499,17 +393,9 @@ sub getGeos5Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
-  #-------------------------
-  # tavg3_3d_mst_Nv file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
+  #--------------------------------------------------------------------------
+  # Download tavg3_3d_mst_Nv files (8/day)
+  #--------------------------------------------------------------------------
 
   # Create URL (place single quotes around it)
   $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T3NVMST$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
@@ -527,17 +413,9 @@ sub getGeos5Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
-  #-------------------------
-  # tavg3_3d_mst_Ne file
-  #-------------------------
-
-  # Start date & time
-  $d0  = "$year-$month-$day";
-  $t0  = "00:00:00";
-  
-  # End date & time
-  $d1  = "$year_n-$month_n-$day_n";
-  $t1  = "00:00:00";
+  #--------------------------------------------------------------------------
+  # Download tavg3_3d_mst_Ne files (8/day)
+  #--------------------------------------------------------------------------
 
   # Create URL (place single quotes around it)
   $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T3NEMST$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
@@ -555,11 +433,15 @@ sub getGeos5Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
+  #--------------------------------------------------------------------------
+  # Print info & return
+  #--------------------------------------------------------------------------
+
   # Print the overall status code to stdout & log before exiting
   $msg = &getLocalTime();
   print     "\nOverall status code: $status\n\nExiting at $msg\n";
 
-  # Exit normally
+  # Return status (i.e. # of processes that failed)
   return( $status );
 }
 #EOC
@@ -589,17 +471,18 @@ sub main() {
   # Error message
   my $errMsg = "Usage: getGeos57 YYYYMMDD [ YYYYMMDD [ {0|1} ] ]\n";
 
-  # Create the GEOS-5 URL's for auto data request
-  # Pass the proper # of arguments
-  if    ( scalar( @ARGV ) == 3 ) { &getGeos5Data( @ARGV                 );  }
-  elsif ( scalar( @ARGV ) == 2 ) { &getGeos5Data( $ARGV[0], $ARGV[1], 0 );  } 
-  elsif ( scalar( @ARGV ) == 1 ) { &getGeos5Data( $ARGV[0], $ARGV[0], 0 );  }
+  # Submit data download request.  Pass proper # of arguments.
+  if    ( scalar( @ARGV ) == 3 ) { &getGeos57Data( @ARGV                 ); }
+  elsif ( scalar( @ARGV ) == 2 ) { &getGeos57Data( $ARGV[0], $ARGV[1], 0 ); } 
+  elsif ( scalar( @ARGV ) == 1 ) { &getGeos57Data( $ARGV[0], $ARGV[0], 0 ); }
   else                           { print "$errMsg\n"; exit(1);              }
  
-  # Return normally
+  # Return exit status
   return( $? );
 }
 #EOC
+
+#------------------------------------------------------------------------------
 
 # Call main driver routine
 main();
