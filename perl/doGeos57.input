@@ -6,7 +6,7 @@
 # !INCLUDE: doGeos57.input  
 #
 # !DESCRIPTION: Input file specifies the various default settings for
-# directories etc. for the doGeos5 script.
+# directories etc. for the doGeos57 script.
 #\\
 #\\
 # !REMARKS:
@@ -23,10 +23,11 @@
 #  24 Oct 2011 - R. Yantosca - Initial version (based on doGeos5.input)
 
 ==> Login String
-ADD YOUR LOGIN INFO HERE
+byantosca:NpHh5Qdc
 
 ==> Raw Met Data Directory
-ADD YOUR DIRECTORY HERE
+/as/priv/ftp/gmao/gmao/
+#/as/scratch-old/2011-08/bmy
 
 ==> Code Directory
 ../bin

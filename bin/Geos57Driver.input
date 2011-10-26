@@ -1,0 +1,121 @@
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !INCLUDE: Geos57Driver.input
+#
+# !DESCRIPTION: Specifies the input directory and the locations of the 
+# GEOS-5.7.x netCDF data files that are required to produce the GEOS-Chem 
+# "A1", "A3", and "I3" files.
+#\\
+#\\
+# !REMARKS:
+# For each GMAO data file type we must specify:
+# - GMAO data file template name (one line)
+# - GMAO data fields to be read from this file (one comma-separated, line)
+#
+# If you wish to omit all fields from a given file type, you may
+# specify "none" for the template name and fields list.
+#
+# End all directory path names with slashes!
+#
+# !REVISION HISTORY: 
+#  26 Oct 2011 - R. Yantosca - Initial version, based on MerraDriver.input
+#
+
+==> Turn on debug print output?
+T
+
+==> const_2d_asm_Nx
+DAS.ops.asm.const_2d_asm_Nx.GEOS572.00000000_0000.V01.nc4
+FRLAKE,FRLAND,FRLANDICE,FROCEAN,PHIS
+T
+
+==> inst3_3d_asm_Nv
+DAS.ops.asm.inst3_3d_asm_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
+none
+
+==> tavg1_2d_flx_Nx
+DAS.ops.asm.tavg1_2d_flx_Nx.GEOS572.YYYYMMDD_hhmm.V01.nc4
+none
+
+==> tavg1_2d_lnd_Nx
+DAS.ops.asm.tavg1_2d_lnd_Nx.GEOS572.YYYYMMDD_hhmm.V01.nc4
+none
+
+==> tavg1_2d_rad_Nx
+DAS.ops.asm.tavg1_2d_rad_Nx.GEOS572.YYYYMMDD_hhmm.V01.nc4
+none
+
+==> tavg1_2d_slv_Nx
+DAS.ops.asm.tavg1_2d_slv_Nx.GEOS572.YYYYMMDD_hhmm.V01.nc4
+none
+
+==> tavg3_3d_cld_Nv
+DAS.ops.asm.tavg3_3d_cld_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
+none
+
+==> tavg3_3d_mst_Ne
+DAS.ops.asm.tavg3_3d_mst_Ne.GEOS572.YYYYMMDD_hhmm.V01.nc4
+none
+
+==> tavg3_3d_mst_Nv
+DAS.ops.asm.tavg3_3d_mst_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
+none
+
+==> tavg3_3d_odt_Nv
+DAS.ops.asm.tavg3_3d_odt_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
+none
+
+==> tavg3_3d_qdt_Nv
+DAS.ops.asm.tavg3_3d_qdt_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
+none
+
+==> tavg3_3d_rad_Nv
+DAS.ops.asm.tavg3_3d_rad_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
+none
+
+==> tavg3_3d_udt_Nv
+DAS.ops.asm.tavg3_3d_udt_Nv.GEOS572.20111001_0130.V01.nc4
+none
+
+==> Local Raw Data Path
+/as/priv/ftp/gmao/gmao/
+
+==> Nested China output
+/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%.2x25
+F
+
+==> Nested NA output
+/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%.2x25
+F
+
+==> Nested EUR output
+/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%.2x25
+F
+
+==> 2 x 2.5 Output 
+GEOS572.YYYYMMDD.%%.2x25.nc4
+F
+/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%.2x25
+
+
+==> 4 x 5 Output 
+GEOS572.YYYYMMDD.%%.4x5.nc4
+T
+#/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/GEOS572.YYYYMMDD.%%.4x5.nc4
+
+
+==> Mapping Weight Files
+weights_025x03125_to_2x25.txt
+weights_025x03125_to_4x5.txt
+
+==> Template Files
+lwi_mask.05x0666.bin
+frlandice.05x0666.bin
+frland.05x0666.bin
+
+#
+#EOP
+#------------------------------------------------------------------------------

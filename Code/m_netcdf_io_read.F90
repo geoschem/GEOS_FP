@@ -25,14 +25,19 @@
       INTERFACE NcRd
          MODULE PROCEDURE Ncrd_Scal
          MODULE PROCEDURE Ncrd_Scal_Int
-         MODULE PROCEDURE Ncrd_1d
+         MODULE PROCEDURE Ncrd_1d_R8
+         MODULE PROCEDURE Ncrd_1d_R4
          MODULE PROCEDURE Ncrd_1d_Int
-         MODULE PROCEDURE Ncrd_2d
+         MODULE PROCEDURE Ncrd_2d_R8
+         MODULE PROCEDURE Ncrd_2d_R4
          MODULE PROCEDURE Ncrd_2d_Int
-         MODULE PROCEDURE Ncrd_3d
+         MODULE PROCEDURE Ncrd_3d_R8
+         MODULE PROCEDURE Ncrd_3d_R4
          MODULE PROCEDURE Ncrd_3d_Int
-         MODULE PROCEDURE Ncrd_4d
-         MODULE PROCEDURE Ncrd_5d
+         MODULE PROCEDURE Ncrd_4d_R8
+         MODULE PROCEDURE Ncrd_4d_R4
+         MODULE PROCEDURE Ncrd_5d_R8
+         MODULE PROCEDURE Ncrd_5d_R4
          MODULE PROCEDURE Ncrd_1d_Char
          MODULE PROCEDURE Ncrd_2d_Char
       END INTERFACE
@@ -47,7 +52,8 @@
 !  Initial code.
 !  03 Jul 2008 - R. Yantosca (Harvard University) - Now overload all
 !   module methods with a single public interface.
-!
+!  26 Oct 2011 - R. Yantosca - Add REAL*8 and REAL*4 versions of all 
+!                              NCRD_* routines.  HACKED for GEOS-5.7.2!!!
 !EOP
 !-------------------------------------------------------------------------
 
@@ -184,15 +190,15 @@ CONTAINS
       return
 
       end subroutine Ncrd_Scal_Int
-!
+!EOC
 !-------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: Ncrd_1d
+! !IROUTINE: Ncrd_1d_R8
 !
 ! !INTERFACE:
 !
-      subroutine Ncrd_1d (varrd_1d, ncid, varname, strt1d, cnt1d)
+      subroutine Ncrd_1d_R8 (varrd_1d, ncid, varname, strt1d, cnt1d)
 !
 ! !USES:
 !
@@ -225,7 +231,79 @@ CONTAINS
 !
 ! !REVISION HISTORY:
 !  Initial code.
+!  26 Oct 2011 - R. Yantosca - Renamed to Ncrd_1d_R8.  REAL*8 version.
+!EOP
+!-------------------------------------------------------------------------
+!BOC
 !
+! !LOCAL VARIABLES:
+      character (len=128) :: err_msg
+      integer             :: ierr
+      integer             :: varid
+      real*8  :: varrd_1d_tmp(cnt1d(1))
+!
+      ierr = Nf_Inq_Varid (ncid, varname, varid)
+
+      if (ierr /= NF_NOERR) then
+        err_msg = 'In Ncrd_1d #1:  ' // Trim (varname) // &
+                   ', ' // Nf_Strerror (ierr)
+        call Do_Err_Out (err_msg, .true., 1, ncid, 0, 0, 0.0d0, 0.0d0)
+      end if
+
+      ierr =  Nf_Get_Vara_Real   (ncid, varid, strt1d, cnt1d, varrd_1d_tmp)
+
+      if (ierr /= NF_NOERR) then
+        err_msg = 'In Ncrd_1d #2:  ' // Nf_Strerror (ierr)
+        call Do_Err_Out (err_msg, .true., 2, ncid, varid, 0, 0.0d0, 0.0d0)
+      end if
+
+      varrd_1d(:) = varrd_1d_tmp(:)
+
+      return
+
+      end subroutine Ncrd_1d_R8
+!EOC
+!-------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: Ncrd_1d_R4
+!
+! !INTERFACE:
+!
+      subroutine Ncrd_1d_R4 (varrd_1d, ncid, varname, strt1d, cnt1d)
+!
+! !USES:
+!
+      use m_do_err_out
+!
+      implicit none
+!
+      include "netcdf.inc"
+!
+! !INPUT PARAMETERS:
+!!    ncid     : netCDF file id to read array input data from
+!!    varname  : netCDF variable name for array
+!!    strt1d   : vector specifying the index in varrd_1d where 
+!!               the first of the data values will be read 
+!!    cnt1d    : varrd_1d dimension
+      integer          , intent(in)   :: ncid
+      character (len=*), intent(in)   :: varname
+      integer          , intent(in)   :: strt1d(1)
+      integer          , intent(in)   :: cnt1d (1)
+!
+! !OUTPUT PARAMETERS:
+!!    varrd_1d : array to fill
+      real*4           , intent(out)  :: varrd_1d(cnt1d(1))
+!
+! !DESCRIPTION: Reads in a 1D netCDF real array and does some error checking.
+!\\
+!\\
+! !AUTHOR: 
+!  John Tannahill (LLNL) and Jules Kouatchou
+!
+! !REVISION HISTORY:
+!  Initial code.
+!  26 Oct 2011 - R. Yantosca - Renamed to Ncrd_1d_R4.  REAL*4 version.
 !EOP
 !-------------------------------------------------------------------------
 !BOC
@@ -255,7 +333,7 @@ CONTAINS
 
       return
 
-      end subroutine Ncrd_1d
+      end subroutine Ncrd_1d_R4
 !EOC
 !-------------------------------------------------------------------------
 !BOP
@@ -299,7 +377,6 @@ CONTAINS
 !
 ! !REVISION HISTORY:
 !  Initial code.
-!
 !EOP
 !-------------------------------------------------------------------------
 !BOC
@@ -336,7 +413,7 @@ CONTAINS
 !
 ! !INTERFACE:
 !
-      subroutine Ncrd_2d (varrd_2d, ncid, varname, strt2d, cnt2d)
+      subroutine Ncrd_2d_R8 (varrd_2d, ncid, varname, strt2d, cnt2d)
 !
 ! !USES:
 !
@@ -369,7 +446,79 @@ CONTAINS
 !
 ! !REVISION HISTORY:
 !  Initial code.
+!  26 Oct 2011 - R. Yantosca - Renamed to Ncrd_2d_R8.  REAL*8 version.
+!EOP
+!-------------------------------------------------------------------------
+!BOC
 !
+! !LOCAL VARIABLES:
+      character (len=128) :: err_msg
+      integer             :: ierr
+      integer             :: varid
+      real*8              :: varrd_2d_tmp(cnt2d(1), cnt2d(2))
+!
+      ierr = Nf_Inq_Varid (ncid, varname, varid)
+
+      if (ierr /= NF_NOERR) then
+        err_msg = 'In Ncrd_2d #1:  ' // Trim (varname) // & 
+                  ', ' // Nf_Strerror (ierr)
+        call Do_Err_Out (err_msg, .true., 1, ncid, 0, 0, 0.0d0, 0.0d0)
+      end if
+
+      ierr = Nf_Get_Vara_Real   (ncid, varid, strt2d, cnt2d, varrd_2d_tmp)
+
+      if (ierr /= NF_NOERR) then
+        err_msg = 'In Ncrd_2d #2:  ' // Nf_Strerror (ierr)
+        call Do_Err_Out (err_msg, .true., 2, ncid, varid, 0, 0.0d0, 0.0d0)
+      end if
+
+      varrd_2d(:,:) = varrd_2d_tmp(:,:)
+
+      return
+
+      end subroutine Ncrd_2d_R8
+!EOC
+!-------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: Ncrd_2d_R4
+!
+! !INTERFACE:
+!
+      subroutine Ncrd_2d_R4 (varrd_2d, ncid, varname, strt2d, cnt2d)
+!
+! !USES:
+!
+      use m_do_err_out
+!
+      implicit none
+!
+      include "netcdf.inc"
+!
+! !INPUT PARAMETERS:
+!!    ncid     : netCDF file id to read array input data from
+!!    varname  : netCDF variable name for array
+!!    strt2d   : vector specifying the index in varrd_2d where
+!!               the first of the data values will be read
+!!    cnt2d    : varrd_2d dimensions
+      integer          , intent(in)   :: ncid
+      character (len=*), intent(in)   :: varname
+      integer          , intent(in)   :: strt2d(2)
+      integer          , intent(in)   :: cnt2d (2)
+!
+! !OUTPUT PARAMETERS:
+!!    varrd_2d : array to fill
+      real*4           , intent(out)  :: varrd_2d(cnt2d(1), cnt2d(2))
+!
+! !DESCRIPTION: Reads in a 2D netCDF real array and does some error checking.
+!\\
+!\\
+! !AUTHOR: 
+!  John Tannahill (LLNL) and Jules Kouatchou
+!
+! !REVISION HISTORY:
+!  Initial code.
+!  26 Oct 2011 - R. Yantosca - Renamed to Ncrd_2d_R4.  REAL*4 version.
 !EOP
 !-------------------------------------------------------------------------
 !BOC
@@ -399,7 +548,7 @@ CONTAINS
 
       return
 
-      end subroutine Ncrd_2d
+      end subroutine Ncrd_2d_R4
 !EOC
 !-------------------------------------------------------------------------
 !BOP
@@ -442,7 +591,6 @@ CONTAINS
 !
 ! !REVISION HISTORY:
 !  Initial code.
-!
 !EOP
 !-------------------------------------------------------------------------
 !BOC
@@ -474,11 +622,11 @@ CONTAINS
 !-------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: Ncrd_3d
+! !IROUTINE: Ncrd_3d_R8
 !
 ! !INTERFACE:
 !
-      subroutine Ncrd_3d (varrd_3d, ncid, varname, strt3d, cnt3d)
+      subroutine Ncrd_3d_R8 (varrd_3d, ncid, varname, strt3d, cnt3d)
 !
 ! !USES:
 !
@@ -512,7 +660,80 @@ CONTAINS
 !
 ! !REVISION HISTORY:
 !  Initial code.
+!  26 Oct 2011 - R. Yantosca - Renamed to Ncrd_3d_R8.  REAL*8 version.
+!EOP
+!-------------------------------------------------------------------------
+!BOC
 !
+! !LOCAL VARIABLES:
+      character (len=128) :: err_msg
+      integer             :: ierr
+      integer             :: varid
+      real*8              :: varrd_3d_tmp(cnt3d(1), cnt3d(2), cnt3d(3))
+!
+      ierr = Nf_Inq_Varid (ncid, varname, varid)
+
+      if (ierr /= NF_NOERR) then
+        err_msg = 'In Ncrd_3d #1:  ' // Trim (varname) // &
+                 ', ' // Nf_Strerror (ierr)
+        call Do_Err_Out (err_msg, .true., 1, ncid, 0, 0, 0.0d0, 0.0d0)
+      end if
+
+      ierr = Nf_Get_Vara_Real (ncid, varid, strt3d, cnt3d, varrd_3d_tmp)
+
+      if (ierr /= NF_NOERR) then
+        err_msg = 'In Ncrd_3d #2:  ' // Nf_Strerror (ierr)
+        call Do_Err_Out (err_msg, .true., 2, ncid, varid, 0, 0.0d0, 0.0d0)
+      end if
+
+      varrd_3d(:,:,:) = varrd_3d_tmp(:,:,:)
+
+      return
+
+      end subroutine Ncrd_3d_R8
+!EOC
+!-------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: Ncrd_3d_R4
+!
+! !INTERFACE:
+!
+      subroutine Ncrd_3d_R4 (varrd_3d, ncid, varname, strt3d, cnt3d)
+!
+! !USES:
+!
+      use m_do_err_out
+!
+      implicit none
+!
+      include "netcdf.inc"
+!
+! !INPUT PARAMETERS:
+!!    ncid     : netCDF file id to read array input data from
+!!    varname  : netCDF variable name for array
+!!    strt3d   : vector specifying the index in varrd_3d where
+!!               the first of the data values will be read
+!!    cnt3d    : varrd_3d dimensions
+      integer          , intent(in)   :: ncid
+      character (len=*), intent(in)   :: varname
+      integer          , intent(in)   :: strt3d(3)
+      integer          , intent(in)   :: cnt3d (3)
+!
+! !OUTPUT PARAMETERS:
+!!    varrd_3d : array to fill
+      real*4           , intent(out)  :: varrd_3d(cnt3d(1), cnt3d(2), &
+                                                  cnt3d(3))
+!
+! !DESCRIPTION: Reads in a 3D netCDF real array and does some error checking.
+!\\
+!\\
+! !AUTHOR: 
+!  John Tannahill (LLNL) and Jules Kouatchou
+!
+! !REVISION HISTORY:
+!  Initial code.
+!  26 Oct 2011 - R. Yantosca - Renamed to Ncrd_3d_R4.  REAL*4 version.
 !EOP
 !-------------------------------------------------------------------------
 !BOC
@@ -542,7 +763,7 @@ CONTAINS
 
       return
 
-      end subroutine Ncrd_3d
+      end subroutine Ncrd_3d_R4
 !EOC
 !-------------------------------------------------------------------------
 !BOP
@@ -618,11 +839,11 @@ CONTAINS
 !-------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: Ncrd_4d
+! !IROUTINE: Ncrd_4d_R8
 !
 ! !INTERFACE:
 !
-      subroutine Ncrd_4d (varrd_4d, ncid, varname, strt4d, cnt4d)
+      subroutine Ncrd_4d_R8 (varrd_4d, ncid, varname, strt4d, cnt4d)
 !
 ! !USES:
 !
@@ -656,7 +877,82 @@ CONTAINS
 !
 ! !REVISION HISTORY:
 !  Initial code.
+!  26 Oct 2011 - R. Yantosca - Renamed to Ncrd_4d_R8.  REAL*8 version.
+!EOP
+!-------------------------------------------------------------------------
+!BOC
 !
+! !LOCAL VARIABLES:
+      character (len=128) :: err_msg
+      integer             :: ierr
+      integer             :: varid
+      real*8              :: varrd_4d_tmp(cnt4d(1), cnt4d(2), cnt4d(3), &
+                                                              cnt4d(4))
+!
+      ierr = Nf_Inq_Varid (ncid, varname, varid)
+
+      if (ierr /= NF_NOERR) then
+        err_msg = 'In Ncrd_4d #1:  ' // Trim (varname) // &
+                    ', ' // Nf_Strerror (ierr)
+        call Do_Err_Out (err_msg, .true., 1, ncid, 0, 0, 0.0d0, 0.0d0)
+      end if
+
+
+      ierr =  Nf_Get_Vara_Real   (ncid, varid, strt4d, cnt4d, varrd_4d_tmp)
+
+      if (ierr /= NF_NOERR) then
+        err_msg = 'In Ncrd_4d #2:  ' // Nf_Strerror (ierr)
+        call Do_Err_Out (err_msg, .true., 2, ncid, varid, 0, 0.0d0, 0.0d0)
+      end if
+
+      varrd_4d(:,:,:,:) = varrd_4d_tmp(:,:,:,:)
+
+      return
+
+      end subroutine Ncrd_4d_R8
+!EOC
+!-------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: Ncrd_4d_R4
+!
+! !INTERFACE:
+!
+      subroutine Ncrd_4d_R4 (varrd_4d, ncid, varname, strt4d, cnt4d)
+!
+! !USES:
+!
+      use m_do_err_out
+!
+      implicit none
+!
+      include "netcdf.inc"
+!
+! !INPUT PARAMETERS:
+!!    ncid     : netCDF file id to read array input data from
+!!    varname  : netCDF variable name for array
+!!    strt4d   : vector specifying the index in varrd_4d where
+!!               the first of the data values will be read
+!!    cnt4d    : varrd_4d dimensions
+      integer          , intent(in)   :: ncid
+      character (len=*), intent(in)   :: varname
+      integer          , intent(in)   :: strt4d(4)
+      integer          , intent(in)   :: cnt4d (4)
+!
+! !OUTPUT PARAMETERS:
+!!    varrd_4d : array to fill
+      real*4           , intent(out)  :: varrd_4d(cnt4d(1), cnt4d(2), &
+                                                  cnt4d(3), cnt4d(4))
+!
+! !DESCRIPTION: Reads in a 4D netCDF real array and does some error checking.
+!\\
+!\\
+! !AUTHOR: 
+!  John Tannahill (LLNL) and Jules Kouatchou
+!
+! !REVISION HISTORY:
+!  Initial code.
+!  26 Oct 2011 - R. Yantosca - Renamed to Ncrd_4d_R4.  REAL*4 version.
 !EOP
 !-------------------------------------------------------------------------
 !BOC
@@ -688,16 +984,16 @@ CONTAINS
 
       return
 
-      end subroutine Ncrd_4d
+      end subroutine Ncrd_4d_R4
 !EOC
 !-------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: Ncrd_5d
+! !IROUTINE: Ncrd_5d_R8
 !
 ! !INTERFACE:
 !
-      subroutine Ncrd_5d (varrd_5d, ncid, varname, strt5d, cnt5d)
+      subroutine Ncrd_5d_R8 (varrd_5d, ncid, varname, strt5d, cnt5d)
 !
 ! !USES:
 !
@@ -732,7 +1028,82 @@ CONTAINS
 !
 ! !REVISION HISTORY:
 !  Initial code.
+!  26 Oct 2011 - R. Yantosca - Renamed to Ncrd_45_R8.  REAL*8 version.
+!EOP
+!-------------------------------------------------------------------------
+!BOC
 !
+! !LOCAL VARIABLES:
+      character (len=128) :: err_msg
+      integer             :: ierr
+      integer             :: varid
+      real*8              :: varrd_5d_tmp(cnt5d(1), cnt5d(2), cnt5d(3), &
+                                                   cnt5d(4), cnt5d(5))
+!
+      ierr = Nf_Inq_Varid (ncid, varname, varid)
+
+      if (ierr /= NF_NOERR) then
+        err_msg = 'In Ncrd_5d #1:  ' // Trim (varname) // &
+                  ', ' // Nf_Strerror (ierr)
+        call Do_Err_Out (err_msg, .true., 1, ncid, 0, 0, 0.0d0, 0.0d0)
+      end if
+
+      ierr = Nf_Get_Vara_Real   (ncid, varid, strt5d, cnt5d, varrd_5d_tmp)
+
+      if (ierr /= NF_NOERR) then
+        err_msg = 'In Ncrd_5d #2:  ' // Nf_Strerror (ierr)
+        call Do_Err_Out (err_msg, .true., 2, ncid, varid, 0, 0.0d0, 0.0d0)
+      end if
+
+      varrd_5d(:,:,:,:,:) = varrd_5d_tmp(:,:,:,:,:)
+
+      return
+
+      end subroutine Ncrd_5d_R8
+!EOC
+!-------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: Ncrd_5d_R4
+!
+! !INTERFACE:
+!
+      subroutine Ncrd_5d_R4 (varrd_5d, ncid, varname, strt5d, cnt5d)
+!
+! !USES:
+!
+      use m_do_err_out
+!
+      implicit none
+!
+      include "netcdf.inc"
+!
+! !INPUT PARAMETERS:
+!!    ncid     : netCDF file id to read array input data from
+!!    varname  : netCDF variable name for array
+!!    strt5d   : vector specifying the index in varrd_5d where
+!!               the first of the data values will be read
+!!    cnt5d    : varrd_5d dimensions
+      integer          , intent(in)   :: ncid
+      character (len=*), intent(in)   :: varname
+      integer          , intent(in)   :: strt5d(5)
+      integer          , intent(in)   :: cnt5d (5)
+!
+! !OUTPUT PARAMETERS:
+!!    varrd_5d : array to fill
+      real*4          , intent(out)  :: varrd_5d(cnt5d(1), cnt5d(2), &
+                                                cnt5d(3), cnt5d(4), &
+                                                cnt5d(5))
+!
+! !DESCRIPTION: Reads in a 5D netCDF real array and does some error checking.
+!\\
+!\\
+! !AUTHOR: 
+!  John Tannahill (LLNL) and Jules Kouatchou
+!
+! !REVISION HISTORY:
+!  Initial code.
+!  26 Oct 2011 - R. Yantosca - Renamed to Ncrd_45_R4.  REAL*4 version.
 !EOP
 !-------------------------------------------------------------------------
 !BOC
@@ -763,7 +1134,7 @@ CONTAINS
 
       return
 
-      end subroutine Ncrd_5d
+      end subroutine Ncrd_5d_R4
 !EOC
 !-------------------------------------------------------------------------
 !BOP

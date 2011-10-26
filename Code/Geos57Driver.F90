@@ -17,17 +17,17 @@ PROGRAM Geos57Driver
 !
 ! !USES:
 !
-  USE Geos57A1Module
-  USE Geos57A3Module
+!  USE Geos57A1Module
+!  USE Geos57A3Module
   USE Geos57CnModule
-  USE Geos57I6Module
+!  USE Geos57I6Module
   USE Geos57InputsModule
   USE Geos57RegridModule
 
   IMPLICIT NONE
 !
 ! !REVISION HISTORY: 
-!  30 Aug 2011 - R. Yantosca - Initial Version, based on MerraDriver
+!  26 Oct 2011 - R. Yantosca - Initial Version, based on MerraDriver
 !------------------------------------------------------------------------------
 
   ! Read filenames and fields to process from an input file
@@ -39,14 +39,14 @@ PROGRAM Geos57Driver
   ! Create the constant data file
   IF ( doMakeCn ) CALL Geos57MakeCn
 
-  ! Create the 1-hour average data file
-  CALL Geos57MakeA1
-
-  ! Create the 3-hour average data file
-  CALL Geos57MakeA3
-
-  ! Create the 6-hour instantaneous data file
-  CALL Geos57MakeI6
+!  ! Create the 1-hour average data file
+!  CALL Geos57MakeA1
+!
+!  ! Create the 3-hour average data file
+!  CALL Geos57MakeA3
+!
+!  ! Create the 6-hour instantaneous data file
+!  CALL Geos57MakeI6
 
   ! Cleanup and quit 
   CALL Geos57Cleanup

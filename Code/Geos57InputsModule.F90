@@ -29,41 +29,31 @@ MODULE Geos57InputsModule
   ! Number of times per file            
   INTEGER,      PARAMETER :: TIMES_A1   = 24          ! # of A1 data times
   INTEGER,      PARAMETER :: TIMES_A3   = 8           ! # of A3 data times
-  INTEGER,      PARAMETER :: TIMES_A6   = 4           ! # of A6 data times
-  INTEGER,      PARAMETER :: TIMES_I6   = 4           ! # of I6 data times
                                         
   ! File units                          
   INTEGER,      PARAMETER :: IU_LOG     = 6           ! Log file output
   INTEGER,      PARAMETER :: IU_TXT     = 70          ! Text file input
   INTEGER,      PARAMETER :: IU_BIN     = 71
-  INTEGER,      PARAMETER :: A1_2x25    = 20          ! 2x25  A3 file
-  INTEGER,      PARAMETER :: A1_4x5     = 21          ! 4x5   A3 file 
-  INTEGER,      PARAMETER :: A3_2x25    = 31          ! 2x25  A3 file
-  INTEGER,      PARAMETER :: A3_4x5     = 32          ! 4x5   A3 file 
-  INTEGER,      PARAMETER :: A6_2x25    = 41          ! 2x25  A6 file 
-  INTEGER,      PARAMETER :: A6_4x5     = 42          ! 4x5   A6 file
-  INTEGER,      PARAMETER :: CN_2x25    = 51          ! 2x25  A6 file 
-  INTEGER,      PARAMETER :: CN_4x5     = 52          ! 4x5   A6 file
-  INTEGER,      PARAMETER :: I6_2x25    = 61          ! 2x25  I6 file 
-  INTEGER,      PARAMETER :: I6_4x5     = 62          ! 4x5   I6 file
-                                        
-  ! Grid sizes                          
-  INTEGER,      PARAMETER :: I05x0666   = 540         ! 0.5  x 0.666 lon dim
-  INTEGER,      PARAMETER :: J05x0666   = 361         ! 0.5  x 0.666 lat dim
-  INTEGER,      PARAMETER :: L05x0666   = 72          ! 0.5  x 0.666 alt dim
-  INTEGER,      PARAMETER :: I125x125   = 288         ! 1.25 x 1.25  lon dim
-  INTEGER,      PARAMETER :: J125x125   = 144         ! 1.25 x 1.25  lat dim
-  INTEGER,      PARAMETER :: L125x125   = 72          ! 1.25 x 1.25  alt dim
-  INTEGER,      PARAMETER :: L125x125_P = 42          ! 1.25 x 1.25  alt dim
-  INTEGER,      PARAMETER :: I1x125     = 288         ! 1.0  x 1.25  lon dim
-  INTEGER,      PARAMETER :: J1x125     = 181         ! 1.0  x 1.25  lat dim
-  INTEGER,      PARAMETER :: L1x125     = 72          ! 1.0  x 1.25  alt dim
-  INTEGER,      PARAMETER :: I2x25      = 144         ! 2.0  x 2.5   lon dim
-  INTEGER,      PARAMETER :: J2x25      = 91          ! 2.0  x 2.5   lat dim
-  INTEGER,      PARAMETER :: L2x25      = 72          ! 2.0  x 2.5   alt dim
-  INTEGER,      PARAMETER :: I4x5       = 72          ! 4.0  x 5.0   lon dim
-  INTEGER,      PARAMETER :: J4x5       = 46          ! 4.0  x 5.0   lat dim
-  INTEGER,      PARAMETER :: L4x5       = 72          ! 4.0  x 5.0   alt dim
+                     
+  ! Grid size dimensions                         
+  INTEGER,      PARAMETER :: I025x03125 = 1152        ! 0.25 x 0.3125 lon dim
+  INTEGER,      PARAMETER :: J025x03125 = 721         ! 0.25 x 0.3125 lat dim
+  INTEGER,      PARAMETER :: L025x03125 = 72          ! 0.25 x 0.3125 alt dim
+  INTEGER,      PARAMETER :: I05x0666   = 540         ! 0.5  x 0.666  lon dim
+  INTEGER,      PARAMETER :: J05x0666   = 361         ! 0.5  x 0.666  lat dim
+  INTEGER,      PARAMETER :: L05x0666   = 72          ! 0.5  x 0.666  alt dim
+  INTEGER,      PARAMETER :: I125x125   = 288         ! 1.25 x 1.25   lon dim
+  INTEGER,      PARAMETER :: J125x125   = 144         ! 1.25 x 1.25   lat dim
+  INTEGER,      PARAMETER :: L125x125   = 72          ! 1.25 x 1.25   alt dim
+  INTEGER,      PARAMETER :: I1x125     = 288         ! 1.0  x 1.25   lon dim
+  INTEGER,      PARAMETER :: J1x125     = 181         ! 1.0  x 1.25   lat dim
+  INTEGER,      PARAMETER :: L1x125     = 72          ! 1.0  x 1.25   alt dim
+  INTEGER,      PARAMETER :: I2x25      = 144         ! 2.0  x 2.5    lon dim
+  INTEGER,      PARAMETER :: J2x25      = 91          ! 2.0  x 2.5    lat dim
+  INTEGER,      PARAMETER :: L2x25      = 72          ! 2.0  x 2.5    alt dim
+  INTEGER,      PARAMETER :: I4x5       = 72          ! 4.0  x 5.0    lon dim
+  INTEGER,      PARAMETER :: J4x5       = 46          ! 4.0  x 5.0    lat dim
+  INTEGER,      PARAMETER :: L4x5       = 72          ! 4.0  x 5.0    alt dim
 !
 ! !PUBLIC TYPES:
 !
@@ -83,14 +73,21 @@ MODULE Geos57InputsModule
   TYPE(MapObj),   POINTER :: mapFxTo2x25(:,:)         ! Mapping Fx -> 2 x 2.5
   TYPE(MapObj),   POINTER :: mapFxTo4x5(:,:)          ! Mapping Fx -> 4 x 5
 
+  ! NetCDF file Handles
+
   ! Scalars
+  LOGICAL                 :: doNested                 ! Save out nested grids
   LOGICAL                 :: do2x25                   ! Save out 2 x 2.25
   LOGICAL                 :: do4x5                    ! Save out 4 x 5?
   LOGICAL                 :: doMakeCn
   LOGICAL                 :: VERBOSE                  ! Do debug printout?
   INTEGER                 :: yyyymmdd                 ! Today's date
+  INTEGER                 :: fIn                      ! NC fId; input
+  INTEGER                 :: fOutNst                  ! NC fId; output nst grid
+  INTEGER                 :: fOut2x25                 ! NC fId; output 2x25
+  INTEGER                 :: fOut4x5                  ! NC fId; output 4x5
   REAL*4                  :: FILL_VALUE = 1e15        ! Fill value in HDF file
-  CHARACTER(LEN=MAX_CHAR) :: dataDirNcdf              ! netCDF data dir
+  CHARACTER(LEN=MAX_CHAR) :: inputDataDir             ! netCDF data dir
   CHARACTER(LEN=MAX_CHAR) :: dataTmpl2x25             ! 2x25  file template
   CHARACTER(LEN=MAX_CHAR) :: dataTmpl4x5              ! 4x5   file template
   CHARACTER(LEN=MAX_CHAR) :: const_2d_asm_Nx_file     ! const_2d_chm_Nx file
@@ -105,6 +102,10 @@ MODULE Geos57InputsModule
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_mst_Ne_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_rad_Nv_file     ! tavg3_3d_rad_Nv file
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_rad_Nv_data     !  and list of data flds
+  CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_odt_Nv_file     ! tavg3_3d_odt_Nv file
+  CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_odt_Nv_data     !  and list of data flds
+  CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_qdt_Nv_file     ! tavg3_3d_qdt_Nv file
+  CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_qdt_Nv_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_udt_Nv_file     ! tavg3_3d_udt_Nv file
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_udt_Nv_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_lsf_Nv_file     ! tavg3_3d_lsf_Nv file
@@ -128,13 +129,12 @@ MODULE Geos57InputsModule
   CHARACTER(LEN=MAX_CHAR) :: frLandFile               ! File for FRLAND
 
   ! Arrays
-  INTEGER                 :: a1Hours  (TIMES_A1)           ! A3 data times
-  INTEGER                 :: a3Hours  (TIMES_A3)           ! A3 data times
-  INTEGER                 :: a6Hours  (TIMES_A6)           ! A6 data times
-  INTEGER                 :: i6Hours  (TIMES_I6)           ! A6 data times
-  REAL*4                  :: lwiMask  (I05x0666,J05x0666)  ! LWI mask
-  REAL*4                  :: frLandIce(I05x0666,J05x0666)  ! FRLANDICE data 
-  REAL*4                  :: frLand   (I05x0666,J05x0666)  ! FRLAND data
+  INTEGER                 :: a1Hours  (TIMES_A1)               ! A1 data times
+  INTEGER                 :: a3HoursI (TIMES_A3)               ! Inst A1 times
+  INTEGER                 :: a3Hours  (TIMES_A3)               ! A3 data times
+  REAL*4                  :: lwiMask  (I025x03125,J025x03125)  ! LWI mask
+  REAL*4                  :: frLandIce(I025x03125,J025x03125)  ! FRLANDICE data
+  REAL*4                  :: frLand   (I025x03125,J025x03125)  ! FRLAND data
 !
 ! !PUBLIC MEMBER FUNCTIONS:
 !
@@ -174,7 +174,7 @@ MODULE Geos57InputsModule
 !------------------------------------------------------------------------------
 !BOC
     ! Local variables
-    INTEGER                 :: nPts
+    INTEGER                 :: nPts, ios
     CHARACTER(LEN=MAX_CHAR) :: line, temp
 
     !-----------------------------------------------------------------------
@@ -184,25 +184,26 @@ MODULE Geos57InputsModule
     ! Get day of year
     READ( 5, '(i8)', ERR=990 ) yyyymmdd
 
-    ! Get times of day (these are listed in the GEOS-5 file spec)
-    a1Hours = (/ 003000, 013000, 023000, 033000, 043000, 053000, &
-                 063000, 073000, 083000, 093000, 103000, 113000, &
-                 123000, 133000, 143000, 153000, 163000, 173000, &
-                 183000, 193000, 203000, 213000, 223000, 233000 /)
+    ! 1-hourly data timestamps (time-avg data)
+    a1Hours  = (/ 003000, 013000, 023000, 033000, 043000, 053000, &
+                  063000, 073000, 083000, 093000, 103000, 113000, &
+                  123000, 133000, 143000, 153000, 163000, 173000, &
+                  183000, 193000, 203000, 213000, 223000, 233000 /)
 
-    a3Hours = (/ 013000, 043000, 073000, 103000,  &
-                 133000, 163000, 193000, 223000 /)
-
-    a6Hours = (/ 030000, 090000, 150000, 210000 /)
-
-    i6Hours = (/ 000000, 060000, 120000, 180000 /)
+    ! 3-hourly data timestamps (time-avg data)
+    a3Hours  = (/ 013000, 043000, 073000, 103000,  &
+                  133000, 163000, 193000, 223000 /)
+    
+    ! 3-hourly data timestamps (instantaneous data)
+    a3HoursI = (/ 000000, 030000, 060000, 090000,  &
+                  120000, 150000, 180000, 210000 /)
     
     !-----------------------------------------------------------------------
     ! Read the file with the filename templates and fields to pull
     !-----------------------------------------------------------------------
 
     ! Open the file
-    OPEN( IU_TXT, FILE='./Geos57Driver.input', STATUS='old' )
+    OPEN( IU_TXT, FILE='./Geos57Driver.input', STATUS='old', ERR=999 )
 
     ! Read each line
     DO 
@@ -217,7 +218,7 @@ MODULE Geos57InputsModule
              READ( IU_TXT,   *,   ERR=999 ) VERBOSE
 
           CASE( '==> Local Raw Data Path' )
-             READ( IU_TXT, '(a)', ERR=999 ) dataDirNcdf
+             READ( IU_TXT, '(a)', ERR=999 ) inputDataDir
 
           CASE( '==> 2 x 2.5 Output' )
              READ( IU_TXT, '(a)', ERR=999 ) dataTmpl2x25
@@ -228,81 +229,61 @@ MODULE Geos57InputsModule
              READ( IU_TXT,   *,   ERR=999 ) do4x5
 
           CASE( '==> const_2d_asm_Nx' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
              READ( IU_TXT, '(a)', ERR=999 ) const_2d_asm_Nx_file
              READ( IU_TXT, '(a)', ERR=999 ) const_2d_asm_Nx_data
              READ( IU_TXT,   *,   ERR=999 ) doMakeCn
 
+          CASE( '==> inst3_3d_asm_Nv' )
+             READ( IU_TXT, '(a)', ERR=999 ) inst3_3d_asm_Nv_file
+             READ( IU_TXT, '(a)', ERR=999 ) inst3_3d_asm_Nv_data
+
           CASE( '==> tavg1_2d_flx_Nx' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
              READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_flx_Nx_file
              READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_flx_Nx_data
 
           CASE( '==> tavg1_2d_lnd_Nx' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
              READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_lnd_Nx_file
              READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_lnd_Nx_data
 
           CASE( '==> tavg1_2d_rad_Nx' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
              READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_rad_Nx_file
              READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_rad_Nx_data
 
           CASE( '==> tavg1_2d_slv_Nx' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
              READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_slv_Nx_file
              READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_slv_Nx_data
 
-          CASE( '==> tavg1_2d_ocn_Nx' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
-             READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_ocn_Nx_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_ocn_Nx_data
-
-          CASE( '==> tavg1_2d_ocn_Nx' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
-             READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_ocn_Nx_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_ocn_Nx_data
-
           CASE( '==> tavg3_3d_cld_Nv' ) 
-             READ( IU_TXT, '(a)', ERR=999 ) temp
              READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_cld_Nv_file
              READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_cld_Nv_data
-             
+
+          CASE( '==> tavg3_3d_mst_Ne' )
+             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_mst_Ne_file
+             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_mst_Ne_data
+            
           CASE( '==> tavg3_3d_mst_Nv' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
              READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_mst_Nv_file
              READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_mst_Nv_data
 
-          CASE( '==> tavg3_3d_mst_Ne' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_mst_Ne_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_mst_Ne_data
+          CASE( '==> tavg3_3d_odt_Nv' )
+             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_odt_Nv_file
+             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_odt_Nv_data
+
+          CASE( '==> tavg3_3d_qdt_Nv' )
+             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_qdt_Nv_file
+             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_qdt_Nv_data
 
           CASE( '==> tavg3_3d_rad_Nv' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
              READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_rad_Nv_file
              READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_rad_Nv_data
 
           CASE( '==> tavg3_3d_udt_Nv' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
-             READ( IU_TXT, '(a)', ERR=999 ) inst3_3d_udt_Nv_file
-             READ( IU_TXT, '(a)', ERR=999 ) inst3_3d_udt_Nv_data
-
-          CASE( '==> tavg3_3d_lsf_Nv' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
-             READ( IU_TXT, '(a)', ERR=999 ) inst6_3d_lsf_Nv_file
-             READ( IU_TXT, '(a)', ERR=999 ) inst6_3d_lsf_Nv_data
-
-          CASE( '==> inst3_3d_asm_Nv' )
-             READ( IU_TXT, '(a)', ERR=999 ) temp
-             READ( IU_TXT, '(a)', ERR=999 ) inst3_3d_asm_Nv_file
-             READ( IU_TXT, '(a)', ERR=999 ) inst3_3d_asm_Nv_data
+             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_udt_Nv_file
+             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_udt_Nv_data
 
           CASE( '==> Mapping Weight Files' ) 
              READ( IU_TXT, '(a)', ERR=999 ) weightFileNxTo2x25
              READ( IU_TXT, '(a)', ERR=999 ) weightFileNxTo4x5
-             READ( IU_TXT, '(a)', ERR=999 ) weightFileFxTo2x25
-             READ( IU_TXT, '(a)', ERR=999 ) weightFileFxTo4x5
 
           CASE( '==> Template Files' ) 
              READ( IU_TXT, '(a)', ERR=999 ) lwiMaskFile
@@ -323,91 +304,89 @@ MODULE Geos57InputsModule
 
     ! Close file
     CLOSE( IU_TXT )
-    
-    ! Mapping weights
-    IF ( do2x25 ) THEN
-
-       ! Nx grid to 2 x 2.5 grid
-       nPts = ( I05x0666 / I2x25 ) + 2
-       CALL ReadMappingWeights( weightFileNxTo2x25,              &
-                                I2x25, J2x25, nPts, mapNxTo2x25 )
-
-       ! Fx grid to 2 x 2.5 grid
-       nPts = ( I1x125 / I2x25 ) + 2
-       CALL ReadMappingWeights( weightFileFxTo2x25,                &
-                                I2x25, J2x25, nPts, mapFxTo2x25 )
-    ENDIF
-
-    IF ( do4x5 ) THEN
-
-       ! Nx grid to 4 x 5 grid
-       nPts = ( I05x0666 / I4x5 ) + 2
-       CALL ReadMappingWeights( weightFileNxTo4x5,               &
-                                I4x5,  J4x5,  nPts, mapNxTo4x5  )
-
-       ! Fx grid to 4 x 5 grid
-       nPts = ( I1x125 / I4x5 ) + 2
-       CALL ReadMappingWeights( weightFileFxTo4x5,               &
-                                I4x5,  J4x5,  nPts, mapFxTo4x5  )
-    ENDIF
-
-    !-----------------------------------------------------------------------
-    ! Read data from template files
-    !-----------------------------------------------------------------------
-
-    ! Default values for LWI regridding
-    CALL ReadTemplateFile( lwiMaskFile, lwiMask )
-    
-    ! FRLANDICE data (for SNOMAS regridding)
-    CALL ReadTemplateFile( frLandIceFile, frLandIce )
-
-    ! FRLANDICE data (for SNOMAS regridding)
-    CALL ReadTemplateFile( frLandFile, frLand )
-
+!    
+!    ! Mapping weights
+!    IF ( do2x25 ) THEN
+!
+!       ! Nx grid to 2 x 2.5 grid
+!       nPts = ( I05x0666 / I2x25 ) + 2
+!       CALL ReadMappingWeights( weightFileNxTo2x25,              &
+!                                I2x25, J2x25, nPts, mapNxTo2x25 )
+!
+!       ! Fx grid to 2 x 2.5 grid
+!       nPts = ( I1x125 / I2x25 ) + 2
+!       CALL ReadMappingWeights( weightFileFxTo2x25,                &
+!                                I2x25, J2x25, nPts, mapFxTo2x25 )
+!    ENDIF
+!
+!    IF ( do4x5 ) THEN
+!
+!       ! Nx grid to 4 x 5 grid
+!       nPts = ( I05x0666 / I4x5 ) + 2
+!       CALL ReadMappingWeights( weightFileNxTo4x5,               &
+!                                I4x5,  J4x5,  nPts, mapNxTo4x5  )
+!
+!       ! Fx grid to 4 x 5 grid
+!       nPts = ( I1x125 / I4x5 ) + 2
+!       CALL ReadMappingWeights( weightFileFxTo4x5,               &
+!                                I4x5,  J4x5,  nPts, mapFxTo4x5  )
+!    ENDIF
+!
+!    !-----------------------------------------------------------------------
+!    ! Read data from template files
+!    !-----------------------------------------------------------------------
+!
+!    ! Default values for LWI regridding
+!    CALL ReadTemplateFile( lwiMaskFile, lwiMask )
+!    
+!    ! FRLANDICE data (for SNOMAS regridding)
+!    CALL ReadTemplateFile( frLandIceFile, frLandIce )
+!
+!    ! FRLANDICE data (for SNOMAS regridding)
+!    CALL ReadTemplateFile( frLandFile, frLand )
+!
     !-----------------------------------------------------------------------
     ! Verbose output for debugging
     !-----------------------------------------------------------------------
     IF ( VERBOSE ) THEN
        PRINT*, 'YYYYMMDD        : ', yyyymmdd
-       PRINT*, 'i6Hours         : ', a1Hours
+       PRINT*, 'a1Hours         : ', a1Hours
+       PRINT*, 'a3HoursI        : ', a3HoursI
        PRINT*, 'a3Hours         : ', a3Hours
-       PRINT*, 'a6Hours         : ', a6Hours
        PRINT*, 'do2x25          : ', do2x25
        PRINT*, 'do4x5           : ', do4x5
        PRINT*, 'doMakeCn        : ', doMakeCn
-       PRINT*, 'dataDirHDF      : ', TRIM( dataDirHDF            )
+       PRINT*, 'dataDirHDF      : ', TRIM( inputDataDir          )
        PRINT*, 'dataFile2x25    : ', TRIM( dataTmpl2x25          )
        PRINT*, 'dataFile4x5     : ', TRIM( dataTmpl4x5           )
        PRINT*, 'const_2d_asm_Nx : ', TRIM( const_2d_asm_Nx_file  )
        PRINT*, '                  ', TRIM( const_2d_asm_Nx_data  )
+       PRINT*, 'inst3_3d_asm_Nv : ', TRIM( inst3_3d_asm_Nv_file  )
+       PRINT*, '                  ', TRIM( inst3_3d_asm_Nv_data  )
        PRINT*, 'tavg1_2d_flx_Nx : ', TRIM( tavg1_2d_flx_Nx_file  )
        PRINT*, '                  ', TRIM( tavg1_2d_flx_Nx_data  )
        PRINT*, 'tavg1_2d_lnd_Nx : ', TRIM( tavg1_2d_lnd_Nx_file  )
        PRINT*, '                  ', TRIM( tavg1_2d_lnd_Nx_data  )
-       PRINT*, 'tavg1_2d_ocn_Nx : ', TRIM( tavg1_2d_ocn_Nx_file  )
-       PRINT*, '                  ', TRIM( tavg1_2d_ocn_Nx_data  )
        PRINT*, 'tavg1_2d_rad_Nx : ', TRIM( tavg1_2d_rad_Nx_file  )
        PRINT*, '                  ', TRIM( tavg1_2d_rad_Nx_data  )
        PRINT*, 'tavg1_2d_slv_Nx : ', TRIM( tavg1_2d_slv_Nx_file  )
        PRINT*, '                  ', TRIM( tavg1_2d_slv_Nx_data  )
-       PRINT*, 'tavg3_3d_cld_Nv : ', TRIM( tavg3_2d_cld_Nv_file  )
-       PRINT*, '                  ', TRIM( tavg3_2d_chm_Fx_data  )
-       PRINT*, 'tavg3_3d_mst_Nv : ', TRIM( tavg3_3d_mst_Nv_file  )
-       PRINT*, '                  ', TRIM( tavg3_3d_mst_Nv_data  )
-       PRINT*, 'tavg3_3d_mst_Ne : ', TRIM( tavg3_3d_mst_Ne_file  )
+       PRINT*, 'tavg3_3d_cld_Nv : ', TRIM( tavg3_3d_cld_Nv_file  )
+       PRINT*, '                  ', TRIM( tavg3_3d_cld_Nv_data  )
+       PRINT*, 'tavg3_3d_mst_Nv : ', TRIM( tavg3_3d_mst_Ne_file  )
        PRINT*, '                  ', TRIM( tavg3_3d_mst_Ne_data  )
+       PRINT*, 'tavg3_3d_mst_Ne : ', TRIM( tavg3_3d_mst_Nv_file  )
+       PRINT*, '                  ', TRIM( tavg3_3d_mst_Nv_data  )
+       PRINT*, 'tavg3_3d_odt_Nv : ', TRIM( tavg3_3d_odt_Nv_file  )
+       PRINT*, '                  ', TRIM( tavg3_3d_odt_Nv_data  )
+       PRINT*, 'tavg3_3d_qdt_Nv : ', TRIM( tavg3_3d_qdt_Nv_file  )
+       PRINT*, '                  ', TRIM( tavg3_3d_qdt_Nv_data  )
        PRINT*, 'tavg3_3d_rad_Nv : ', TRIM( tavg3_3d_rad_Nv_file  )
        PRINT*, '                  ', TRIM( tavg3_3d_rad_Nv_data  )
        PRINT*, 'tavg3_3d_udt_Nv : ', TRIM( tavg3_3d_udt_Nv_file  )
-       PRINT*, '                  ', TRIM( tavg3_3d_udt_Cp_data  )
-       PRINT*, 'tavg3_3d_lsv_Nv : ', TRIM( tavg3_3d_lsf_Nv_file  )
-       PRINT*, '                  ', TRIM( tavg3_3d_lsf_Cp_data  )
-       PRINT*, 'inst3_3d_asm_Nv : ', TRIM( inst3_3d_asm_Nv_file  )
-       PRINT*, '                  ', TRIM( inst3_3d_asm_Nv_data  )
+       PRINT*, '                  ', TRIM( tavg3_3d_udt_Nv_data  )
        PRINT*, 'WeightsNxTo2x25 : ', TRIM( weightFileNxTo2x25    )
        PRINT*, 'WeightsNxTo4x5  : ', TRIM( weightFileNxTo4x5     )
-       PRINT*, 'WeightsFxTo2x25 : ', TRIM( weightFileFxTo2x25    )
-       PRINT*, 'WeightsFxTo4x5  : ', TRIM( weightFileFxTo4x5     )
        PRINT*, 'lwiMaskFile     : ', TRIM( lwiMaskFile           )
        PRINT*, 'frLandIceFile   : ', TRIM( frLandIceFile         )
        PRINT*, 'frLandFile      : ', TRIM( frLandFile            )
@@ -476,6 +455,9 @@ MODULE Geos57InputsModule
     ! Local variables
     INTEGER                      :: I, J, Nx, Ny, rc
     CHARACTER(LEN=11)            :: fmtStr
+
+    !%%% TEMPORARY EXIT FOR DEBUGGING %%%
+    RETURN
 
     !========================================================================
     ! Initialize the pointer object if necessary
@@ -644,6 +626,9 @@ MODULE Geos57InputsModule
 
     ! Local variables
     INTEGER :: I, J
+
+    !### RETURN for testing
+    RETURN
 
     !======================================================================
     ! Deallocate 2x25 mapping weight objects

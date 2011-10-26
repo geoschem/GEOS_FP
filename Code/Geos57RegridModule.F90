@@ -3,9 +3,9 @@
 !------------------------------------------------------------------------------
 !BOP
 !
-! !MODULE: MerraRegridModule
+! !MODULE: Geos57RegridModule
 !
-! !DESCRIPTION: Module MerraRegridModule contains arrays and variables used 
+! !DESCRIPTION: Module Geos57RegridModule contains arrays and variables used 
 !  to regrid the GEOS-5 data from 0.5 x 0.666 to 1 x 1, 1 x 1.25, 2 x 2.5, 
 !  and 4 x 5 resolution. (bmy, 3/3/04)
 !
@@ -83,117 +83,105 @@
 !
 ! !INTERFACE: 
 !
-MODULE MerraRegridModule
+MODULE Geos57RegridModule
 ! 
 ! !USES:
 !
-  USE MerraInputsModule, ONLY : I05x0666, J05x0666, L05x0666
-  USE MerraInputsModule, ONLY : I125x125, J125x125, L125x125, L125x125_P 
-  USE MerraInputsModule, ONLY : I1x125,   J1x125,   L1x125  
-  USE MerraInputsModule, ONLY : I2x25,    J2x25,    L2x25   
-  USE MerraInputsModule, ONLY : I4x5,     J4x5,     L4x5    
+  USE Geos57InputsModule, ONLY : I025x03125, J025x03125, L025x03125
+  USE Geos57InputsModule, ONLY : I05x0666,   J05x0666,   L05x0666
+  USE Geos57InputsModule, ONLY : I1x125,     J1x125,     L1x125  
+  USE Geos57InputsModule, ONLY : I2x25,      J2x25,      L2x25   
+  USE Geos57InputsModule, ONLY : I4x5,       J4x5,       L4x5    
 
   IMPLICIT NONE
   PRIVATE
 !
-! !PUBLIC MEMBER FUNCTIONS:
-!
-  PUBLIC  :: RegridMerraNto2x25
-  PUBLIC  :: RegridMerraFto2x25
-  PUBLIC  :: RegridMerraCto2x25
-  PUBLIC  :: RegridMerraNto4x5
-  PUBLIC  :: RegridMerraFto4x5
-  PUBLIC  :: RegridMerraCto4x5
-  PUBLIC  :: MerraRegridInit
-!
 ! !PRIVATE MEMBER FUNCTIONS:
 !
-  PRIVATE :: map_a2a
-  PRIVATE :: YMAP
-  PRIVATE :: ppm_lat
-  PRIVATE :: xmap
-  PRIVATE :: ppm_cycle
-  PRIVATE :: lmppm
-  PRIVATE :: huynh
+  PRIVATE        :: map_a2a
+  PRIVATE        :: YMAP
+  PRIVATE        :: ppm_lat
+  PRIVATE        :: xmap
+  PRIVATE        :: ppm_cycle
+  PRIVATE        :: lmppm
+  PRIVATE        :: huynh
 !
-! !PRIVATE TYPES:
+! !PUBLIC MEMBER FUNCTIONS:
+!
+  PUBLIC         :: RegridGeos57to1x125
+  PUBLIC         :: RegridGeos57to2x25
+  PUBLIC         :: RegridGeos57to4x5
+  PUBLIC         :: Geos57RegridInit
+!
+! !PUBLIC DATA MEMBERS:
 ! 
   !--------------------------
-  ! MERRA "N" global grid
+  ! 0.25 x 0.3125 resolution
+  !--------------------------
+  REAL*4, PUBLIC :: xedge_025x03125( I025x03125 + 1 )  ! Lon edges
+  REAL*4, PUBLIC :: yedge_025x03125( J025x03125 + 1 )  ! Lat edges
+  REAL*4, PUBLIC :: sine_025x03125 ( J025x03125 + 1 )  ! SIN( lat edges ) 
+  REAL*4, PUBLIC :: xmid_025x03125 ( I025x03125     )  ! Lon centers
+  REAL*4, PUBLIC :: ymid_025x03125 ( J025x03125     )  ! Lat centers
+
+  !--------------------------
   ! 0.5 x 0.666 resolution
   !--------------------------
-
-  ! Lon edges, lat edges, sine of lat edges
-  REAL*4              :: xedge_05x0666( I05x0666 + 1 ) 
-  REAL*4              :: yedge_05x0666( J05x0666 + 1 )
-  REAL*4              :: sine_05x0666 ( J05x0666 + 1 )
-
-  !--------------------------
-  ! MERRA "C" global grid"
-  ! 1.25 x 1.25 resolution
-  !--------------------------
-
-  ! Lon edges, lat edges, sine of lat edges
-  REAL*4              :: xedge_125x125( I125x125 + 1 ) 
-  REAL*4              :: yedge_125x125( J125x125 + 1 )
-  REAL*4              :: sine_125x125 ( J125x125 + 1 )
+  REAL*4, PUBLIC :: xedge_05x0666( I05x0666 + 1 )      ! Lon edges
+  REAL*4, PUBLIC :: yedge_05x0666( J05x0666 + 1 )      ! Lat edges
+  REAL*4, PUBLIC :: sine_05x0666 ( J05x0666 + 1 )      ! SIN( lat edges ) 
+  REAL*4, PUBLIC :: xmid_05x0666 ( I05x0666     )      ! Lon centers
+  REAL*4, PUBLIC :: ymid_05x0666 ( J05x0666     )      ! Lat centers
 
   !--------------------------
-  ! MERRA "F" global grid
   ! 1 x 1.25 resolution
   !--------------------------
-
-  ! Lon edges, lat edges, sine of lat edges
-  REAL*4              :: xedge_1x125( I1x125 + 1 ) 
-  REAL*4              :: yedge_1x125( J1x125 + 1 )
-  REAL*4              :: sine_1x125 ( J1x125 + 1 )
+  REAL*4, PUBLIC :: xedge_1x125( I1x125 + 1 )          ! Lon edges
+  REAL*4, PUBLIC :: yedge_1x125( J1x125 + 1 )          ! Lat edges
+  REAL*4, PUBLIC :: sine_1x125 ( J1x125 + 1 )          ! SIN( lat edges )
+  REAL*4, PUBLIC :: xmid_1x125 ( I1x125     )          ! Lon centers
+  REAL*4, PUBLIC :: ymid_1x125 ( J1x125     )          ! Lat centers
 
   !--------------------------
-  ! GEOS-Chem global grid
   ! 2 x 2.5 resolution 
   !--------------------------
-
-  ! Lon edges, lat edges, sine of lat edges
-  REAL*4              :: xedge_2x25( I2x25 + 1 ) 
-  REAL*4              :: yedge_2x25( J2x25 + 1 )
-  REAL*4              :: sine_2x25 ( J2x25 + 1 )
+  REAL*4, PUBLIC :: xedge_2x25( I2x25 + 1 )            ! Lon edges
+  REAL*4, PUBLIC :: yedge_2x25( J2x25 + 1 )            ! Lat edges
+  REAL*4, PUBLIC :: sine_2x25 ( J2x25 + 1 )            ! SIN( lat edges )
+  REAL*4, PUBLIC :: xmid_2x25 ( I2x25     )            ! Lon centers
+  REAL*4, PUBLIC :: ymid_2x25 ( J2x25     )            ! Lat centers
 
   !--------------------------
-  ! GEOS-Chem global grid
   ! 4 x 5 resolution
   !--------------------------
-
-  ! Lon edges, lat edges, sine of lat edges
-  REAL*4              :: xedge_4x5( I4x5 + 1 )
-  REAL*4              :: yedge_4x5( J4x5 + 1 )
-  REAL*4              :: sine_4x5 ( J4x5 + 1 )
-!
-! !DEFINED PARAMETERS:
-!
-  ! Degrees to Radians
-  REAL*4,  PARAMETER  :: D2R = 3.141592658979323d0 / 180d0
+  REAL*4, PUBLIC :: xedge_4x5( I4x5 + 1 )              ! Lon edges  
+  REAL*4, PUBLIC :: yedge_4x5( J4x5 + 1 )              ! Lat edges
+  REAL*4, PUBLIC :: sine_4x5 ( J4x5 + 1 )              ! SIN( lat edges )
+  REAL*4, PUBLIC :: xmid_4x5 ( I4x5     )              ! Lon centers
+  REAL*4, PUBLIC :: ymid_4x5 ( J4x5     )              ! Lat centers
 !
 ! !AUTHOR:
 ! Original MAP_A2A code from S-J Lin
 ! Modified by Bob Yantosca and placed into F90 module format
 !
 ! !REMARKS:
-!  The MERRA "N" 0.5  x 0.666 grid is centered on (-180,-90).
-!  The MERRA "C" 1.25 x 1.25  grid is edged    on (-180,-90).
-!  The MERRA "F" 1.0  x 1.25  grid is centered on (-180,-90).
-!  The GEOS-Chem 2.0  x 2.5   grid is centered on (-180,-90).
-!  The GEOS-Chem 4.0  x 5.0   grid is centered on (-180,-90).
-
-!  All other grids are are centered on (-180,-90).
+!  The GEOS-5.7.x 0.25 x 0.3125 grid is centered on (-180,-90).
+!  The GEOS-Chem  1.0  x 1.25   grid is centered on (-180,-90).
+!  The GEOS-Chem  2.0  x 2.5    grid is centered on (-180,-90).
+!  The GEOS-Chem  4.0  x 5.0    grid is centered on (-180,-90).
 !
 ! !REVISION HISTORY:
-!  23 Jul 2010 - R. Yantosca - Initial version, based on Geos5RegridModule.f90
-!  29 Jul 2010 - R. Yantosca - Added RegridMerraCto2x25, RegridMerraCto4x5
-!  29 Jul 2010 - R. Yantosca - Added xedge_125x125, yedge_125x125, sine_125x125
-!  30 Jul 2010 - R. Yantosca - Bug fix: now define 1.25 x 1.25 grid properly
+!  23 Jul 2010 - R. Yantosca - Initial version, based on MerraRegridModule.f90
+!  26 Oct 2011 - R. Yantosca - Now make all lon & lat arrays public
 !EOP
 !------------------------------------------------------------------------------
 !BOC
+!
+! !DEFINED PARAMETERS:
+!
+  ! Degrees to Radians
+  REAL*4, PARAMETER  :: D2R = 3.141592658979323d0 / 180d0
+
   CONTAINS
 !EOC
 !------------------------------------------------------------------------------
@@ -201,209 +189,16 @@ MODULE MerraRegridModule
 !------------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: RegridMerraNTo2x25
+! !IROUTINE: RegridGeos57to1x125
 !
-! !DESCRIPTION: Subroutine RegridMerraNTo2x25 is a wrapper for MAP\_A2A.
-!  It is called to regrid from the MERRA native ("N") grid (0.5 x 0.666)
-!  to the GEOS-Chem 2 x 2.5 grid.
-!\\
-!\\
-! !INTERFACE:
-!
-  SUBROUTINE RegridMerraNTo2x25( iv, q1, q2 )
-!
-! !INPUT PARAMETERS:
-!
-    ! IV = 0 is scalar field; IV = 1 is vector field
-    INTEGER, INTENT(IN)  :: iv
-    
-    ! Input data on 0.5 x 0.666 grid
-    REAL*4,  INTENT(IN)  :: q1(I05x0666,J05x0666)  
-!
-! !OUTPUT PARAMETERS:
-!
-    ! Output data on 2 x 2.5 grid
-    REAL*4,  INTENT(OUT) :: q2(I2x25,J2x25)
-!
-! !REVISION HISTORY: 
-!  26 Jul 2010 - R. Yantosca - Initial version
-!EOP
-!------------------------------------------------------------------------------
-!BOC
-    INTEGER :: T
-
-    ! If all elements of q1 are zero, then set q2=0 and return
-    IF ( ALL( q1 == 0e0 ) ) THEN
-       q2 = 0e0
-       RETURN
-    ENDIF
-
-    ! Call MAP_A2A to do the horizontal regridding
-    CALL map_a2a( I05x0666, J05x0666, xedge_05x0666, sine_05x0666, q1, &
-                  I2x25,    J2x25,    xedge_2x25,    sine_2x25,    q2, 0, iv )
-
-  END SUBROUTINE RegridMerraNTo2x25
-!EOC
-!------------------------------------------------------------------------------
-!          Harvard University Atmospheric Chemistry Modeling Group            !
-!------------------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: RegridMerraFTo2x25
-!
-! !DESCRIPTION: Subroutine RegridMerraFTo2x25 is a wrapper for MAP\_A2A.  
-!  It is called to regrid from the MERRA chemistry forcing ("F") 
-!  grid (1 x 1.25) to the GEOS-Chem 2 x 2.5 grid.
-!\\
-!\\
-! !INTERFACE:
-!
-  SUBROUTINE RegridMerraFTo2x25( iv, q1, q2 )
-!
-! !INPUT PARAMETERS:
-!
-    ! IV = 0 is scalar field; IV = 1 is vector field
-    INTEGER, INTENT(IN)  :: iv
-    
-    ! Input data on 1 x 1.25 grid
-    REAL*4,  INTENT(IN)  :: q1(I1x125,J1x125)  
-!
-! !OUTPUT PARAMETERS:
-!
-    ! Output data on 2 x 2.5 grid
-    REAL*4,  INTENT(OUT) :: q2(I2x25,J2x25)
-!
-! !REVISION HISTORY: 
-!  26 Jul 2010 - R. Yantosca - Initial version
-!EOP
-!------------------------------------------------------------------------------
-!BOC
-    INTEGER :: T
-
-    ! If all elements of q1 are zero, then set q2=0 and return
-    IF ( ALL( q1 == 0e0 ) ) THEN
-       q2 = 0e0
-       RETURN
-    ENDIF
-
-    ! Call MAP_A2A to do the horizontal regridding
-    CALL map_a2a( I1x125, J1x125, xedge_1x125, sine_1x125, q1, &
-                  I2x25,  J2x25,  xedge_2x25,  sine_2x25,  q2, 0, iv )
-
-  END SUBROUTINE RegridMerraFTo2x25
-!EOC
-!------------------------------------------------------------------------------
-!          Harvard University Atmospheric Chemistry Modeling Group            !
-!------------------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: RegridMerraCTo2x25
-!
-! !DESCRIPTION: Subroutine RegridMerraCTo2x25 is a wrapper for MAP\_A2A.  
-!  It is called to regrid from the MERRA chemistry ("C")  grid (1.25 x 1.25) 
-!  to the GEOS-Chem 2 x 2.5 grid.
-!\\
-!\\
-! !INTERFACE:
-!
-  SUBROUTINE RegridMerraCTo2x25( iv, q1, q2 )
-!
-! !INPUT PARAMETERS:
-!
-    ! IV = 0 is scalar field; IV = 1 is vector field
-    INTEGER, INTENT(IN)  :: iv
-    
-    ! Input data on 1.25 x 1.25 grid
-    REAL*4,  INTENT(IN)  :: q1(I125x125,J125x125)  
-!
-! !OUTPUT PARAMETERS:
-!
-    ! Output data on 2 x 2.5 grid
-    REAL*4,  INTENT(OUT) :: q2(I2x25,J2x25)
-!
-! !REVISION HISTORY: 
-!  30 Jul 2010 - R. Yantosca - Initial version
-!EOP
-!------------------------------------------------------------------------------
-!BOC
-    INTEGER :: T
-
-    ! If all elements of q1 are zero, then set q2=0 and return
-    IF ( ALL( q1 == 0e0 ) ) THEN
-       q2 = 0e0
-       RETURN
-    ENDIF
-
-    ! Call MAP_A2A to do the horizontal regridding
-    CALL map_a2a( I125x125, J125x125, xedge_125x125, sine_125x125, q1, &
-                  I2x25,    J2x25,    xedge_2x25,    sine_2x25,    q2, 0, iv )
-
-  END SUBROUTINE RegridMerraCTo2x25
-!EOC
-!------------------------------------------------------------------------------
-!          Harvard University Atmospheric Chemistry Modeling Group            !
-!------------------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: RegridMerraNTo4x5
-!
-! !DESCRIPTION: Subroutine RegridMerraNTo2x25 is a wrapper for MAP\_A2A.
-!  It is called to regrid from the MERRA native ("N") grid (0.5 x 0.666)
-!  to the GEOS-Chem 4 x 5 grid.
-!\\
-!\\
-! !INTERFACE:
-!
-  SUBROUTINE RegridMerraNTo4x5( iv, q1, q2 )
-!
-! !INPUT PARAMETERS:
-!
-    ! IV = 0 is scalar field; IV = 1 is vector field
-    INTEGER, INTENT(IN)  :: iv
-
-    ! Input data on 0.5 x 0.666 grid
-    REAL*4,  INTENT(IN)  :: q1(I05x0666,J05x0666)
-!
-! !OUTPUT PARAMETERS:
-!
-    ! Output data on 4 x 5 grid
-    REAL*4,  INTENT(OUT) :: q2(I4x5,J4x5)
-!
-! !REVISION HISTORY: 
-!  26 Jul 2010 - R. Yantosca - Initial version
-!EOP
-!------------------------------------------------------------------------------
-!BOC
-
-    INTEGER :: T
-
-    ! If all elements of q1 are zero, then set q2=0 and return
-    IF ( ALL( q1 == 0e0 ) ) THEN
-       q2 = 0e0
-       RETURN
-    ENDIF
-
-    ! Call MAP_A2A to do the horizontal regridding
-    CALL map_a2a( I05x0666, J05x0666, xedge_05x0666, sine_05x0666, q1, &
-                  I4x5,     J4x5,     xedge_4x5,     sine_4x5,     q2, 0, iv )
-
-  END SUBROUTINE RegridMerraNto4x5
-!EOC
-!------------------------------------------------------------------------------
-!          Harvard University Atmospheric Chemistry Modeling Group            !
-!------------------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: RegridMerraFTo4x5
-!
-! !DESCRIPTION: Subroutine RegridMerraFTo2x25 is a wrapper for MAP\_A2A.  
-!  It is called to regrid from the MERRA chemistry forcing ("F") 
+! !DESCRIPTION: Subroutine RegridGeos57to1x125 is a wrapper for MAP\_A2A.  
+!  It is called to regrid from the GEOS-5.7.x chemistry forcing ("F") 
 !  grid (1 x 1.25) to the GEOS-Chem 4 x 5 grid.
 !\\
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE RegridMerraFTo4x5( iv, q1, q2 )
+  SUBROUTINE RegridGeos57to1x125( iv, q1, q2 )
 !
 ! !INPUT PARAMETERS:
 !
@@ -411,7 +206,108 @@ MODULE MerraRegridModule
     INTEGER, INTENT(IN)  :: iv
 
     ! Input data on 1 x 1.25 grid
-    REAL*4,  INTENT(IN)  :: q1(I1x125,J1x125)
+    REAL*4,  INTENT(IN)  :: q1(I025x03125,J025x03125)
+!
+! !OUTPUT PARAMETERS:
+!
+    ! Output data on 4 x 5 grid
+    REAL*4,  INTENT(OUT) :: q2(I1x125,J1x125)
+!
+! !REVISION HISTORY: 
+!  26 Jul 2010 - R. Yantosca - Initial version
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+
+    INTEGER :: T
+
+    ! If all elements of q1 are zero, then set q2=0 and return
+    IF ( ALL( q1 == 0e0 ) ) THEN
+       q2 = 0e0
+       RETURN
+    ENDIF
+
+    ! Call MAP_A2A to do the horizontal regridding
+    CALL map_a2a( I025x03125,     J025x03125,  xedge_025x03125,  &
+                  sine_025x03125, q1,          I1x125,           &
+                  J1x125,         xedge_1x125, sine_1x125,       &
+                  q2,             0,           iv               )
+
+  END SUBROUTINE RegridGeos57to1x125
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: RegridGeos57To2x25
+!
+! !DESCRIPTION: Subroutine RegridGeos57To2x25 is a wrapper for MAP\_A2A.
+!  It is called to regrid from the GEOS-5.7.x native grid (0.25 x0 x 0.3125)
+!  to the GEOS-Chem 2 x 2.5 grid.
+!\\
+!\\
+! !INTERFACE:
+!
+  SUBROUTINE RegridGeos57To2x25( iv, q1, q2 )
+!
+! !INPUT PARAMETERS:
+!
+    ! IV = 0 is scalar field; IV = 1 is vector field
+    INTEGER, INTENT(IN)  :: iv
+    
+    ! Input data on 0.5 x 0.666 grid
+    REAL*4,  INTENT(IN)  :: q1(I025x03125,J025x03125)  
+!
+! !OUTPUT PARAMETERS:
+!
+    ! Output data on 2 x 2.5 grid
+    REAL*4,  INTENT(OUT) :: q2(I2x25,J2x25)
+!
+! !REVISION HISTORY: 
+!  26 Jul 2010 - R. Yantosca - Initial version
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+    INTEGER :: T
+
+    ! If all elements of q1 are zero, then set q2=0 and return
+    IF ( ALL( q1 == 0e0 ) ) THEN
+       q2 = 0e0
+       RETURN
+    ENDIF
+
+    ! Call MAP_A2A to do the horizontal regridding
+    CALL map_a2a( I025x03125,     J025x03125,  xedge_025x03125,  &
+                  sine_025x03125, q1,          I2x25,            &
+                  J2x25,          xedge_2x25,  sine_2x25,        &
+                  q2,             0,           iv               )
+
+  END SUBROUTINE RegridGeos57To2x25
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: RegridGeos57NTo4x5
+!
+! !DESCRIPTION: Subroutine RegridGeos57NTo2x25 is a wrapper for MAP\_A2A.
+!  It is called to regrid from the GEOS-5.7.x native ("N") grid (0.5 x 0.666)
+!  to the GEOS-Chem 4 x 5 grid.
+!\\
+!\\
+! !INTERFACE:
+!
+  SUBROUTINE RegridGeos57to4x5( iv, q1, q2 )
+!
+! !INPUT PARAMETERS:
+!
+    ! IV = 0 is scalar field; IV = 1 is vector field
+    INTEGER, INTENT(IN)  :: iv
+
+    ! Input data on 0.5 x 0.666 grid
+    REAL*4,  INTENT(IN)  :: q1(I025x03125,J025x03125)  
 !
 ! !OUTPUT PARAMETERS:
 !
@@ -433,59 +329,12 @@ MODULE MerraRegridModule
     ENDIF
 
     ! Call MAP_A2A to do the horizontal regridding
-    CALL map_a2a( I1x125, J1x125, xedge_1x125, sine_1x125, q1, &
-                  I4x5,   J4x5,   xedge_4x5,   sine_4x5,   q2, 0, iv )
+    CALL map_a2a( I025x03125,     J025x03125,  xedge_025x03125,  &
+                  sine_025x03125, q1,          I4x5,             &
+                  J4x5,           xedge_4x5,   sine_4x5,         &
+                  q2,             0,           iv               )
 
-  END SUBROUTINE RegridMerraFto4x5
-!EOC
-!------------------------------------------------------------------------------
-!          Harvard University Atmospheric Chemistry Modeling Group            !
-!------------------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: RegridMerraCTo4x5
-!
-! !DESCRIPTION: Subroutine RegridMerraCTo4x5 is a wrapper for MAP\_A2A.  
-!  It is called to regrid from the MERRA chemistry ("C")  grid (1.25 x 1.25) 
-!  to the GEOS-Chem 4 x 5 grid.
-!\\
-!\\
-! !INTERFACE:
-!
-  SUBROUTINE RegridMerraCTo4x5( iv, q1, q2 )
-!
-! !INPUT PARAMETERS:
-!
-    ! IV = 0 is scalar field; IV = 1 is vector field
-    INTEGER, INTENT(IN)  :: iv
-
-    ! Input data on 1.25 x 1.25 grid
-    REAL*4,  INTENT(IN)  :: q1(I125x125,J125x125)
-!
-! !OUTPUT PARAMETERS:
-!
-    ! Output data on 4 x 5 grid
-    REAL*4,  INTENT(OUT) :: q2(I4x5,J4x5)
-!
-! !REVISION HISTORY: 
-!  30 Jul 2010 - R. Yantosca - Initial version
-!EOP
-!------------------------------------------------------------------------------
-!BOC
-
-    INTEGER :: T
-
-    ! If all elements of q1 are zero, then set q2=0 and return
-    IF ( ALL( q1 == 0e0 ) ) THEN
-       q2 = 0e0
-       RETURN
-    ENDIF
-
-    ! Call MAP_A2A to do the horizontal regridding
-    CALL map_a2a( I125x125, J125x125, xedge_125x125, sine_125x125, q1, &
-                  I4x5,     J4x5,     xedge_4x5,     sine_4x5,     q2, 0, iv )
-
-  END SUBROUTINE RegridMerraCto4x5
+  END SUBROUTINE RegridGeos57to4x5
 !EOC
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -542,7 +391,7 @@ MODULE MerraRegridModule
 !                               into "Geos3RegridModule".  Added F90 type 
 !                               declarations to be consistent with  
 !                               TypeModule.f90.  Also updated comments. 
-!   08 Nov 2006 - R. Yantosca - Inserted into MerraRegridModule.f90
+!   08 Nov 2006 - R. Yantosca - Inserted into Geos57RegridModule.f90
 !   12 Dec 2008 - R. Yantosca - Added ProTeX documentation headers
 !EOP
 !------------------------------------------------------------------------------
@@ -652,7 +501,7 @@ MODULE MerraRegridModule
 !                               into "Geos3RegridModule".  Added F90 type 
 !                               declarations to be consistent with  
 !                               TypeModule.f90.  Also updated comments. 
-!   08 Nov 2006 - R. Yantosca - Inserted into MerraRegridModule.f90
+!   08 Nov 2006 - R. Yantosca - Inserted into Geos57RegridModule.f90
 !   12 Dec 2008 - R. Yantosca - Added ProTeX documentation headers
 !EOP
 !------------------------------------------------------------------------------
@@ -801,7 +650,7 @@ MODULE MerraRegridModule
 !                               into "Geos3RegridModule".  Added F90 type 
 !                               declarations to be consistent with  
 !                               TypeModule.f90.  Also updated comments. 
-!   08 Nov 2006 - R. Yantosca - Inserted into MerraRegridModule.f90
+!   08 Nov 2006 - R. Yantosca - Inserted into Geos57RegridModule.f90
 !   12 Dec 2008 - R. Yantosca - Added ProTeX documentation headers
 !EOP
 !------------------------------------------------------------------------------
@@ -1027,7 +876,7 @@ MODULE MerraRegridModule
 !                               into "Geos3RegridModule".  Added F90 type 
 !                               declarations to be consistent with  
 !                               TypeModule.f90.  Also updated comments. 
-!   08 Nov 2006 - R. Yantosca - Inserted into MerraRegridModule.f90
+!   08 Nov 2006 - R. Yantosca - Inserted into Geos57RegridModule.f90
 !   12 Dec 2008 - R. Yantosca - Added ProTeX documentation headers
 !EOP
 !------------------------------------------------------------------------------
@@ -1217,7 +1066,7 @@ MODULE MerraRegridModule
 !                               into "Geos3RegridModule".  Added F90 type 
 !                               declarations to be consistent with  
 !                               TypeModule.f90.  Also updated comments. 
-!   08 Nov 2006 - R. Yantosca - Inserted into MerraRegridModule.f90
+!   08 Nov 2006 - R. Yantosca - Inserted into Geos57RegridModule.f90
 !   12 Dec 2008 - R. Yantosca - Added ProTeX documentation headers
 !EOP
 !------------------------------------------------------------------------------
@@ -1305,7 +1154,7 @@ MODULE MerraRegridModule
 !                               into "Geos3RegridModule".  Added F90 type 
 !                               declarations to be consistent with  
 !                               TypeModule.f90.  Also updated comments. 
-!   08 Nov 2006 - R. Yantosca - Inserted into MerraRegridModule.f90
+!   08 Nov 2006 - R. Yantosca - Inserted into Geos57RegridModule.f90
 !   12 Dec 2008 - R. Yantosca - Added ProTeX documentation headers
 !EOP
 !------------------------------------------------------------------------------
@@ -1415,7 +1264,7 @@ MODULE MerraRegridModule
 !                               into "Geos3RegridModule".  Added F90 type 
 !                               declarations to be consistent with  
 !                               TypeModule.f90.  Also updated comments. 
-!   08 Nov 2006 - R. Yantosca - Inserted into MerraRegridModule.f90
+!   08 Nov 2006 - R. Yantosca - Inserted into Geos57RegridModule.f90
 !   12 Dec 2008 - R. Yantosca - Added ProTeX documentation headers
 !EOP
 !------------------------------------------------------------------------------
@@ -1493,24 +1342,23 @@ MODULE MerraRegridModule
 !------------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: MerraRegridInit
+! !IROUTINE: Geos57RegridInit
 !
-! !DESCRIPTION: Subroutine MerraRegridInit initializes the longitude and 
+! !DESCRIPTION: Subroutine Geos57RegridInit initializes the longitude and 
 !  latitude edge arrays for 0.5 x 0.666, 1 x 1.25, 2 x 2.5, and 4 x 5 grids.
 !\\
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE MerraRegridInit
+  SUBROUTINE Geos57RegridInit
 !
 ! !REMARKS:
 !  Computation is done in REAL*8 and then casted to REAL*4 in order
 !  to get correct values for the high-resolution grids. 
 !
 ! !REVISION HISTORY: 
-!  23 Jul 2010 - R. Yantosca - Initial version, based on Geos5RegridModule
-!  30 Jul 2010 - R. Yantosca - Now initialize for 1.25 x 1.25 grid
-!  05 Aug 2010 - R. Yantosca - Fixed typo in definition of sine125x125
+!  25 Oct 2011 - R. Yantosca - InitialVersion, based on MerraRegridModule
+!  26 Oct 2011 - R. Yantosca - Now initialize lon & lat center arrays
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1521,7 +1369,46 @@ MODULE MerraRegridModule
     REAL*8  :: DI, DJ
 
     !======================================================================
-    ! MERRA "N" global grid
+    ! GEOS-5.7.x NATIVE GRID
+    ! 0.25 x 0.3125 resolution; centered on (-180,-90)
+    !======================================================================
+
+    ! Size of box
+    DI = 0.3125d0
+    DJ = 0.25d0
+
+    ! Lon edges
+    DO I = 0, I025x03125
+       xedge_025x03125(I+1)       = -180d0 - DI/2d0 + ( DI * I )
+    ENDDO
+
+    ! Lat edges
+    DO J = 0, J025x03125 
+       yedge_025x03125(J+1)       =  -90d0 - DJ/2d0 + ( DJ * J )
+    ENDDO
+
+    ! Lon centers
+    DO I = 0, I025x03125-1
+       xmid_025x03125(I+1)        = -180d0          + ( DI * I )
+    ENDDO                         
+                                  
+    ! Lat centers                 
+    DO J = 0, J025x03125-1              
+       ymid_025x03125(J+1)        =  -90d0          + ( DJ * J ) 
+    ENDDO  
+
+    ! Reset poles
+    yedge_025x03125(1           ) = -90e0
+    yedge_025x03125(J025x03125+1) = +90e0
+    ymid_025x03125 (1           ) = -89.9375d0
+    ymid_025x03125 (J025x03125  ) = +89.9375d0
+
+    ! Sine of latitude edges
+    DO J = 1, J025x03125+1
+       sine_025x03125(J)          = SIN( yedge_025x03125(J) * D2R )
+    ENDDO
+
+    !======================================================================
     ! 0.5 x 0.666 resolution; centered on (-180,-90)
     !======================================================================
 
@@ -1531,53 +1418,36 @@ MODULE MerraRegridModule
 
     ! Lon edges
     DO I = 0, I05x0666
-       xedge_05x0666(I+1)     = -180d0 - DI/2d0 + ( DI * I )
-    ENDDO
-
-    ! Lat edges
-    DO J = 0, J05x0666 
-       yedge_05x0666(J+1)     =  -90d0 - DJ/2d0 + ( DJ * J )
-    ENDDO
-
-    ! Reset poles
-    yedge_05x0666(1)          = -90e0
-    yedge_05x0666(J05x0666+1) = +90e0
-
-    ! Sine of latitude edges
-    DO J = 1, J05x0666+1
-       sine_05x0666(J)        = SIN( yedge_05x0666(J) * D2R )
-    ENDDO
-
-    !======================================================================
-    ! MERRA "C" global grid"
-    ! 1.25 x 1.25 resolution; edged on (-180,-90)
-    !======================================================================
-
-    ! Size of box
-    DI = 1.25d0
-    DJ = 1.25d0
-
-    ! Lon edges
-    DO I = 0, I125x125
-       xedge_125x125(I+1)     = -180d0 + ( DI * I )
-    ENDDO
-
-    ! Lat edges
-    DO J = 0, J125x125
-       yedge_125x125(J+1)     =  -90d0 + ( DJ * J )
-    ENDDO
-
-    ! Reset poles
-    yedge_125x125(1)          = -90e0
-    yedge_125x125(J125x125+1) = +90e0
-  
-    ! Sine of latitude edges
-    DO J = 1, J125x125+1
-       sine_125x125(J)        = SIN( yedge_125x125(J) * D2R )
+       xedge_05x0666(I+1)         = -180d0 - DI/2d0 + ( DI * I )
+    ENDDO                         
+                                  
+    ! Lat edges                   
+    DO J = 0, J05x0666            
+       yedge_05x0666(J+1)         =  -90d0 - DJ/2d0 + ( DJ * J )
+    ENDDO                         
+        
+    ! Lon centers
+    DO I = 0, I05x0666-1
+       xmid_05x0666(I+1)          = -180d0          + ( DI * I )
+    ENDDO                         
+                                  
+    ! Lat centers                 
+    DO J = 0, J05x0666-1              
+       ymid_05x0666(J+1)          =  -90d0          + ( DJ * J ) 
+    ENDDO  
+                          
+    ! Reset poles                 
+    yedge_05x0666(1         )     = -90e0
+    yedge_05x0666(J05x0666+1)     = +90e0
+    ymid_05x0666 (1         )     = -89.875d0
+    ymid_05x0666 (J05x0666  )     = +89.87500
+                                  
+    ! Sine of latitude edges      
+    DO J = 1, J05x0666+1          
+       sine_05x0666(J)            = SIN( yedge_05x0666(J) * D2R )
     ENDDO
 
     !======================================================================
-    ! MERRA "F" global grid
     ! 1 x 1.25 resolution; centered on (-180,-90)
     !======================================================================
     
@@ -1587,25 +1457,36 @@ MODULE MerraRegridModule
 
     ! Lon edges
     DO I = 0, I1x125
-       xedge_1x125(I+1)       = -180d0 - DI/2d0 + ( DI * I )
-    ENDDO
+       xedge_1x125(I+1)           = -180d0 - DI/2d0 + ( DI * I )
+    ENDDO                         
+                                  
+    ! Lat edges                   
+    DO J = 0, J1x125              
+       yedge_1x125(J+1)           =  -90d0 - DJ/2d0 + ( DJ * J ) 
+    ENDDO   
 
-    ! Lat edges
-    DO J = 0, J1x125
-       yedge_1x125(J+1)       =  -90d0 - DJ/2d0 + ( DJ * J ) 
-    ENDDO
-
-    ! Reset poles
-    yedge_1x125(1)            = -90e0
-    yedge_1x125(J1x125+1)     = +90e0
-  
-    ! Sine of latitude edges
-    DO J = 1, J1x125+1
-       sine_1x125(J)          = SIN( yedge_1x125(J) * D2R )
+    ! Lon centers
+    DO I = 0, I1x125-1
+       xmid_1x125(I+1)            = -180d0          + ( DI * I )
+    ENDDO                         
+                                  
+    ! Lat centers                 
+    DO J = 0, J1x125-1              
+       ymid_1x125(J+1)            =  -90d0          + ( DJ * J ) 
+    ENDDO                         
+                                  
+    ! Reset poles                 
+    yedge_1x125(1       )         = -90e0
+    yedge_1x125(J1x125+1)         = +90e0
+    ymid_1x125 (1       )         = -89.75e0
+    ymid_1x125 (J1x125  )         = +89.75e0
+                                  
+    ! Sine of latitude edges      
+    DO J = 1, J1x125+1            
+       sine_1x125(J)              = SIN( yedge_1x125(J) * D2R )
     ENDDO
 
     !======================================================================
-    ! GEOS-Chem global grid
     ! 2 x 2.5 resolution; centered on (-180,-90)
     !======================================================================
 
@@ -1615,25 +1496,36 @@ MODULE MerraRegridModule
 
     ! Lon edges
     DO I = 0, I2x25
-       xedge_2x25(I+1)        = -180d0 - DI/2d0 + ( DI * I )
+       xedge_2x25(I+1)            = -180d0 - DI/2d0 + ( DI * I )
+    ENDDO                         
+                                  
+    ! Lat edges                   
+    DO J = 0, J2x25               
+       yedge_2x25(J+1)            =  -90d0 - DJ/2d0 + ( DJ * J )
+    ENDDO                         
+            
+    ! Lon centers
+    DO I = 0, I2x25-1
+       xmid_2x25(I+1)             = -180d0          + ( DI * I )
     ENDDO
-
-    ! Lat edges
-    DO J = 0, J2x25
-       yedge_2x25(J+1)        =  -90d0 - DJ/2d0 + ( DJ * J )
-    ENDDO
-
-    ! Reset poles
-    yedge_2x25(1)             = -90e0
-    yedge_2x25(J2x25+1)       = +90e0
-
-    ! Sine of latitude edges
-    DO J = 1, J2x25+1
-       sine_2x25(J)           = SIN( yedge_2x25(J) * D2R )
+   
+    ! Lat centers         
+    DO J = 0, J2x25-1              
+       ymid_2x25(J+1)             =  -90d0          + ( DJ * J )
+    ENDDO 
+         
+    ! Reset poles                 
+    yedge_2x25(1      )           = -90e0
+    yedge_2x25(J2x25+1)           = +90e0
+    ymid_2x25 (1      )           = -89.75e0
+    ymid_2x25 (J2x25  )           = +89.75e0
+                                  
+    ! Sine of latitude edges      
+    DO J = 1, J2x25+1             
+       sine_2x25(J)               = SIN( yedge_2x25(J) * D2R )
     ENDDO
 
     !======================================================================
-    ! GEOS-Chem global grid
     ! 4 x 5 Grid; centered on (-180,-90)
     !======================================================================
 
@@ -1643,24 +1535,36 @@ MODULE MerraRegridModule
 
     ! Lon edges
     DO I = 0, I4x5
-       xedge_4x5(I+1)        = -180d0 - DI/2d0 + ( DI * I )
+       xedge_4x5(I+1)            = -180d0 - DI/2d0 + ( DI * I )
+    ENDDO                        
+                         
+    ! Lat edges         
+    DO J = 0, J4x5               
+       yedge_4x5(J+1)            =  -90d0 - DJ/2d0 + ( DJ * J )
+    ENDDO                        
+
+    ! Lon centers
+    DO I = 0, I4x5-1
+       xmid_4x5(I+1)             = -180d0          + ( DI * I )
+    ENDDO
+   
+    ! Lat centers         
+    DO J = 0, J4x5-1              
+       ymid_4x5(J+1)             =  -90d0          + ( DJ * J )
+    ENDDO 
+              
+    ! Reset poles                
+    yedge_4x5(1     )            = -90e0   
+    yedge_4x5(J4x5+1)            = +90e0
+    ymid_4x5 (1     )            = -89e0
+    ymid_4x5 (J4x5  )            = +89e0
+                                 
+    ! Sine of latitude edges     
+    DO J = 1, J4x5+1             
+       sine_4x5(J)               = SIN( yedge_4x5(J) * D2R )
     ENDDO
 
-    ! Lat edges and sine
-    DO J = 0, J4x5
-       yedge_4x5(J+1)        =  -90d0 - DJ/2d0 + ( DJ * J )
-    ENDDO
-
-    ! Reset poles
-    yedge_4x5(1)             = -90e0
-    yedge_4x5(J4x5+1)        = +90e0
-
-    ! Sine of latitude edges
-    DO J = 1, J4x5+1
-       sine_4x5(J)           = SIN( yedge_4x5(J) * D2R )
-    ENDDO
-
-  END SUBROUTINE MerraRegridInit
+  END SUBROUTINE Geos57RegridInit
 !EOC
-END MODULE MerraRegridModule
+END MODULE Geos57RegridModule
 

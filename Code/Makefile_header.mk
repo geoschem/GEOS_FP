@@ -42,18 +42,17 @@
 
 # Make ifort the default compiler
 ifndef COMPILER
-#COMPILER = mpif90
-COMPILER = ifort
+COMPILER := ifort
 endif
 
 ###############################################################################
 # Include directory for NETCDF library
 # Modify this accordingly for your system!
-INC_NC  = -I$(BL_INC_NETCDF) -I$(BL_INC_HDF5)
+INC_NC  := -I$(BL_INC_NETCDF) -I$(BL_INC_HDF5)
 ###############################################################################
 # Library link commands for NETCDF library
 # Modify this accordingly for your system!
-LINK_NC = \
+LINK_NC := \
 -L$(BL_LIB_NETCDF) -lnetcdf \
 -L$(BL_LIB_HDF5) -lhdf5_hl \
 -L$(BL_LIB_HDF5) -lhdf5 \
@@ -61,58 +60,60 @@ LINK_NC = \
 ###############################################################################
 
 #==============================================================================
-# MPIF90 compilation options (default)
+# MPIF90 compilation options 
 #==============================================================================
 ifeq ($(COMPILER),mpif90) 
 
 # Pick correct options for debug run or regular run 
 ifdef DEBUG
-FFLAGS = -cpp -w -noalign -convert big_endian -g -traceback 
+FFLAGS   := -cpp -w -noalign -convert big_endian -g -traceback -CU
 else
-FFLAGS = -cpp -w -O2 -auto -noalign -convert big_endian -openmp
+FFLAGS   := -cpp -w -O2 -auto -noalign -convert big_endian -openmp
 endif
 
 # Add option for "array out of bounds" checking
 ifdef BOUNDS
-FFLAGS += -CB
+FFLAGS   += -CB
 endif
 
 # Also add traceback option
 ifdef TRACEBACK
-FFLAGS += -traceback
+FFLAGS   += -traceback
 endif
 
-F90      = mpif90 $(FFLAGS) $(INC_NC)
-LD       = mpif90 $(FFLAGS)
-FREEFORM = -free
+INCLUDE  := -module $(MOD) -I$(MOD) $(INC_NC)
+F90      := mpif90 $(FFLAGS) $(INCLUDE)
+LD       := mpif90 $(FFLAGS) $(INCLUDE)
+FREEFORM := -free
 
 endif
 
 #==============================================================================
-# IFORT compilation options
+# IFORT compilation options (default)
 #==============================================================================
 ifeq ($(COMPILER),ifort) 
 
 # Pick correct options for debug run or regular run 
 ifdef DEBUG
-FFLAGS = -cpp -w -noalign -convert big_endian -g -traceback 
+FFLAGS   := -cpp -w -noalign -convert big_endian -g -traceback -CU
 else
-FFLAGS = -cpp -w -O2 -auto -noalign -convert big_endian -openmp
+FFLAGS   := -cpp -w -O2 -auto -noalign -convert big_endian -openmp
 endif
 
 # Add option for "array out of bounds" checking
 ifdef BOUNDS
-FFLAGS += -CB
+FFLAGS   += -CB
 endif
 
 # Also add traceback option
 ifdef TRACEBACK
-FFLAGS += -traceback
+FFLAGS   += -traceback
 endif
 
-F90      = ifort $(FFLAGS) $(INC_NC)
-LD       = ifort $(FFLAGS)
-FREEFORM = -free
+INCLUDE  := -module $(MOD) -I$(MOD) $(INC_NC)
+F90      := ifort $(FFLAGS) $(INCLUDE)
+LD       := ifort $(FFLAGS) $(INCLUDE)
+FREEFORM := -free
 
 endif
 
@@ -123,19 +124,20 @@ ifeq ($(COMPILER),pgi)
 
 # Pick correct options for debug run or regular run 
 ifdef DEBUG
-FFLAGS = -byteswapio -Mpreprocess -fast -Bstatic
+FFLAGS   := -byteswapio -Mpreprocess -fast -Bstatic
 else
-FFLAGS = -byteswapio -Mpreprocess -fast -mp -Mnosgimp -DHE4 -Bstatic
+FFLAGS   := -byteswapio -Mpreprocess -fast -mp -Mnosgimp -DHE4 -Bstatic
 endif
 
 # Add option for "array out of bounds" checking
 ifdef BOUNDS
-FFLAGS += -C
+FFLAGS   += -C
 endif
 
-F90      = pgf90 $(FFLAGS) $(INC_NC)
-LD       = pgf90 $(FFLAGS)
-FREEFORM = -Mfree
+INCLUDE  := -module $(MOD) -I$(MOD) $(INC_NC)
+F90      := pgf90 $(FFLAGS) $(INCLUDE)
+LD       := pgf90 $(FFLAGS) $(INCLUDE)
+FREEFORM := -Mfree
 
 endif
 
@@ -158,14 +160,17 @@ ifdef BOUNDS
 FFLAGS += -C
 endif
 
+# Include options
+INCLUDE  := -module $(MOD) -I$(MOD) $(INC_NC)
+
 #---------------------------------------------------------------
 # If your compiler is under the name "f90", use these lines!
-#F90      = f90 $(FFLAGS) $(INC_NC)
-#LD       = f90 $(FFLAGS)
+#F90      = f90 $(FFLAGS) $(INCLUDE)
+#LD       = f90 $(FFLAGS) $(INCLUDE)
 #---------------------------------------------------------------
 # If your compiler is under the name "sunf90", use these lines!
-F90      = sunf90 $(FFLAGS) $(INC_NC)
-LD       = sunf90 $(FFLAGS)
+F90      = sunf90 $(FFLAGS) $(INCLUDE)
+LD       = sunf90 $(FFLAGS) $(INCLUDE)
 ##---------------------------------------------------------------
 FREEFORM = -free
 

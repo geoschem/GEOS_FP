@@ -11,13 +11,13 @@
 #\\
 # !REMARKS:
 # To build the program, call "make" with the following syntax:
-#
+#                                                                             .
 #   make TARGET [ OPTIONAL-FLAGS ]
-#
+#                                                                             .
 # To display a complete list of options, type "make help".
-#
+#                                                                             .
 # Makefile uses the following variables:
-#
+#                                                                             .
 # Variable   Description
 # --------   -----------
 # BIN        Specifies the directory where the executable will be sent
@@ -27,8 +27,9 @@
 # LD         Contains the command to link to libraries & make executable
 # LIB        Specifies the directory where the libNcUtils.a files will be sent
 # LINK_NC    Contains the comand to link to the HDF library
+# MOD        Specifies the directory where module files (*.mod) will be sent
 # SHELL      Specifies the shell for "make" to use (usually SHELL=/bin/sh)
-#
+#                                                                             .
 # F90, LD, LINK_NC are included from "Makefile_header.mk"
 #
 # !REVISION HISTORY: 
@@ -45,8 +46,9 @@
 SHELL   = /bin/sh
 BIN     = ../bin
 DOC     = ../doc
-EXE     = TestGeos57.x
+EXE     = Geos57Driver.x
 LIB     = ../lib
+MOD     = ../mod
 
 # Include header file.  This returns variables F90, LD, LINK_NC
 # as well as the default Makefile compilation rules for source code files.
@@ -60,45 +62,86 @@ include ./Makefile_header.mk
 # (2) The syntax $(SRC:.F90=.o) is a shorthand for the "patsubst" function. 
 #==============================================================================
 
-#-----------------
+#----------------------
 # Objects
-#-----------------
+#----------------------
 
-# Files for library build (code & objects)
-SRC  = $(wildcard m_*.F90)
-OBJ  = $(SRC:.F90=.o)
-MOD  = $(SRC:.F90=.mod)
+# Source code & object files
+SRC  := $(wildcard *.F) $(wildcard *.F90)
+TMP  := $(SRC:.F=.o)
+OBJ  := $(TMP:.F90=.o)
 
-# Files for standalone test driver (code, object, exe)
-OBJx = $(EXE:.x=.o)
+# Object file for executable
+OBJx := $(EXE:.x=.o)
 
-#------------------
-# Dependencies
-#-----------------
-m_netcdf_io_close.o      : m_do_err_out.o
-m_netcdf_io_create.o     : m_do_err_out.o
-m_netcdf_io_define.o     : m_do_err_out.o
-m_netcdf_io_get_dimlen.o : m_do_err_out.o
-m_netcdf_io_handle_err.o : m_do_err_out.o
-m_netcdf_io_open.o       : m_do_err_out.o
-m_netcdf_io_read.o       : m_do_err_out.o
-m_netcdf_io_write.o      : m_do_err_out.o
+#-----------------------
+# Dependency listing
+#-----------------------
+m_do_err_out.o           : m_do_err_out.F90
+
+m_netcdf_io_close.o      : m_netcdf_io_close.F90        \
+                           m_do_err_out.o
+
+m_netcdf_io_create.o     : m_netcdf_io_create.F90       \
+                           m_do_err_out.o
+
+m_netcdf_io_define.o     : m_netcdf_io_define.F90       \
+                           m_do_err_out.o
+
+m_netcdf_io_get_dimlen.o : m_netcdf_io_get_dimlen.F90   \
+                           m_do_err_out.o
+
+m_netcdf_io_handle_err.o : m_netcdf_io_handle_err.F90   \
+                           m_do_err_out.o
+
+m_netcdf_io_open.o       : m_netcdf_io_open.F90         \
+                           m_do_err_out.o
+
+m_netcdf_io_read.o       : m_netcdf_io_read.F90         \
+                           m_do_err_out.o
+
+m_netcdf_io_write.o      : m_netcdf_io_write.F90        \
+                           m_do_err_out.o
+
+CharpakModule.o          : CharpakModule.F
+
+Geos57InputsModule.o     : Geos57InputsModule.F90
+
+Geos57RegridModule.o     : Geos57RegridModule.F90       \
+                           Geos57InputsModule.o
+
+Geos57CnModule.o         : Geos57CnModule.F90           \
+                           CharpakModule.o              \
+                           Geos57InputsModule.o         \
+                           Geos57RegridModule.o         \
+                           m_netcdf_io_create.o         \
+                           m_netcdf_io_define.o         \
+                           m_netcdf_io_write.o          \
+                           m_netcdf_io_close.o          \
+                           m_netcdf_io_open.o           \
+                           m_netcdf_io_close.o          \
+                           m_netcdf_io_get_dimlen.o     \
+                           m_netcdf_io_read.o
+
+Geos57Driver.o           : Geos57Driver.F90             \
+                           Geos57InputsModule.o         \
+                           Geos57RegridModule.o
 
 #==============================================================================
 # Makefile targets
 #==============================================================================
 
-.PHONY: all doc docclean clean realclean help test
+.PHONY: all doc docclean clean realclean help test driver
 
-all: lib check
+all: lib exe
 
 lib: $(OBJ)
-	$(AR) crs libNcUtils.a $(OBJ)
-	mv libNcUtils.a $(LIB)
+	$(AR) crs libGeos57.a $(OBJ)
+	mv libGeos57.a $(LIB)
 
-check: $(OBJx)
-	$(LD) $(OBJx) -L$(LIB) -lNcUtils $(LINK_NC) -o $(EXE)
-	$(EXE) 
+exe: $(OBJx)
+	$(LD) $(OBJx) -L$(LIB) -lGeos57 $(LINK_NC) -o $(EXE)
+	cp -f $(EXE) $(BIN)
 
 doc:
 	$(MAKE) -C $(DOC) doc
@@ -107,15 +150,18 @@ docclean:
 	$(MAKE) -C $(DOC) clean
 
 clean:
-	rm -f *.a *.mod *.o *.nc *.x 
+	rm -f *.o *.nc *.x *.a *.mod
 
 realclean:
 	$(MAKE) clean
 	$(MAKE) docclean
 	rm -f $(BIN)/*.x
 	rm -f $(LIB)/*.a
+	rm -f $(MOD)/*.mod
 
 test: check
+
+driver: all
 
 #==============================================================================
 # Help Screen
