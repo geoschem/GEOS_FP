@@ -132,6 +132,9 @@ MODULE Geos57InputsModule
   INTEGER                 :: a1Hours  (TIMES_A1)               ! A1 data times
   INTEGER                 :: a3HoursI (TIMES_A3)               ! Inst A1 times
   INTEGER                 :: a3Hours  (TIMES_A3)               ! A3 data times
+  INTEGER                 :: a1Mins   (TIMES_A1)               ! A1 data times
+  INTEGER                 :: a3MinsI  (TIMES_A3)               ! Inst A1 times
+  INTEGER                 :: a3Mins   (TIMES_A3)               ! A3 data times
   REAL*4                  :: lwiMask  (I025x03125,J025x03125)  ! LWI mask
   REAL*4                  :: frLandIce(I025x03125,J025x03125)  ! FRLANDICE data
   REAL*4                  :: frLand   (I025x03125,J025x03125)  ! FRLAND data
@@ -147,6 +150,7 @@ MODULE Geos57InputsModule
 !
 ! !REVISION HISTORY:
 !  30 Aug 2011 - R. Yantosca - Initial version, based on MerraInputsModule
+!  21 Dec 2011 - R. Yantosca - Now add a3Mins, a3MinsI, a1Mins variables
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -170,11 +174,12 @@ MODULE Geos57InputsModule
 !
 ! !REVISION HISTORY: 
 !  30 Aug 2011 - R. Yantosca - Initial version, based on MerraInputsModule
+!  21 Dec 2011 - R. Yantosca - Now also initialize a3Mins, a3MinsI, a1Mins
 !EOP
 !------------------------------------------------------------------------------
 !BOC
     ! Local variables
-    INTEGER                 :: nPts, ios
+    INTEGER                 :: nPts, ios, T
     CHARACTER(LEN=MAX_CHAR) :: line, temp
 
     !-----------------------------------------------------------------------
@@ -197,7 +202,17 @@ MODULE Geos57InputsModule
     ! 3-hourly data timestamps (instantaneous data)
     a3HoursI = (/ 000000, 030000, 060000, 090000,  &
                   120000, 150000, 180000, 210000 /)
-    
+   
+    ! 1-hourly data timestamps (time-avg data)
+    DO T = 0, 23
+       a1Mins(T) = ( T * 60 ) + 30
+    ENDDO
+
+    DO T = 0, 7
+       a3MinsI(T) = ( T * 180 )
+       a3Mins (T) = ( T * 180 ) + 90
+    ENDDO
+       
     !-----------------------------------------------------------------------
     ! Read the file with the filename templates and fields to pull
     !-----------------------------------------------------------------------
@@ -304,33 +319,23 @@ MODULE Geos57InputsModule
 
     ! Close file
     CLOSE( IU_TXT )
-!    
-!    ! Mapping weights
-!    IF ( do2x25 ) THEN
-!
-!       ! Nx grid to 2 x 2.5 grid
-!       nPts = ( I05x0666 / I2x25 ) + 2
-!       CALL ReadMappingWeights( weightFileNxTo2x25,              &
-!                                I2x25, J2x25, nPts, mapNxTo2x25 )
-!
-!       ! Fx grid to 2 x 2.5 grid
-!       nPts = ( I1x125 / I2x25 ) + 2
-!       CALL ReadMappingWeights( weightFileFxTo2x25,                &
-!                                I2x25, J2x25, nPts, mapFxTo2x25 )
-!    ENDIF
-!
-!    IF ( do4x5 ) THEN
-!
-!       ! Nx grid to 4 x 5 grid
-!       nPts = ( I05x0666 / I4x5 ) + 2
-!       CALL ReadMappingWeights( weightFileNxTo4x5,               &
-!                                I4x5,  J4x5,  nPts, mapNxTo4x5  )
-!
-!       ! Fx grid to 4 x 5 grid
-!       nPts = ( I1x125 / I4x5 ) + 2
-!       CALL ReadMappingWeights( weightFileFxTo4x5,               &
-!                                I4x5,  J4x5,  nPts, mapFxTo4x5  )
-!    ENDIF
+    
+    ! Mapping weights
+    IF ( do2x25 ) THEN
+
+       ! Nx grid to 2 x 2.5 grid
+       nPts = ( I025x03125 / I2x25 ) + 2
+       CALL ReadMappingWeights( weightFileNxTo2x25,              &
+                                I2x25, J2x25, nPts, mapNxTo2x25 )
+    ENDIF
+
+    IF ( do4x5 ) THEN
+
+       ! Nx grid to 4 x 5 grid
+       nPts = ( I025x03125 / I4x5 ) + 2
+       CALL ReadMappingWeights( weightFileNxTo4x5,               &
+                                I4x5,  J4x5,  nPts, mapNxTo4x5  )
+    ENDIF
 !
 !    !-----------------------------------------------------------------------
 !    ! Read data from template files
@@ -342,7 +347,7 @@ MODULE Geos57InputsModule
 !    ! FRLANDICE data (for SNOMAS regridding)
 !    CALL ReadTemplateFile( frLandIceFile, frLandIce )
 !
-!    ! FRLANDICE data (for SNOMAS regridding)
+!    ! FRLAND data (for SNOMAS regridding)
 !    CALL ReadTemplateFile( frLandFile, frLand )
 !
     !-----------------------------------------------------------------------
