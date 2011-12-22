@@ -193,25 +193,12 @@ MODULE Geos57InputsModule
     ! Get day of year
     READ( 5, '(i8)', ERR=990 ) yyyymmdd
 
-!    ! 1-hourly data timestamps (time-avg data)
-!    a1Hours  = (/ 003000, 013000, 023000, 033000, 043000, 053000, &
-!                  063000, 073000, 083000, 093000, 103000, 113000, &
-!                  123000, 133000, 143000, 153000, 163000, 173000, &
-!                  183000, 193000, 203000, 213000, 223000, 233000 /)
-!
-!    ! 3-hourly data timestamps (time-avg data)
-!    a3Hours  = (/ 013000, 043000, 073000, 103000,  &
-!                  133000, 163000, 193000, 223000 /)
-!    
-!    ! 3-hourly data timestamps (instantaneous data)
-!    a3HoursI = (/ 000000, 030000, 060000, 090000,  &
-!                  120000, 150000, 180000, 210000 /)
-   
-    ! 1-hourly data timestamps (time-avg data)
+    ! 1-hourly data timestamps
     DO T = 0, 23
        a1Mins(T) = ( T * 60 ) + 30
     ENDDO
-
+   
+    ! 3-hourly timestamps
     DO T = 0, 7
        a3MinsI(T) = ( T * 180 )
        a3Mins (T) = ( T * 180 ) + 90
