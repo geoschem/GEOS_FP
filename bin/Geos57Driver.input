@@ -85,8 +85,9 @@ none
 #/as/priv/ftp/gmao/gmao/
 
 ==> Nested China output
-/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%.2x25
-F
+GEOS572.YYYYMMDD.%%.05x0666.SEA4CRS.nc
+T
+  769  281   1025   521
 
 ==> Nested NA output
 /as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%.2x25
@@ -97,15 +98,15 @@ F
 F
 
 ==> 2 x 2.5 Output 
-GEOS572.YYYYMMDD.%%.2x25.nc4
-F
-/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%.2x25
+GEOS572.YYYYMMDD.%%.2x25.nc
+T
+#/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/GEOS572.YYYYMMDD.%%.2x25.nc
 
 
 ==> 4 x 5 Output 
 GEOS572.YYYYMMDD.%%.4x5.nc
 T
-#/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/GEOS572.YYYYMMDD.%%.4x5.nc
+#/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/GEOS572.YYYYMMDD.%%.4x5.nc
 
 
 ==> Mapping Weight Files

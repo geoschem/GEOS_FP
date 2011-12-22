@@ -72,7 +72,9 @@ CONTAINS
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE NcOutFileDef( X, Y, T, xMid, YMid, time, outFileName, fOut )
+  SUBROUTINE NcOutFileDef( X,        Y,           T,    &
+                           xMid,     YMid,        time, &
+                           gridName, outFileName, fOut )
 !
 ! !INPUT PARAMETERS:
 ! 
@@ -82,6 +84,7 @@ CONTAINS
     REAL*4,           INTENT(IN)    :: xMid(X)       ! Array of lon centers
     REAL*4,           INTENT(IN)    :: yMid(Y)       ! Array of lat centers
     INTEGER,          INTENT(IN)    :: time(T)       ! Array of times
+    CHARACTER(LEN=*), INTENT(IN)    :: gridName      ! Name of the grid
     CHARACTER(LEN=*), INTENT(IN)    :: outFileName   ! Output file name
 !
 ! !INPUT/OUTPUT PARAMETERS:
@@ -95,6 +98,7 @@ CONTAINS
 !  25 Oct 2011 - R. Yantosca - Initial version
 !  21 Dec 2011 - R. Yantosca - Modified for COARDS compliance
 !  21 Dec 2011 - R. Yantosca - Also now write index arrays
+!  22 Dec 2011 - R. Yantosca - Added gridName argument
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -102,8 +106,9 @@ CONTAINS
 ! !LOCAL VARIABLES:
 !
     ! Scalars
-    CHARACTER(LEN=255) :: lName,   units,   gamap, DI
-    CHARACTER(LEN=255) :: DJ,      delta_t, begin, incr
+    CHARACTER(LEN=255) :: lName,   units,   gamap
+    CHARACTER(LEN=255) :: DI,      DJ,      delta_t
+    CHARACTER(LEN=255) :: begin,   incr,    msg
     INTEGER            :: idLon,   idLat,   idTime
     INTEGER            :: vId,     omode
 
@@ -114,8 +119,14 @@ CONTAINS
     ! %%% BEGINNING OF NETCDF DEFINITION SECTION %%%
     !=========================================================================
 
+    ! Echo info    
+    msg = '%%%%%% ENTERING ROUTINE NcOutFileDef %%%%%%'
+    WRITE( IU_LOG, '(a)' ) '%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
     ! Echo info
-    WRITE( 6, '(a)' ) '=== Defining netCDF file variables & attributes ==='
+    WRITE( 6, 100 ) TRIM( gridName )
+100 FORMAT ( '%%% Defining netCDF file vars & attrs for ', a' grid' )
 
     ! Open netCDF file for writing
     CALL NcCr_Wr( fOut, TRIM( outFileName ) )
@@ -166,24 +177,22 @@ CONTAINS
     ! Delta-time
     lName = '0'
     CALL NcDef_Glob_Attributes( fOut, 'Delta_time',  TRIM( lName ) )
-    
-    ! Set DI and DJ global attributes
-    IF      ( X == 1152 .and. Y == 721 ) THEN
-       DI = '0.3125'
-       DJ = '0.25'
-    ELSE IF ( X == 576  .and. Y == 361 ) THEN
-       DI = '0.625'
-       DJ = '0.5'
-    ELSE IF ( X == 540  .and. Y == 361 ) THEN
-       DI = '0.667'
-       DJ = '0.5'
-    ELSE IF ( X == 144  .and. Y == 91  ) THEN
-       DI = '2.5'
-       DJ = '2'
-    ELSE IF ( X == 72   .and. Y == 46  ) THEN
-       DI = '5'
-       DJ = '4'
-    ENDIF
+
+    ! Pick DI and DJ attributes based on the grid
+    SELECT CASE ( TRIM( gridName ) )
+       CASE( 'native', 'SEA4CRS', 'nested China' )
+          DI = '0.3125'
+          DJ = '0.25'
+       CASE ( 'nested 0.5 x 0.625' )
+          DI = '0.625'
+          DJ = '0.5'
+       CASE( '2 x 2.5 global' )
+          DI = '2.5'
+          DJ = '2'
+       CASE( '4 x 5 global' )
+          DI = '5'
+          DJ = '4'
+    END SELECT
 
     ! Delta-lon
     CALL NcDef_Glob_Attributes( fOut, 'Delta_lon',   TRIM( DI    ) )
@@ -315,6 +324,10 @@ CONTAINS
     CALL NcWr( yMid, fOut, 'lat',  (/ 1 /), (/ Y /) )
     CALL NcWr( time, fOut, 'time', (/ 1 /), (/ T /) )
 
+    ! Echo info    
+    msg = '%%%%%% LEAVING ROUTINE NcOutFileDef %%%%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
   END SUBROUTINE NcOutFileDef
 !EOC
 !------------------------------------------------------------------------------
@@ -353,6 +366,7 @@ CONTAINS
     INTEGER                 :: time(1)
     CHARACTER(LEN=MAX_CHAR) :: msg
     CHARACTER(LEN=MAX_CHAR) :: fName
+    CHARACTER(LEN=MAX_CHAR) :: gName
 
     ! Arrays
     CHARACTER(LEN=MAX_CHAR) :: fields(MAX_FLDS)
@@ -361,8 +375,8 @@ CONTAINS
     ! Initialization
     !=======================================================================
 
-    ! Echo info    
-    msg = '%%%%%%%%%% ENTERING ROUTINE Geos57MakeConst %%%%%%%%%%'
+    ! Echo info
+    msg = '%%%%%%%%%% ENTERING ROUTINE Geos57MakeCn %%%%%%%%%%'
     WRITE( IU_LOG, '(a)' )
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
@@ -387,32 +401,45 @@ CONTAINS
 
     ! Hours in the day
     time = (/ 0 /)
-
-    IF ( doNative ) THEN
-
+    
+    ! Open nested China output file
+    IF ( doNestCh ) THEN
+       fName = dataTmplNestCh
+       gName = 'SEA4CRS'
+       CALL ExpandDate  ( fName,     20110101,  000000      )      
+       CALL StrRepl     ( fName,     '%%',     'cn'         )
+       CALL NcOutFileDef( I_NestCh,  J_NestCh,  1,           &
+                          xMid_025x03125(I0_ch:I1_ch),       &
+                          yMid_025x03125(J0_ch:J1_ch),       &
+                          time,      gName,    fName,        &
+                          fOutNestCh                        )
     ENDIF
 
     ! Open 2 x 2.5 output file
     IF ( do2x25 ) THEN
        fName = dataTmpl2x25
-       CALL ExpandDate  ( fName, 20110101, 000000             )      
-       CALL StrRepl     ( fName, '%%',     'cn'               )
-       CALL NcOutFileDef( I2x25,     J2x25, 1,      xMid_2x25, &
-                          yMid_2x25, time,  fName,  fOut2x25  )
+       gName = '2 x 2.5 global'
+       CALL ExpandDate  ( fName,     20110101,  000000      )      
+       CALL StrRepl     ( fName,     '%%',      'cn'        )
+       CALL NcOutFileDef( I2x25,     J2x25,     1,           &
+                          xMid_2x25, yMid_2x25, time,        &
+                          gName,     fName,     fOut2x25    )
     ENDIF
 
     ! Open 4 x 5 output file 
     IF ( do4x5 ) THEN
        fName = dataTmpl4x5
-       CALL ExpandDate  ( fName, 20110101, 000000             )      
-       CALL StrRepl     ( fName, '%%',     'cn'               )
-       CALL NcOutFileDef( I4x5,      J4x5,  1,      xMid_4x5,  &
-                          yMid_4x5,  time,  fName,  fOut4x5   )
+       gName = '4 x 5 global'
+       CALL ExpandDate  ( fName,     20110101,  000000      )      
+       CALL StrRepl     ( fName,     '%%',     'cn'         )
+       CALL NcOutFileDef( I4x5,      J4x5,      1,           &
+                          xMid_4x5,  yMid_4x5,  time,        &
+                          gName,     fName,     fOut4x5     )
     ENDIF
 
     ! Regrid fields from the various raw data files
-    CALL ProcessCn2dAsmNx( nFields,  fields, &
-                           fOut2x25, fOut4x5 )
+    CALL ProcessCn2dAsmNx( nFields,    fields,            &
+                           fOutNestCh, fOut2x25, fOut4x5 )
     
     !=======================================================================
     ! Cleanup & quit
@@ -422,18 +449,13 @@ CONTAINS
     msg = '%%% Closing CN output files'
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
-    ! Close 2 x 2.5 output file
-    IF ( do2x25 ) THEN
-       CALL NcCl( fOut2x25 )
-    ENDIF
-
-    ! Close 4 x 5 output file
-    IF ( do4x5 ) THEN
-       CALL NcCl( fOut4x5  )
-    ENDIF
+    ! Close output files
+    IF ( doNestCh ) CALL NcCl( fOutNestCh )
+    IF ( do2x25   ) CALL NcCl( fOut2x25   )
+    IF ( do4x5    ) CALL NcCl( fOut4x5    )
 
     ! Echo info
-    msg = '%%%%%%%%%% LEAVING ROUTINE Geos57MakeConst %%%%%%%%%%'
+    msg = '%%%%%%%%%% LEAVING ROUTINE Geos57MakeCn %%%%%%%%%%'
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
   END SUBROUTINE Geos57MakeCn
@@ -500,13 +522,14 @@ CONTAINS
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE ProcessCn2dAsmNx( nFields,  fields,  &
-                               fOut2x25, fOut4x5 )
+  SUBROUTINE ProcessCn2dAsmNx( nFields,    fields,  &
+                               fOutNestCh, fOut2x25, fOut4x5 )
 !
 ! !INPUT PARAMETERS:
 !
     INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
     CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
+    INTEGER,          INTENT(IN) :: fOUtNestCh  ! NestCh  netCDF file ID
     INTEGER,          INTENT(IN) :: fOut2x25    ! 2 x 2.5 netCDF file ID
     INTEGER,          INTENT(IN) :: fOut4x5     ! 4 x 5   netCDF file ID
 !
@@ -524,23 +547,23 @@ CONTAINS
 ! !LOCAL VARIABLES:
 !
     ! Loop variables
-    INTEGER                 :: F,       DD,     HH
+    INTEGER                 :: F,        DD,       HH
 
     ! Variables for netCDF I/O
     INTEGER                 :: X,        Y,        T
+    INTEGER                 :: XNestCh,  YNestCh,  TNestCh
     INTEGER                 :: X2x25,    Y2x25,    T2x25
     INTEGER                 :: X4x5,     Y4x5,     T4x5
-    INTEGER                 :: st2d(2), st3d(3)
-    INTEGER                 :: ct2d(2), ct3d(3)
-
-    ! Index arrays
-    REAL*4                  :: lon  ( I025x03125                )
-    REAL*4                  :: lat  ( J025x03125                )
+    INTEGER                 :: st2d(2),  st3d(3)
+    INTEGER                 :: ct2d(2),  ct3d(3)
 
     ! Data arrays
-    REAL*4                  :: Q    ( I025x03125, J025x03125, 1 )
+    REAL*4,  TARGET         :: Q    ( I025x03125, J025x03125, 1 )
     REAL*4                  :: Q2x25( I2x25,      J2x25         )
     REAL*4                  :: Q4x5 ( I4x5,       J4x5          )
+
+    ! Pointers
+    REAL*4,  POINTER        :: QNest(:,:)
 
     ! Character strings and arrays
     CHARACTER(LEN=8       ) :: name8
@@ -555,18 +578,27 @@ CONTAINS
     ! Get dimensions from output files
     !=======================================================================
 
+    ! Nested China grid
+    IF ( doNestCh ) THEN
+       CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
+       CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
+       CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! 2 x 2.5 global grid       
     IF ( do2x25 ) THEN
-       CALL NcGet_DimLen( fOut2x25, 'lon',  X2x25 )
-       CALL NcGet_DimLen( fOut2x25, 'lat',  Y2x25 ) 
-       CALL NcGet_DimLen( fOut2x25, 'time', T2x25 )
+       CALL NcGet_DimLen( fOut2x25,   'lon',  X2x25   )
+       CALL NcGet_DimLen( fOut2x25,   'lat',  Y2x25   ) 
+       CALL NcGet_DimLen( fOut2x25,   'time', T2x25   )
     ENDIF
 
+    ! 4x5 global grid
     IF ( do4x5 ) THEN
-       CALL NcGet_DimLen( fOut4x5,  'lon',  X4x5  )
-       CALL NcGet_DimLen( fOut4x5,  'lat',  Y4x5  ) 
-       CALL NcGet_DimLen( fOut4x5,  'time', T4x5  )
+       CALL NcGet_DimLen( fOut4x5,    'lon',  X4x5    )
+       CALL NcGet_DimLen( fOut4x5,    'lat',  Y4x5    )   
+       CALL NcGet_DimLen( fOut4x5,    'time', T4x5    )
     ENDIF
-
+    
     !=======================================================================
     ! Open input file
     ! NOTE: For constant file, hardwire date to 2011/01/01
@@ -653,6 +685,15 @@ CONTAINS
 
        ! Special handing
        IF ( TRIM( name ) == 'FRLANDICE' ) name ='FRLANDIC'
+
+       ! Nested China
+       IF ( doNestCh ) THEN
+          QNest => Q( I0_ch:I1_ch, J0_ch:J1_ch, 1 )  ! Point to proper slice
+
+          st3d  = (/ 1,       1,       1       /)
+          ct3d  = (/ XNestCh, YNestCh, TNestCh /)
+          CALL NcWr( QNest, fOutNestCh, TRIM( name ), st3d, ct3d )          
+       ENDIF
 
        ! Write 2 x 2.5 data
        IF ( do2x25 ) THEN

@@ -76,18 +76,22 @@ MODULE Geos57InputsModule
   ! NetCDF file Handles
 
   ! Scalars
-  LOGICAL                 :: doNested                 ! Save out nested grids
+  LOGICAL                 :: doNestCh                 ! Save nested CH grid?
+  INTEGER                 :: I0_ch,    J0_ch          ! LL corner of CH grid
+  INTEGER                 :: I1_ch,    J1_ch          ! UR corner of CH grid
+  INTEGER                 :: I_NestCh, J_NestCh       ! NstCh dimensions   
   LOGICAL                 :: do2x25                   ! Save out 2 x 2.25
   LOGICAL                 :: do4x5                    ! Save out 4 x 5?
   LOGICAL                 :: doMakeCn
   LOGICAL                 :: VERBOSE                  ! Do debug printout?
   INTEGER                 :: yyyymmdd                 ! Today's date
   INTEGER                 :: fIn                      ! NC fId; input
-  INTEGER                 :: fOutNst                  ! NC fId; output nst grid
+  INTEGER                 :: fOutNestCh               ! NC fId; output nst grid
   INTEGER                 :: fOut2x25                 ! NC fId; output 2x25
   INTEGER                 :: fOut4x5                  ! NC fId; output 4x5
   REAL*4                  :: FILL_VALUE = 1e15        ! Fill value in HDF file
   CHARACTER(LEN=MAX_CHAR) :: inputDataDir             ! netCDF data dir
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestCh           ! NstCh file template
   CHARACTER(LEN=MAX_CHAR) :: dataTmpl2x25             ! 2x25  file template
   CHARACTER(LEN=MAX_CHAR) :: dataTmpl4x5              ! 4x5   file template
   CHARACTER(LEN=MAX_CHAR) :: const_2d_asm_Nx_file     ! const_2d_chm_Nx file
@@ -129,9 +133,9 @@ MODULE Geos57InputsModule
   CHARACTER(LEN=MAX_CHAR) :: frLandFile               ! File for FRLAND
 
   ! Arrays
-  INTEGER                 :: a1Hours  (TIMES_A1)               ! A1 data times
-  INTEGER                 :: a3HoursI (TIMES_A3)               ! Inst A1 times
-  INTEGER                 :: a3Hours  (TIMES_A3)               ! A3 data times
+!  INTEGER                 :: a1Hours  (TIMES_A1)               ! A1 data times
+!  INTEGER                 :: a3HoursI (TIMES_A3)               ! Inst A1 times
+!  INTEGER                 :: a3Hours  (TIMES_A3)               ! A3 data times
   INTEGER                 :: a1Mins   (TIMES_A1)               ! A1 data times
   INTEGER                 :: a3MinsI  (TIMES_A3)               ! Inst A1 times
   INTEGER                 :: a3Mins   (TIMES_A3)               ! A3 data times
@@ -189,19 +193,19 @@ MODULE Geos57InputsModule
     ! Get day of year
     READ( 5, '(i8)', ERR=990 ) yyyymmdd
 
-    ! 1-hourly data timestamps (time-avg data)
-    a1Hours  = (/ 003000, 013000, 023000, 033000, 043000, 053000, &
-                  063000, 073000, 083000, 093000, 103000, 113000, &
-                  123000, 133000, 143000, 153000, 163000, 173000, &
-                  183000, 193000, 203000, 213000, 223000, 233000 /)
-
-    ! 3-hourly data timestamps (time-avg data)
-    a3Hours  = (/ 013000, 043000, 073000, 103000,  &
-                  133000, 163000, 193000, 223000 /)
-    
-    ! 3-hourly data timestamps (instantaneous data)
-    a3HoursI = (/ 000000, 030000, 060000, 090000,  &
-                  120000, 150000, 180000, 210000 /)
+!    ! 1-hourly data timestamps (time-avg data)
+!    a1Hours  = (/ 003000, 013000, 023000, 033000, 043000, 053000, &
+!                  063000, 073000, 083000, 093000, 103000, 113000, &
+!                  123000, 133000, 143000, 153000, 163000, 173000, &
+!                  183000, 193000, 203000, 213000, 223000, 233000 /)
+!
+!    ! 3-hourly data timestamps (time-avg data)
+!    a3Hours  = (/ 013000, 043000, 073000, 103000,  &
+!                  133000, 163000, 193000, 223000 /)
+!    
+!    ! 3-hourly data timestamps (instantaneous data)
+!    a3HoursI = (/ 000000, 030000, 060000, 090000,  &
+!                  120000, 150000, 180000, 210000 /)
    
     ! 1-hourly data timestamps (time-avg data)
     DO T = 0, 23
@@ -234,6 +238,13 @@ MODULE Geos57InputsModule
 
           CASE( '==> Local Raw Data Path' )
              READ( IU_TXT, '(a)', ERR=999 ) inputDataDir
+
+          CASE( '==> Nested China output' )
+             READ( IU_TXT, '(a)', ERR=999 ) dataTmplNestCh
+             READ( IU_TXT,   *,   ERR=999 ) doNestCh
+             READ( IU_TXT,   *,   ERR=999 ) I0_ch, J0_ch, I1_ch, J1_ch
+             I_NestCh = I1_ch - I0_ch + 1
+             J_NestCh = J1_ch - J0_ch + 1
 
           CASE( '==> 2 x 2.5 Output' )
              READ( IU_TXT, '(a)', ERR=999 ) dataTmpl2x25
@@ -355,13 +366,20 @@ MODULE Geos57InputsModule
     !-----------------------------------------------------------------------
     IF ( VERBOSE ) THEN
        PRINT*, 'YYYYMMDD        : ', yyyymmdd
-       PRINT*, 'a1Hours         : ', a1Hours
-       PRINT*, 'a3HoursI        : ', a3HoursI
-       PRINT*, 'a3Hours         : ', a3Hours
+       !PRINT*, 'a1Hours         : ', a1Hours
+       !PRINT*, 'a3HoursI        : ', a3HoursI
+       !PRINT*, 'a3Hours         : ', a3Hours
+       PRINT*, 'aMins           : ', a1Mins
+       PRINT*, 'a3MinsI         : ', a3MinsI
+       PRINT*, 'a3Mins          : ', a3Mins
+       PRINT*, 'doNstCh         : ', doNestCh
+       PRINT*, ' I0, J0, I1, J1 : ', I0_ch, J0_ch, I1_ch, J1_ch
+       PRINT*, ' ICH, JCH       : ', I_NestCh, J_NestCh
        PRINT*, 'do2x25          : ', do2x25
        PRINT*, 'do4x5           : ', do4x5
        PRINT*, 'doMakeCn        : ', doMakeCn
        PRINT*, 'dataDirHDF      : ', TRIM( inputDataDir          )
+       PRINT*, 'dataFileNestCh  : ', TRIM( dataTmplNestCh        )
        PRINT*, 'dataFile2x25    : ', TRIM( dataTmpl2x25          )
        PRINT*, 'dataFile4x5     : ', TRIM( dataTmpl4x5           )
        PRINT*, 'const_2d_asm_Nx : ', TRIM( const_2d_asm_Nx_file  )
