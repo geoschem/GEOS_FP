@@ -19,6 +19,7 @@ MODULE Geos57CnModule
   USE CharpakModule
   USE Geos57InputsModule
   USE Geos57RegridModule
+  USE Geos57UtilityModule
 
   ! Modules for writing netCDF
   USE m_netcdf_io_create
@@ -55,6 +56,8 @@ MODULE Geos57CnModule
 !  25 Oct 2011 - R. Yantosca - Initial version, based on MERRA
 !  20 Dec 2011 - R. Yantosca - Updates to achieve COARDS netCDF compliance
 !  04 Jan 2012 - R. Yantosca - Updated comments, cosmetic changes
+!  04 Jan 2012 - R. Yantosca - Add extra global attributes
+!  04 Jan 2012 - R. Yantosca - Now reference Geos57UtilityModule
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -103,6 +106,7 @@ CONTAINS
 !  04 Jan 2012 - R. Yantosca - Now use separate attributes "begin_date" and
 !                              "begin_time" for the "time" index array
 !  04 Jan 2012 - R. Yantosca - Now use all lowercase for index array names
+!  04 Jan 2012 - R. Yantosca - Add extra global attributes
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -110,6 +114,7 @@ CONTAINS
 ! !LOCAL VARIABLES:
 !
     ! Scalars
+    CHARACTER(LEN=255) :: sysTime
     CHARACTER(LEN=255) :: lName,   units,   gamap,   DI,   DJ
     CHARACTER(LEN=255) :: delta_t, begin_d, begin_t, incr, msg
     INTEGER            :: idLon,   idLat,   idTime,  vId,  oMode
@@ -139,46 +144,67 @@ CONTAINS
     !-------------------------------------------------------------------------
     ! Define global attributes and filling mode
     !-------------------------------------------------------------------------
- 
+  
     ! Title string
-    lName = 'GEOS-5.7.2 Constant Fields for GEOS-Chem'
-    CALL NcDef_Glob_Attributes( fOut, 'Title',       TRIM( lName ) )
+    lName = 'GEOS-5.7.2 constant (CN) fields for GEOS-Chem'
+    CALL NcDef_Glob_Attributes( fOut, 'Title',       TRIM( lName )   )
 
-    ! Version history
-    lName = 'Version: 03 Jan 2012'
-    CALL NcDef_Glob_Attributes( fOut, 'History',     TRIM( lName ) )
+    ! Contact
+    lName = "GEOS-Chem Support Team (geos-chem-support@as.harvard.edu)"
+    CALL NcDef_Glob_Attributes( fOut, 'Contact',     TRIM( lName )   )
+
+    ! References
+    lName = "www.geos-chem.org; wiki.geos-chem.org"
+    CALL NcDef_Glob_Attributes( fOut, 'References',  TRIM( lName )   )
+
+    ! Filename
+    lName = outFileName
+    CALL NcDef_Glob_Attributes( fOut, 'Filename',    TRIM( lName )   )
+    
+    ! History
+    sysTime = SystemTimeStampGmt()
+    lName = 'File generated on: ' // TRIM( sysTime )
+    CALL NcDef_Glob_Attributes( fOut, 'History' ,    TRIM( lName )   )
+
+    ! Format
+    lName = "NetCDF-3" ;
+    CALL NcDef_Glob_Attributes( fOut, 'Format' ,     TRIM( lName )   )
 
     ! Conventions
     lName = 'COARDS'
-    CALL NcDef_Glob_Attributes( fOut, 'Conventions', TRIM( lName ) )
+    CALL NcDef_Glob_Attributes( fOut, 'Conventions', TRIM( lName )   )
+
+    ! Version
+    lName = 'GEOS-5,7.2'
+    CALL NcDef_Glob_Attributes( fOut, 'Version',     TRIM( lName )   )
 
     ! Model
     lName = 'GEOS5'
-    CALL NcDef_Glob_Attributes( fOut, 'Model',       TRIM( lName ) )
+    CALL NcDef_Glob_Attributes( fOut, 'Model',       TRIM( lName )   )
 
     ! NLayers
     lName = '72'
-    CALL NcDef_Glob_Attributes( fOut, 'Nlayers',     TRIM( lName ) )
+    CALL NcDef_Glob_Attributes( fOut, 'Nlayers',     TRIM( lName )   )
 
-    ! Start Date (use hardwired value of 2011/01/01)
-    lName = '20110101'
-    CALL NcDef_Glob_Attributes( fOut, 'Start_Date',  TRIM( lName ) )
+    ! Start Date (hardwire to 2011/01/01)
+    lName = '20110101' 
+    CALL NcDef_Glob_Attributes( fOut, 'Start_Date',  TRIM( lName )   )
 
     ! Start Time
     lName = '00:00:00.0'
-    CALL NcDef_Glob_Attributes( fOut, 'Start_Time',  TRIM( lName ) )
+    CALL NcDef_Glob_Attributes( fOut, 'Start_Time',  TRIM( lName )   )
 
-    ! End Date (use hardwired value of 2011/01/01)
+    ! End Date (hardwire to 2011/01/01)
     lName = '20110101' 
-    CALL NcDef_Glob_Attributes( fOut, 'End_Date',    TRIM( lName ) )
+    CALL NcDef_Glob_Attributes( fOut, 'End_Date',    TRIM( lName )   )
 
     ! End Time
-    lName = '00:00.00.0'
-    CALL NcDef_Glob_Attributes( fOut, 'End_Time',    TRIM( lName ) )
+    lName = '00:00:00.0'
+    CALL NcDef_Glob_Attributes( fOut, 'End_Time',    TRIM( lName )   )
 
     ! Delta-time
     lName = '0'
-    CALL NcDef_Glob_Attributes( fOut, 'Delta_time',  TRIM( lName ) )
+    CALL NcDef_Glob_Attributes( fOut, 'Delta_time',  TRIM( lName )   )
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
@@ -230,11 +256,11 @@ CONTAINS
     CALL NcDef_Var_attributes( fOut, vId, 'long_name',      TRIM( lName )    )
     CALL NcDef_Var_attributes( fOut, vId, 'units',          TRIM( units )    ) 
 
-    ! Time index array
+    ! Time index array (hardwire date to 2011/01/01)
     var1    = (/ idTime /)
     vId     = vId + 1
     lName   = 'time'
-    units   = 'minutes since 2011-1-1 00:00:0.0'
+    units   = UnitsForTime( 20110101 )
     delta_t = '0000-00-00 00:00:00'
     begin_d = '20110101'
     begin_t = '0'
@@ -464,55 +490,6 @@ CONTAINS
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
   END SUBROUTINE Geos57MakeCn
-!EOC
-!------------------------------------------------------------------------------
-!          Harvard University Atmospheric Chemistry Modeling Group            !
-!------------------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: GetNFields
-!
-! !DESCRIPTION: Returns the list of fields and number of fields to regrid
-!  for each GEOS-5.7.x raw data file.
-!\\
-!\\
-! !INTERFACE:
-!
-  SUBROUTINE GetNFields( dataList, nFields, fields )
-!
-! !INPUT PARAMETERS: 
-!
-    CHARACTER(LEN=*), INTENT(IN)  :: dataList   ! Comma-sep'd field name list
-!
-! !OUTPUT PARAMETERS:
-!
-    INTEGER,          INTENT(OUT) :: nFields    ! Number of fields
-    CHARACTER(LEN=*), INTENT(OUT) :: fields(:)  ! Array of field names
-! 
-! !REVISION HISTORY: 
-!  04 Jan 2012 - R. Yantosca - Initial version, based on MERRA
-!EOP
-!------------------------------------------------------------------------------
-!BOC
-!
-! !LOCAL VARIABLES:
-!
-    INTEGER :: F
-
-    ! Split the data field list by commas into an array
-    CALL makeCharArrayFromCharList( dataList, ',', fields )
-    
-    ! Compute the number of data fields we will process
-    nFields = 0
-
-    DO F = 1, SIZE( fields )
-       IF ( TRIM( fields(F) ) /= ''      .and. &
-            TRIM( fields(F) ) /= 'none' ) THEN
-          nFields = nFields + 1
-       ENDIF
-    ENDDO
-
-  END SUBROUTINE GetNFields
 !EOC
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !

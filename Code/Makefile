@@ -110,10 +110,14 @@ Geos57InputsModule.o     : Geos57InputsModule.F90
 Geos57RegridModule.o     : Geos57RegridModule.F90       \
                            Geos57InputsModule.o
 
+Geos57UtilityModule.o    : Geos57UtilityModule.F90      \
+                           CharpakModule.o
+
 Geos57CnModule.o         : Geos57CnModule.F90           \
                            CharpakModule.o              \
                            Geos57InputsModule.o         \
                            Geos57RegridModule.o         \
+                           Geos57UtilityModule.o        \
                            m_netcdf_io_create.o         \
                            m_netcdf_io_define.o         \
                            m_netcdf_io_write.o          \
@@ -127,6 +131,7 @@ Geos57I3Module.o         : Geos57I3Module.F90           \
                            CharpakModule.o              \
                            Geos57InputsModule.o         \
                            Geos57RegridModule.o         \
+                           Geos57UtilityModule.o        \
                            m_netcdf_io_create.o         \
                            m_netcdf_io_define.o         \
                            m_netcdf_io_write.o          \

@@ -10,7 +10,7 @@
 !\\
 !\\
 ! !INTERFACE: 
-
+!
 MODULE Geos57I3Module
 ! 
 ! !USES:
@@ -19,6 +19,7 @@ MODULE Geos57I3Module
   USE CharpakModule
   USE Geos57InputsModule
   USE Geos57RegridModule
+  USE Geos57UtilityModule
 
   ! Modules for writing netCDF
   USE m_netcdf_io_create
@@ -44,11 +45,11 @@ MODULE Geos57I3Module
 ! !PRIVATE MEMBER FUNCTIONS:
 !
   PRIVATE :: NcOutFileDef
-  PRIVATE :: GetNFields
   PRIVATE :: ProcessI33dAsmNv
 !
 ! !REVISION HISTORY:
 !  03 Jan 2012 - R. Yantosca - Initial version, based on MERRA
+!  04 Jan 2012 - R. Yantosca - Add extra global attributes
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -89,7 +90,8 @@ MODULE Geos57I3Module
     INTEGER,          INTENT(INOUT) :: fOut          ! Output netCDF file ID
 !
 ! !REVISION HISTORY: 
-!  04 Jan 2012 - R. Yantosca - Initial version, based on Geos57CnModule
+!  03 Jan 2012 - R. Yantosca - Initial version, based on Geos57CnModule
+!  04 Jan 2012 - R. Yantosca - Add extra global attributes
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -97,6 +99,7 @@ MODULE Geos57I3Module
 ! !LOCAL VARIABLES:
 !
     ! Scalars
+    CHARACTER(LEN=255) :: sysTime
     CHARACTER(LEN=255) :: lName,   units,   gamap,   DI,    DJ
     CHARACTER(LEN=255) :: delta_t, begin_d, begin_t, incr,  msg
     INTEGER            :: idLon,   idLat,   idLev,   idAp
@@ -129,16 +132,37 @@ MODULE Geos57I3Module
     !-------------------------------------------------------------------------
  
     ! Title string
-    lName = 'GEOS-5.7.2 Instantaneous 3-hour Fields for GEOS-Chem'
+    lName = 'GEOS-5.7.2 instantaneous 3-hour (I3) fields for GEOS-Chem'
     CALL NcDef_Glob_Attributes( fOut, 'Title',       TRIM( lName )   )
 
-    ! Version history
-    lName = 'Version: 03 Jan 2012'
-    CALL NcDef_Glob_Attributes( fOut, 'History',     TRIM( lName )   )
+    ! Contact
+    lName = "GEOS-Chem Support Team (geos-chem-support@as.harvard.edu)"
+    CALL NcDef_Glob_Attributes( fOut, 'Contact',     TRIM( lName )   )
+
+    ! References
+    lName = "www.geos-chem.org; wiki.geos-chem.org"
+    CALL NcDef_Glob_Attributes( fOut, 'References',  TRIM( lName )   )
+
+    ! Filename
+    lName = outFileName
+    CALL NcDef_Glob_Attributes( fOut, 'Filename',    TRIM( lName )   )
+    
+    ! History
+    sysTime = SystemTimeStampGmt()
+    lName = 'File generated on: ' // TRIM( sysTime )
+    CALL NcDef_Glob_Attributes( fOut, 'History' ,    TRIM( lName )   )
+
+    ! Format
+    lName = "NetCDF-3" ;
+    CALL NcDef_Glob_Attributes( fOut, 'Format' ,     TRIM( lName )   )
 
     ! Conventions
     lName = 'COARDS'
     CALL NcDef_Glob_Attributes( fOut, 'Conventions', TRIM( lName )   )
+
+    ! Version
+    lName = 'GEOS-5,7.2'
+    CALL NcDef_Glob_Attributes( fOut, 'Version',     TRIM( lName )   )
 
     ! Model
     lName = 'GEOS5'
@@ -163,7 +187,7 @@ MODULE Geos57I3Module
     CALL NcDef_Glob_Attributes( fOut, 'End_Time',    TRIM( lName )   )
 
     ! Delta-time
-    lName = '0'
+    lName = '30000'
     CALL NcDef_Glob_Attributes( fOut, 'Delta_time',  TRIM( lName )   )
 
     ! Pick DI and DJ attributes based on the grid
@@ -232,7 +256,7 @@ MODULE Geos57I3Module
     var1    = (/ idTime /)
     vId     = vId + 1
     lName   = 'time'
-    units   = 'minutes since 2011-1-1 00:00:0.0'
+    units   = UnitsForTime( yyyymmdd )
     delta_t = '0000-00-00 00:00:00'
     begin_d = yyyymmdd_string
     begin_t = '0'
@@ -287,7 +311,7 @@ MODULE Geos57I3Module
        lName = 'Ertel potential vorticity' 
        units = 'K m-2 kg-1 s-1'
        gamap = 'GMAO-3D$'
-       CALL NcDef_Variable      ( fOut, 'PV', NF_FLOAT, 4, var4, vId         )
+       CALL NcDef_Variable      ( fOut, 'PV', NF_FLOAT, 4, var4, vId        )
        CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
@@ -465,55 +489,7 @@ MODULE Geos57I3Module
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
   END SUBROUTINE Geos57MakeI3
-!EOC
-!------------------------------------------------------------------------------
-!          Harvard University Atmospheric Chemistry Modeling Group            !
-!------------------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: GetNFields
-!
-! !DESCRIPTION: Returns the list of fields and number of fields to regrid
-!  for each GEOS-5.7.x raw data file.
-!\\
-!\\
-! !INTERFACE:
-!
-  SUBROUTINE GetNFields( dataList, nFields, fields )
-!
-! !INPUT PARAMETERS: 
-!
-    CHARACTER(LEN=*), INTENT(IN)  :: dataList   ! Comma-sep'd field name list
-!
-! !OUTPUT PARAMETERS:
-!
-    INTEGER,          INTENT(OUT) :: nFields    ! Number of fields
-    CHARACTER(LEN=*), INTENT(OUT) :: fields(:)  ! Array of field names
-! 
-! !REVISION HISTORY: 
-!  26 Jul 2010 - R. Yantosca - Initial version
-!EOP
-!------------------------------------------------------------------------------
-!BOC
-!
-! !LOCAL VARIABLES:
-!
-    INTEGER :: F
 
-    ! Split the data field list by commas into an array
-    CALL makeCharArrayFromCharList( dataList, ',', fields )
-    
-    ! Compute the number of data fields we will process
-    nFields = 0
-
-    DO F = 1, SIZE( fields )
-       IF ( TRIM( fields(F) ) /= ''      .and. &
-            TRIM( fields(F) ) /= 'none' ) THEN
-          nFields = nFields + 1
-       ENDIF
-    ENDDO
-
-  END SUBROUTINE GetNFields
 !EOC
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -548,26 +524,28 @@ MODULE Geos57I3Module
 ! !LOCAL VARIABLES:
 !
     ! Loop and time variables
-    INTEGER                 :: F,        H,        hhmmss 
+    INTEGER                 :: F,        H,        L,       LR
+    INTEGER                 :: hhmmss 
 
     ! Variables for netCDF I/O
     INTEGER                 :: X,        Y,        Z,       T
     INTEGER                 :: XNestCh,  YNestCh,  ZNestCh, TNestCh
     INTEGER                 :: X2x25,    Y2x25,    Z2x25,   T2x25
     INTEGER                 :: X4x5,     Y4x5,     Z4x5,    T4x5
-    INTEGER                 :: st2d(2),  st3d(3)
-    INTEGER                 :: ct2d(2),  ct3d(3)
+    INTEGER                 :: st3d(3),  st4d(4)
+    INTEGER                 :: ct3d(3),  ct4d(4)
 
-    ! Data arrays
-    REAL*4,  TARGET         :: Q2d     (I025x03125,J025x03125,            1)
-    REAL*4                  :: Q2d_2x25(I2x25,     J2x25                   )
-    REAL*4                  :: Q2d_4x5 (I4x5,      J4x5                    )
-    REAL*4,  TARGET         :: Q3d     (I025x03125,J025x03125, L025x03125,1)
-    REAL*4                  :: Q3d_2x25(I2x25,     J2x25,      L2x25       )
-    REAL*4                  :: Q3d_4x5 (I4x5,      J4x5,       L4x5        )
+    ! Data arrays (NOTE: 2d or 3d refers to spatial dimensions)
+    REAL*4,  TARGET         :: Q2d     ( I025x03125, J025x03125              )
+    REAL*4                  :: Q2d_2x25( I2x25,      J2x25                   )
+    REAL*4                  :: Q2d_4x5 ( I4x5,       J4x5                    )
+    REAL*4,  TARGET         :: Q3d     ( I025x03125, J025x03125, L025x03125  )
+    REAL*4                  :: Q3d_2x25( I2x25,      J2x25,      L2x25       )
+    REAL*4                  :: Q3d_4x5 ( I4x5,       J4x5,       L4x5        )
 
-    ! Pointers 30000
-    REAL*4,  POINTER        :: QNest(:,:)
+    ! Pointers
+    REAL*4,  POINTER        :: Ptr_2d(:,:)
+    REAL*4,  POINTER        :: Ptr_3d(:,:,:)
 
     ! Character strings and arrays
     CHARACTER(LEN=8       ) :: name8
@@ -586,6 +564,7 @@ MODULE Geos57I3Module
     IF ( doNestCh ) THEN
        CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
        CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
+       CALL NcGet_DimLen( fOutNestCh, 'lev',  ZNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
     ENDIF
 
@@ -593,6 +572,7 @@ MODULE Geos57I3Module
     IF ( do2x25 ) THEN
        CALL NcGet_DimLen( fOut2x25,   'lon',  X2x25   )
        CALL NcGet_DimLen( fOut2x25,   'lat',  Y2x25   ) 
+       CALL NcGet_DimLen( fOut2x25,   'lev',  Z2x25   ) 
        CALL NcGet_DimLen( fOut2x25,   'time', T2x25   )
     ENDIF
 
@@ -600,6 +580,7 @@ MODULE Geos57I3Module
     IF ( do4x5 ) THEN
        CALL NcGet_DimLen( fOut4x5,    'lon',  X4x5    )
        CALL NcGet_DimLen( fOut4x5,    'lat',  Y4x5    )   
+       CALL NcGet_DimLen( fOut4x5,    'lev',  Z4x5    )   
        CALL NcGet_DimLen( fOut4x5,    'time', T4x5    )
     ENDIF
     
@@ -613,7 +594,7 @@ MODULE Geos57I3Module
     WRITE( IU_LOG, '(a)' ) '%%%'
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
-    ! Loop over hours
+    ! Loop over the number of files per day
     DO H = 1, TIMES_A3
 
        ! GMT time of day (hh:mm:ss)
@@ -633,6 +614,7 @@ MODULE Geos57I3Module
        ! Get the dimensions from the netCDF file
        CALL NcGet_DimLen( fIn, 'lon',  X )
        CALL NcGet_DimLen( fIn, 'lat',  Y ) 
+       CALL NcGet_DimLen( fIn, 'lev',  Z ) 
        CALL NcGet_DimLen( fIn, 'time', T )
 
        !====================================================================
@@ -670,8 +652,6 @@ MODULE Geos57I3Module
              st3d = (/ 1, 1, 1 /)
              ct3d = (/ X, Y, 1 /)
 
-             print*, '### st3d, ct3d: ', st3d, ct3d
-
              !-----------------------------
              ! Read data
              !-----------------------------
@@ -685,8 +665,6 @@ MODULE Geos57I3Module
              ! Convert from [Pa] to [hPa]
              Q2d = Q2d / 100e0
 
-             print*, '### maxval native: ', maxval( q2d )
-
              !-----------------------------
              ! Regrid data
              !-----------------------------
@@ -695,12 +673,12 @@ MODULE Geos57I3Module
              
              ! Regrid to 2 x 2.5
              IF ( do2x25 ) THEN
-                CALL RegridGeos57to2x25( 0, Q2d(:,:,1), Q2d_2x25 )
+                CALL RegridGeos57to2x25( 0, Q2d, Q2d_2x25 )
              ENDIF
              
              ! Regrid to 4x5 
              IF ( do4x5 ) THEN
-                CALL RegridGeos57To4x5( 0, Q2d(:,:,1), Q2d_4x5 )
+                CALL RegridGeos57To4x5 ( 0, Q2d, Q2d_4x5  )
              ENDIF
  
              !-----------------------------
@@ -711,23 +689,23 @@ MODULE Geos57I3Module
              
              ! Nested China (point to proper slice of global data)
              IF ( doNestCh ) THEN
-                QNest => Q2d( I0_ch:I1_ch, J0_ch:J1_ch, 1 )
-                st3d  = (/ 1,       1,       H /)
-                ct3d  = (/ XNestCh, YNestCh, 1 /)
-                CALL NcWr( QNest, fOutNestCh, TRIM( name ), st3d, ct3d )
+                Ptr_2d => Q2d( I0_ch:I1_ch, J0_ch:J1_ch )
+                st3d   = (/ 1,       1,       H /)
+                ct3d   = (/ XNestCh, YNestCh, 1 /)
+                CALL NcWr( Ptr_2d, fOutNestCh, TRIM( name ), st3d, ct3d )
              ENDIF
              
              ! Write 2 x 2.5 data
              IF ( do2x25 ) THEN
-                st3d = (/ 1,     1,     H  /)
-                ct3d = (/ X2x25, Y2x25, 1  /)
+                st3d  = (/ 1,     1,     H  /)
+                ct3d  = (/ X2x25, Y2x25, 1  /)
                 CALL NcWr( Q2d_2x25, fOut2x25, TRIM( name ), st3d, ct3d )
              ENDIF
        
              ! Write 4x5 data
              IF ( do4x5 ) THEN
-                st3d = (/ 1,    1,    H /)
-                ct3d = (/ X4x5, Y4x5, 1 /)
+                st3d  = (/ 1,    1,    H /)
+                ct3d  = (/ X4x5, Y4x5, 1 /)
                 CALL NcWr( Q2d_4x5, fOut4x5, TRIM( name ), st3d, ct3d )
              ENDIF
 
@@ -736,6 +714,78 @@ MODULE Geos57I3Module
              !==============================================================
              ! Process all other fields
              !==============================================================
+
+             ! Start and count index arrays for netCDF
+             ! (There is only one data block per file)
+             st4d = (/ 1, 1, 1, 1 /)
+             ct4d = (/ X, Y, Z, 1 /)
+
+             ! Special handling: "EPV" is known as "PV" 
+             ! for backwards compatibility
+             name8 = name
+             IF ( TRIM( name8 ) == 'PV' ) name8 = 'EPV'
+
+             !-----------------------------
+             ! Read data
+             !-----------------------------
+             msg = '%%% Reading     ' // name8
+             WRITE( IU_LOG, '(a)' ) TRIM( msg )
+             CALL NcRd( Q3d, fIn, TRIM( name8 ), st4d, ct4d )
+             
+             ! Replace missing values with zeroes
+             WHERE( Q3d == FILL_VALUE ) Q3d = 0e0
+
+             !-----------------------------
+             ! Regrid data
+             !-----------------------------
+             msg = '%%% Regridding  ' // name
+             WRITE( IU_LOG, '(a)' ) TRIM( msg )
+             
+             ! Loop over vertical levels
+             DO L = 1, L025x03125 
+
+                ! Reverse level indices
+                LR = L025x03125 - L + 1
+
+                ! Regrid to 2 x 2.5
+                IF ( do2x25 ) THEN
+                   CALL RegridGeos57to2x25( 0, Q3d(:,:,LR), Q3d_2x25(:,:,L) )
+                ENDIF
+             
+                ! Regrid to 4x5 
+                IF ( do4x5 ) THEN
+                   CALL RegridGeos57To4x5 ( 0, Q3d(:,:,LR), Q3d_4x5(:,:,L)  )
+                ENDIF
+                
+             ENDDO
+
+             !-----------------------------
+             ! Write netCDF output
+             !-----------------------------
+             msg = '%%% Archiving   ' // name
+             WRITE( IU_LOG, '(a)' ) TRIM( msg )
+             
+             ! Nested China (point to proper slice of global data)
+             IF ( doNestCh ) THEN
+                Ptr_3d => Q3d( I0_ch:I1_ch, J0_ch:J1_ch, : )
+                st4d   = (/ 1,       1,       1,          H /)
+                ct4d   = (/ XNestCh, YNestCh, L025x03125, 1 /)
+                CALL NcWr( Ptr_3d, fOutNestCh, TRIM( name ), st4d, ct4d )
+             ENDIF
+             
+             ! Write 2 x 2.5 data
+             IF ( do2x25 ) THEN
+                st4d  = (/ 1,     1,     1,     H  /)
+                ct4d  = (/ X2x25, Y2x25, L2x25, 1  /)
+                CALL NcWr( Q3d_2x25, fOut2x25, TRIM( name ), st4d, ct4d )
+             ENDIF
+       
+             ! Write 4x5 data
+             IF ( do4x5 ) THEN
+                st4d  = (/ 1,    1,    1,    H /)
+                ct4d  = (/ X4x5, Y4x5, L4x5, 1 /)
+                CALL NcWr( Q3d_4x5, fOut4x5, TRIM( name ), st4d, ct4d )
+             ENDIF
 
           ENDIF
 

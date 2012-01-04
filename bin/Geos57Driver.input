@@ -35,7 +35,7 @@ T
 
 ==> inst3_3d_asm_Nv
 DAS.ops.asm.inst3_3d_asm_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
-O3,PS,PV,QV,T
+PS,PV,QV,T
 
 ==> tavg1_2d_flx_Nx
 DAS.ops.asm.tavg1_2d_flx_Nx.GEOS572.YYYYMMDD_hhmm.V01.nc4
