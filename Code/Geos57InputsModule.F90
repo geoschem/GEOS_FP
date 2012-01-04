@@ -90,6 +90,9 @@ MODULE Geos57InputsModule
   INTEGER                 :: fOut2x25                 ! NC fId; output 2x25
   INTEGER                 :: fOut4x5                  ! NC fId; output 4x5
   REAL*4                  :: FILL_VALUE = 1e15        ! Fill value in HDF file
+  REAL*4                  :: Ap(L025x03125+1)         ! Hybrid grid "A" array 
+  REAL*4                  :: Bp(L025x03125+1)         ! Hybrid grid "B" array
+  CHARACTER(LEN=8)        :: yyyymmdd_string          ! String for YYYYMMDD
   CHARACTER(LEN=MAX_CHAR) :: inputDataDir             ! netCDF data dir
   CHARACTER(LEN=MAX_CHAR) :: dataTmplNestCh           ! NstCh file template
   CHARACTER(LEN=MAX_CHAR) :: dataTmpl2x25             ! 2x25  file template
@@ -133,9 +136,6 @@ MODULE Geos57InputsModule
   CHARACTER(LEN=MAX_CHAR) :: frLandFile               ! File for FRLAND
 
   ! Arrays
-!  INTEGER                 :: a1Hours  (TIMES_A1)               ! A1 data times
-!  INTEGER                 :: a3HoursI (TIMES_A3)               ! Inst A1 times
-!  INTEGER                 :: a3Hours  (TIMES_A3)               ! A3 data times
   INTEGER                 :: a1Mins   (TIMES_A1)               ! A1 data times
   INTEGER                 :: a3MinsI  (TIMES_A3)               ! Inst A1 times
   INTEGER                 :: a3Mins   (TIMES_A3)               ! A3 data times
@@ -155,6 +155,7 @@ MODULE Geos57InputsModule
 ! !REVISION HISTORY:
 !  30 Aug 2011 - R. Yantosca - Initial version, based on MerraInputsModule
 !  21 Dec 2011 - R. Yantosca - Now add a3Mins, a3MinsI, a1Mins variables
+!  03 Jan 2012 - R. Yantosca - Add Ap, Bp arrays for hybrid grid definition
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -193,15 +194,18 @@ MODULE Geos57InputsModule
     ! Get day of year
     READ( 5, '(i8)', ERR=990 ) yyyymmdd
 
+    ! Save day of year in a string
+    WRITE( yyyymmdd_string, '(i8)' ) yyyymmdd
+
     ! 1-hourly data timestamps
-    DO T = 0, 23
-       a1Mins(T) = ( T * 60 ) + 30
+    DO T = 1, TIMES_A1
+       a1Mins(T)  = ( ( T - 1 ) * 60 ) + 30
     ENDDO
    
     ! 3-hourly timestamps
-    DO T = 0, 7
-       a3MinsI(T) = ( T * 180 )
-       a3Mins (T) = ( T * 180 ) + 90
+    DO T = 1, TIMES_A3
+       a3MinsI(T) = ( ( T - 1 ) * 180 )
+       a3Mins (T) = ( ( T - 1 ) * 180 ) + 90
     ENDDO
        
     !-----------------------------------------------------------------------
@@ -334,7 +338,7 @@ MODULE Geos57InputsModule
        CALL ReadMappingWeights( weightFileNxTo4x5,               &
                                 I4x5,  J4x5,  nPts, mapNxTo4x5  )
     ENDIF
-!
+
 !    !-----------------------------------------------------------------------
 !    ! Read data from template files
 !    !-----------------------------------------------------------------------
@@ -347,15 +351,58 @@ MODULE Geos57InputsModule
 !
 !    ! FRLAND data (for SNOMAS regridding)
 !    CALL ReadTemplateFile( frLandFile, frLand )
-!
+
+    !-----------------------------------------------------------------------
+    ! Define hybrid-grid index arrays
+    !-----------------------------------------------------------------------
+
+    ! Ap [hPa] for 72 levels (73 edges)
+    Ap =  (/ 0.000000d+00, 4.804826d-02, 6.593752d+00, 1.313480d+01, &
+             1.961311d+01, 2.609201d+01, 3.257081d+01, 3.898201d+01, &
+             4.533901d+01, 5.169611d+01, 5.805321d+01, 6.436264d+01, &
+             7.062198d+01, 7.883422d+01, 8.909992d+01, 9.936521d+01, &
+             1.091817d+02, 1.189586d+02, 1.286959d+02, 1.429100d+02, &
+             1.562600d+02, 1.696090d+02, 1.816190d+02, 1.930970d+02, &
+             2.032590d+02, 2.121500d+02, 2.187760d+02, 2.238980d+02, &
+             2.243630d+02, 2.168650d+02, 2.011920d+02, 1.769300d+02, &
+             1.503930d+02, 1.278370d+02, 1.086630d+02, 9.236572d+01, &
+             7.851231d+01, 6.660341d+01, 5.638791d+01, 4.764391d+01, &
+             4.017541d+01, 3.381001d+01, 2.836781d+01, 2.373041d+01, &
+             1.979160d+01, 1.645710d+01, 1.364340d+01, 1.127690d+01, &
+             9.292942d+00, 7.619842d+00, 6.216801d+00, 5.046801d+00, &
+             4.076571d+00, 3.276431d+00, 2.620211d+00, 2.084970d+00, &
+             1.650790d+00, 1.300510d+00, 1.019440d+00, 7.951341d-01, &
+             6.167791d-01, 4.758061d-01, 3.650411d-01, 2.785261d-01, &
+             2.113490d-01, 1.594950d-01, 1.197030d-01, 8.934502d-02, &
+             6.600001d-02, 4.758501d-02, 3.270000d-02, 2.000000d-02, &
+             1.000000d-02 /)
+
+    ! Bp [unitless] for 72 levels (73 edges)
+    Bp =  (/ 1.000000d+00, 9.849520d-01, 9.634060d-01, 9.418650d-01, &
+             9.203870d-01, 8.989080d-01, 8.774290d-01, 8.560180d-01, &
+             8.346609d-01, 8.133039d-01, 7.919469d-01, 7.706375d-01, &
+             7.493782d-01, 7.211660d-01, 6.858999d-01, 6.506349d-01, &
+             6.158184d-01, 5.810415d-01, 5.463042d-01, 4.945902d-01, &
+             4.437402d-01, 3.928911d-01, 3.433811d-01, 2.944031d-01, &
+             2.467411d-01, 2.003501d-01, 1.562241d-01, 1.136021d-01, &
+             6.372006d-02, 2.801004d-02, 6.960025d-03, 8.175413d-09, &
+             0.000000d+00, 0.000000d+00, 0.000000d+00, 0.000000d+00, &
+             0.000000d+00, 0.000000d+00, 0.000000d+00, 0.000000d+00, &
+             0.000000d+00, 0.000000d+00, 0.000000d+00, 0.000000d+00, &
+             0.000000d+00, 0.000000d+00, 0.000000d+00, 0.000000d+00, &
+             0.000000d+00, 0.000000d+00, 0.000000d+00, 0.000000d+00, &
+             0.000000d+00, 0.000000d+00, 0.000000d+00, 0.000000d+00, &
+             0.000000d+00, 0.000000d+00, 0.000000d+00, 0.000000d+00, &
+             0.000000d+00, 0.000000d+00, 0.000000d+00, 0.000000d+00, &
+             0.000000d+00, 0.000000d+00, 0.000000d+00, 0.000000d+00, &
+             0.000000d+00, 0.000000d+00, 0.000000d+00, 0.000000d+00, &
+             0.000000d+00 /)
+
     !-----------------------------------------------------------------------
     ! Verbose output for debugging
     !-----------------------------------------------------------------------
     IF ( VERBOSE ) THEN
        PRINT*, 'YYYYMMDD        : ', yyyymmdd
-       !PRINT*, 'a1Hours         : ', a1Hours
-       !PRINT*, 'a3HoursI        : ', a3HoursI
-       !PRINT*, 'a3Hours         : ', a3Hours
        PRINT*, 'aMins           : ', a1Mins
        PRINT*, 'a3MinsI         : ', a3MinsI
        PRINT*, 'a3Mins          : ', a3Mins
@@ -742,6 +789,5 @@ MODULE Geos57InputsModule
     ENDIF
 
   END SUBROUTINE Geos57Cleanup
-
-END MODULE Geos57InputsModule
 !EOC
+END MODULE Geos57InputsModule

@@ -38,7 +38,7 @@ EXE   = Geos57Driver.x
 
 all: 
 	$(MAKE) -C $(DIR) all
-	$(EXE) < 20111001
+	$(EXE) < 20110815
 
 lib:
 	$(MAKE) -C $(DIR) lib

@@ -123,9 +123,24 @@ Geos57CnModule.o         : Geos57CnModule.F90           \
                            m_netcdf_io_get_dimlen.o     \
                            m_netcdf_io_read.o
 
+Geos57I3Module.o         : Geos57I3Module.F90           \
+                           CharpakModule.o              \
+                           Geos57InputsModule.o         \
+                           Geos57RegridModule.o         \
+                           m_netcdf_io_create.o         \
+                           m_netcdf_io_define.o         \
+                           m_netcdf_io_write.o          \
+                           m_netcdf_io_close.o          \
+                           m_netcdf_io_open.o           \
+                           m_netcdf_io_close.o          \
+                           m_netcdf_io_get_dimlen.o     \
+                           m_netcdf_io_read.o
+
 Geos57Driver.o           : Geos57Driver.F90             \
                            Geos57InputsModule.o         \
-                           Geos57RegridModule.o
+                           Geos57RegridModule.o         \
+                           Geos57CnModule.o             \
+                           Geos57I3Module.o
 
 #==============================================================================
 # Makefile targets
@@ -150,7 +165,7 @@ docclean:
 	$(MAKE) -C $(DOC) clean
 
 clean:
-	rm -f *.o *.nc *.x *.a *.mod
+	rm -f *.o *.nc *.x *.a *.mod *.nc
 
 realclean:
 	$(MAKE) clean

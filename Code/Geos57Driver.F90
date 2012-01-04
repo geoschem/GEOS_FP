@@ -20,7 +20,7 @@ PROGRAM Geos57Driver
 !  USE Geos57A1Module
 !  USE Geos57A3Module
   USE Geos57CnModule
-!  USE Geos57I6Module
+  USE Geos57I3Module
   USE Geos57InputsModule
   USE Geos57RegridModule
 
@@ -28,6 +28,7 @@ PROGRAM Geos57Driver
 !
 ! !REVISION HISTORY: 
 !  26 Oct 2011 - R. Yantosca - Initial Version, based on MerraDriver
+!  03 Jan 2012 - R. Yantosca - Activate calls to Goes57MakeCn, Geos57MakeI3
 !------------------------------------------------------------------------------
 
   ! Read filenames and fields to process from an input file
@@ -46,7 +47,7 @@ PROGRAM Geos57Driver
 !  CALL Geos57MakeA3
 !
 !  ! Create the 6-hour instantaneous data file
-!  CALL Geos57MakeI6
+  CALL Geos57MakeI3
 
   ! Cleanup and quit 
   CALL Geos57Cleanup

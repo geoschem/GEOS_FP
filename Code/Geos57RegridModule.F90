@@ -123,6 +123,7 @@ MODULE Geos57RegridModule
   REAL*4, PUBLIC :: sine_025x03125 ( J025x03125 + 1 )  ! SIN( lat edges ) 
   REAL*4, PUBLIC :: xmid_025x03125 ( I025x03125     )  ! Lon centers
   REAL*4, PUBLIC :: ymid_025x03125 ( J025x03125     )  ! Lat centers
+  REAL*4, PUBLIC :: zmid_025x03125 ( L025x03125     )  ! Vertical levels
 
   !--------------------------
   ! 0.5 x 0.666 resolution
@@ -132,6 +133,7 @@ MODULE Geos57RegridModule
   REAL*4, PUBLIC :: sine_05x0666 ( J05x0666 + 1 )      ! SIN( lat edges ) 
   REAL*4, PUBLIC :: xmid_05x0666 ( I05x0666     )      ! Lon centers
   REAL*4, PUBLIC :: ymid_05x0666 ( J05x0666     )      ! Lat centers
+  REAL*4, PUBLIC :: zmid_05x0666 ( L05x0666     )      ! Vertical levels
 
   !--------------------------
   ! 1 x 1.25 resolution
@@ -141,6 +143,8 @@ MODULE Geos57RegridModule
   REAL*4, PUBLIC :: sine_1x125 ( J1x125 + 1 )          ! SIN( lat edges )
   REAL*4, PUBLIC :: xmid_1x125 ( I1x125     )          ! Lon centers
   REAL*4, PUBLIC :: ymid_1x125 ( J1x125     )          ! Lat centers
+  REAL*4, PUBLIC :: zmid_1x125 ( L1x125     )          ! Vertical levels
+
 
   !--------------------------
   ! 2 x 2.5 resolution 
@@ -150,6 +154,7 @@ MODULE Geos57RegridModule
   REAL*4, PUBLIC :: sine_2x25 ( J2x25 + 1 )            ! SIN( lat edges )
   REAL*4, PUBLIC :: xmid_2x25 ( I2x25     )            ! Lon centers
   REAL*4, PUBLIC :: ymid_2x25 ( J2x25     )            ! Lat centers
+  REAL*4, PUBLIC :: zmid_2x25 ( L2x25     )            ! Vertical levels
 
   !--------------------------
   ! 4 x 5 resolution
@@ -159,6 +164,7 @@ MODULE Geos57RegridModule
   REAL*4, PUBLIC :: sine_4x5 ( J4x5 + 1 )              ! SIN( lat edges )
   REAL*4, PUBLIC :: xmid_4x5 ( I4x5     )              ! Lon centers
   REAL*4, PUBLIC :: ymid_4x5 ( J4x5     )              ! Lat centers
+  REAL*4, PUBLIC :: zmid_4x5 ( L4x5     )              ! Vertical levels
 !
 ! !AUTHOR:
 ! Original MAP_A2A code from S-J Lin
@@ -173,6 +179,7 @@ MODULE Geos57RegridModule
 ! !REVISION HISTORY:
 !  23 Jul 2010 - R. Yantosca - Initial version, based on MerraRegridModule.f90
 !  26 Oct 2011 - R. Yantosca - Now make all lon & lat arrays public
+!  03 Jan 2012 - R. Yantosca - Now define index arrays for vertical levels
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1359,13 +1366,14 @@ MODULE Geos57RegridModule
 ! !REVISION HISTORY: 
 !  25 Oct 2011 - R. Yantosca - InitialVersion, based on MerraRegridModule
 !  26 Oct 2011 - R. Yantosca - Now initialize lon & lat center arrays
+!  03 Jan 2012 - R. Yantosca - Now define index arrays for vertical levels
 !EOP
 !------------------------------------------------------------------------------
 !BOC
 !
 ! !LOCAL VARIABLES:
 !
-    INTEGER :: I, J
+    INTEGER :: I, J, L
     REAL*8  :: DI, DJ
 
     !======================================================================
@@ -1408,6 +1416,11 @@ MODULE Geos57RegridModule
        sine_025x03125(J)          = SIN( yedge_025x03125(J) * D2R )
     ENDDO
 
+    ! Vertical levels
+    DO L = 1, L025x03125
+       zmid_025x03125(L) = L
+    ENDDO
+
     !======================================================================
     ! 0.5 x 0.666 resolution; centered on (-180,-90)
     !======================================================================
@@ -1445,6 +1458,11 @@ MODULE Geos57RegridModule
     ! Sine of latitude edges      
     DO J = 1, J05x0666+1          
        sine_05x0666(J)            = SIN( yedge_05x0666(J) * D2R )
+    ENDDO
+
+    ! Vertical levels
+    DO L = 1, L05x0666
+       zmid_05x0666(L) = L
     ENDDO
 
     !======================================================================
@@ -1486,6 +1504,11 @@ MODULE Geos57RegridModule
        sine_1x125(J)              = SIN( yedge_1x125(J) * D2R )
     ENDDO
 
+    ! Vertical levels
+    DO L = 1, L1x125
+       zmid_1x125(L) = L
+    ENDDO
+
     !======================================================================
     ! 2 x 2.5 resolution; centered on (-180,-90)
     !======================================================================
@@ -1525,6 +1548,11 @@ MODULE Geos57RegridModule
        sine_2x25(J)               = SIN( yedge_2x25(J) * D2R )
     ENDDO
 
+    ! Vertical levels
+    DO L = 1, L2x25
+       zmid_2x25(L) = L
+    ENDDO
+
     !======================================================================
     ! 4 x 5 Grid; centered on (-180,-90)
     !======================================================================
@@ -1562,6 +1590,11 @@ MODULE Geos57RegridModule
     ! Sine of latitude edges     
     DO J = 1, J4x5+1             
        sine_4x5(J)               = SIN( yedge_4x5(J) * D2R )
+    ENDDO
+
+    ! Vertical levels
+    DO L = 1, L4x5
+       zmid_4x5(L) = L
     ENDDO
 
   END SUBROUTINE Geos57RegridInit

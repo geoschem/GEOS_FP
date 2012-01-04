@@ -22,6 +22,7 @@
 #
 # !REVISION HISTORY: 
 #  26 Oct 2011 - R. Yantosca - Initial version, based on MerraDriver.input
+#  03 Jan 2012 - R. Yantosca - Added fields for I3 output file
 #
 
 ==> Turn on debug print output?
@@ -34,7 +35,7 @@ T
 
 ==> inst3_3d_asm_Nv
 DAS.ops.asm.inst3_3d_asm_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
-none
+O3,PS,PV,QV,T
 
 ==> tavg1_2d_flx_Nx
 DAS.ops.asm.tavg1_2d_flx_Nx.GEOS572.YYYYMMDD_hhmm.V01.nc4
