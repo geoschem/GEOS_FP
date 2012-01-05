@@ -148,7 +148,7 @@ MODULE Geos57I3Module
     CALL NcDef_Glob_Attributes( fOut, 'Filename',    TRIM( lName )   )
     
     ! History
-    sysTime = SystemTimeStampGmt()
+    sysTime = SystemTimeStamp()
     lName = 'File generated on: ' // TRIM( sysTime )
     CALL NcDef_Glob_Attributes( fOut, 'History' ,    TRIM( lName )   )
 
@@ -176,14 +176,14 @@ MODULE Geos57I3Module
     CALL NcDef_Glob_Attributes( fOut, 'Start_Date',  yyyymmdd_string )
 
     ! Start Time
-    lName = '00:00:00.0'
+    lName = '00:00:00.000000'
     CALL NcDef_Glob_Attributes( fOut, 'Start_Time',  TRIM( lName )   )
 
     ! End Date
     CALL NcDef_Glob_Attributes( fOut, 'End_Date',    yyyymmdd_string )
 
     ! End Time
-    lName = '23:59:59.0'
+    lName = '23:59:59.99999'
     CALL NcDef_Glob_Attributes( fOut, 'End_Time',    TRIM( lName )   )
 
     ! Delta-time
@@ -257,10 +257,10 @@ MODULE Geos57I3Module
     vId     = vId + 1
     lName   = 'time'
     units   = UnitsForTime( yyyymmdd )
-    delta_t = '0000-00-00 00:00:00'
+    delta_t = '0000-00-00 03:00:00'
     begin_d = yyyymmdd_string
-    begin_t = '0'
-    incr    = '30000'
+    begin_t = '000000'
+    incr    = '030000'
     CALL NcDef_Variable      ( fOut, 'time', NF_INT,  1, var1, vId           )
     CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName   )  )
     CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units   )  ) 

@@ -24,7 +24,7 @@ MODULE Geos57UtilityModule
 !
   PUBLIC :: GetNFields
   PUBLIC :: SystemDateTime
-  PUBLIC :: SystemTimeStampGmt
+  PUBLIC :: SystemTimeStamp
   PUBLIC :: TimeStampString
   PUBLIC :: UnitsForTime
 !
@@ -154,7 +154,7 @@ MODULE Geos57UtilityModule
 !------------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: SystemTimeStampGmt
+! !IROUTINE: SystemTimeStamp
 !
 ! !DESCRIPTION: Function SystemTimeStamp returns a string with 
 !  the onboard system GMT time in YYYY/MM/DD HH:MM format.
@@ -162,7 +162,7 @@ MODULE Geos57UtilityModule
 !\\
 ! !INTERFACE:
 !
-  FUNCTION SystemTimeStampGmt() RESULT( timeStamp )
+  FUNCTION SystemTimeStamp() RESULT( timeStamp )
 !
 ! !RETURN VALUE:
 !
@@ -189,7 +189,7 @@ MODULE Geos57UtilityModule
     ! Create a string w/ system date & time
     timeStamp = TimeStampString( sysDate, sysTime, timeZone )
 
-  END FUNCTION SystemTimeStampGmt
+  END FUNCTION SystemTimeStamp
 !EOC
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -199,9 +199,8 @@ MODULE Geos57UtilityModule
 ! !IROUTINE: TimeStampString
 !
 ! !DESCRIPTION: Function TimeStampString returns a formatted string 
-!  "YYYY/MM/DD hh:mm" for the a date and time specified by YYYYMMDD and hhmmss.
-!  If YYYYMMDD and hhmmss are omitted, then TimeStampString will create a 
-!  formatted string for the current date and time.
+!  "YYYY/MM/DD hh:mm" for the a date and time specified by YYYYMMDD and 
+!  hhmmss.
 !\\
 !\\
 ! !INTERFACE:
@@ -220,6 +219,8 @@ MODULE Geos57UtilityModule
 !
 ! !REVISION HISTORY: 
 !  04 Jan 2012 - R. Yantosca - Initial version, based on GEOS-Chem
+!  05 Jan 2012 - R. Yantosca - Print time zone offset (e.g. GMT-0500) if
+!                              the timeZone argument is passed
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -238,16 +239,16 @@ MODULE Geos57UtilityModule
 
     ! Use FORTRAN internal write to create the string
     IF ( PRESENT( timeZone ) ) THEN
-       WRITE( timeStamp, 10 ) year, month, day, hour, minute, second
+       WRITE( timeStamp, 10 ) year, month, day, hour, minute, second, timeZone
     ELSE
        WRITE( timeStamp, 20 ) year, month, day, hour, minute, second
     ENDIF
 
     ! Format statements
- 10 FORMAT( i4.4, '/', i2.2, '/', i2.2, ' ',    &
-            i2.2, ':', i2.2, ':', i2.2, ' GMT' )
- 20 FORMAT( i4.4, '/', i2.2, '/', i2.2, ' ',    &
-            i2.2, ':', i2.2, ':', i2.2         )
+ 10 FORMAT( i4.4, '/', i2.2, '/', i2.2, ' ',        &
+            i2.2, ':', i2.2, ':', i2.2, ' GMT', a5 )
+ 20 FORMAT( i4.4, '/', i2.2, '/', i2.2, ' ',        &
+            i2.2, ':', i2.2, ':', i2.2             )
 
   END FUNCTION TimeStampString
 !EOC

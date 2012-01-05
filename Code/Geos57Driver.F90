@@ -17,7 +17,7 @@ PROGRAM Geos57Driver
 !
 ! !USES:
 !
-!  USE Geos57A1Module
+  USE Geos57A1Module
 !  USE Geos57A3Module
   USE Geos57CnModule
   USE Geos57I3Module
@@ -40,14 +40,14 @@ PROGRAM Geos57Driver
   ! Create the constant data file
   IF ( doMakeCn ) CALL Geos57MakeCn
 
-!  ! Create the 1-hour average data file
-!  CALL Geos57MakeA1
+  ! Create the 1-hour average data file
+  CALL Geos57MakeA1
 !
 !  ! Create the 3-hour average data file
 !  CALL Geos57MakeA3
 !
 !  ! Create the 6-hour instantaneous data file
-  CALL Geos57MakeI3
+!  CALL Geos57MakeI3
 
   ! Cleanup and quit 
   CALL Geos57Cleanup

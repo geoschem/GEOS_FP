@@ -23,6 +23,7 @@
 # !REVISION HISTORY: 
 #  26 Oct 2011 - R. Yantosca - Initial version, based on MerraDriver.input
 #  03 Jan 2012 - R. Yantosca - Added fields for I3 output file
+#  05 Jan 2012 - R. Yantosca - Added fields for A1 output file
 #
 
 ==> Turn on debug print output?
@@ -39,19 +40,19 @@ PS,PV,QV,T
 
 ==> tavg1_2d_flx_Nx
 DAS.ops.asm.tavg1_2d_flx_Nx.GEOS572.YYYYMMDD_hhmm.V01.nc4
-none
+EFLUX,EVAP,FRSEAICE,HFLUX,PBLH,PRECANV,PRECCON,PRECLSC,PRECSNO,PRECTOT,USTAR,Z0M
 
 ==> tavg1_2d_lnd_Nx
 DAS.ops.asm.tavg1_2d_lnd_Nx.GEOS572.YYYYMMDD_hhmm.V01.nc4
-none
+FRSNO,GRN,GWETROOT,GWETTOP,LAI,PARDF,PARDR,SNODP,SNOMAS
 
 ==> tavg1_2d_rad_Nx
 DAS.ops.asm.tavg1_2d_rad_Nx.GEOS572.YYYYMMDD_hhmm.V01.nc4
-none
+ALBEDO,CLDTOT,LWGNT,LWTUP,SWGDN
 
 ==> tavg1_2d_slv_Nx
 DAS.ops.asm.tavg1_2d_slv_Nx.GEOS572.YYYYMMDD_hhmm.V01.nc4
-none
+QV2M,SLP,TROPPT,TS,T2M,U10M,V10M
 
 ==> tavg3_3d_cld_Nv
 DAS.ops.asm.tavg3_3d_cld_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
@@ -108,7 +109,6 @@ T
 GEOS572.YYYYMMDD.%%.4x5.nc
 T
 #/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/GEOS572.YYYYMMDD.%%.4x5.nc
-
 
 ==> Mapping Weight Files
 weights_025x03125_to_2x25.txt

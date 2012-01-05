@@ -162,7 +162,7 @@ CONTAINS
     CALL NcDef_Glob_Attributes( fOut, 'Filename',    TRIM( lName )   )
     
     ! History
-    sysTime = SystemTimeStampGmt()
+    sysTime = SystemTimeStamp()
     lName = 'File generated on: ' // TRIM( sysTime )
     CALL NcDef_Glob_Attributes( fOut, 'History' ,    TRIM( lName )   )
 
@@ -263,8 +263,8 @@ CONTAINS
     units   = UnitsForTime( 20110101 )
     delta_t = '0000-00-00 00:00:00'
     begin_d = '20110101'
-    begin_t = '0'
-    incr    = '0'
+    begin_t = '000000'
+    incr    = '000000'
     CALL NcDef_Variable      ( fOut, 'time', NF_INT,  1, var1, vId           )
     CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName   )  )
     CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units   )  ) 
@@ -467,6 +467,10 @@ CONTAINS
                           xMid_4x5,  yMid_4x5,  time,        &
                           gName,     fName,     fOut4x5     )
     ENDIF
+
+    !=======================================================================
+    ! Process data
+    !=======================================================================
 
     ! Regrid fields from the various raw data files
     CALL ProcessCn2dAsmNx( nFields,    fields,               &
