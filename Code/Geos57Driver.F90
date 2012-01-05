@@ -42,7 +42,8 @@ PROGRAM Geos57Driver
 
   ! Create the 1-hour average data file
   CALL Geos57MakeA1
-!
+
+! Comment out for testing
 !  ! Create the 3-hour average data file
 !  CALL Geos57MakeA3
 !

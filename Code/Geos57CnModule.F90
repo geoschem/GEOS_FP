@@ -203,7 +203,7 @@ CONTAINS
     CALL NcDef_Glob_Attributes( fOut, 'End_Time',    TRIM( lName )   )
 
     ! Delta-time
-    lName = '0'
+    lName = '000000'
     CALL NcDef_Glob_Attributes( fOut, 'Delta_time',  TRIM( lName )   )
 
     ! Pick DI and DJ attributes based on the grid

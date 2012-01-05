@@ -46,8 +46,8 @@ MODULE Geos57A1Module
 ! !PRIVATE MEMBER FUNCTIONS:
 !
   PRIVATE :: NcOutFileDef
-!  PRIVATE :: Process2dFlxNx
-!  PRIVATE :: Process2dLndNx
+  PRIVATE :: Process2dFlxNx
+  PRIVATE :: Process2dLndNx
 !  PRIVATE :: Process2dRadNx
 !  PRIVATE :: Process2dSlvNx
 !  PRIVATE :: Geos57SeaIceBins
@@ -59,8 +59,6 @@ MODULE Geos57A1Module
 !
 ! !PRIVATE TYPES:
 !
-  REAL*4, TARGET, ALLOCATABLE :: Q2x25  (:,:,:,:)     ! 2 x 2.5 output array
-  REAL*4, TARGET, ALLOCATABLE :: Q4x5   (:,:,:,:)     ! 4 x 5   output array
   REAL*4, TARGET, ALLOCATABLE :: Ice2x25(:,:,:,:)     ! 2 x 2.5 sea ice bins
   REAL*4, TARGET, ALLOCATABLE :: Ice4x5 (:,:,:,:)     ! 4 x 5   sea ice bins
   REAL*4, TARGET, ALLOCATABLE :: Lwi2x25(:,:,:  )     ! 2 x 2.5 land/water/ice
@@ -206,7 +204,7 @@ MODULE Geos57A1Module
     CALL NcDef_Glob_Attributes( fOut, 'End_Time',    TRIM( lName )   )
 
     ! Delta-time
-    lName = '10000'
+    lName = '010000'
     CALL NcDef_Glob_Attributes( fOut, 'Delta_time',  TRIM( lName )   )
 
     ! Pick DI and DJ attributes based on the grid
@@ -226,10 +224,10 @@ MODULE Geos57A1Module
     END SELECT
 
     ! Delta-lon
-    CALL NcDef_Glob_Attributes( fOut, 'Delta_lon',   TRIM( DI    ) )
+    CALL NcDef_Glob_Attributes( fOut, 'Delta_lon',   TRIM( DI    )   )
 
     ! Delta-lat
-    CALL NcDef_Glob_Attributes( fOut, 'Delta_lat',   TRIM( DJ    ) )
+    CALL NcDef_Glob_Attributes( fOut, 'Delta_lat',   TRIM( DJ    )   )
 
     !-------------------------------------------------------------------------
     ! Define dimensions and index arrays.  NOTE: COARDS specifies that index 
@@ -707,7 +705,7 @@ MODULE Geos57A1Module
     ENDIF
 
     ! SNOMAS
-    IF ( StrPos( '', tavg1_2d_lnd_Nx_Data ) >= 0 ) THEN
+    IF ( StrPos( 'SNOMAS', tavg1_2d_lnd_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
        vId   = vId + 1
        lName = 'Snow mass' 
@@ -778,7 +776,7 @@ MODULE Geos57A1Module
        lName = 'Temperature 2m above displacement height' 
        units = 'K'
        gamap = 'GMAO-2D'
-       CALL NcDef_Variable      ( fOut, 'SLV', NF_FLOAT, 3, var3, vId        )
+       CALL NcDef_Variable      ( fOut, 'T2M', NF_FLOAT, 3, var3, vId        )
        CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
@@ -944,20 +942,16 @@ MODULE Geos57A1Module
 
     ! Allocate module arrays on 2 x 2.5 grid
     IF ( do2x25 ) THEN 
-       ALLOCATE( Q2x25  ( I2x25, J2x25, TIMES_A1, nAllFields ) )
        ALLOCATE( Ice2x25( I2x25, J2x25, TIMES_A1, N_ICE      ) )
        ALLOCATE( Lwi2x25( I2x25, J2x25, TIMES_A1             ) )
-       Q2x25   = 0e0
        Ice2x25 = 0e0
        Lwi2x25 = 0e0
     ENDIF
 
     ! Allocate 4x5 module arrays
     IF ( do4x5 ) THEN
-       ALLOCATE( Q4x5  ( I4x5, J4x5, TIMES_A1, nAllFields ) )
        ALLOCATE( Ice4x5( I4x5, J4x5, TIMES_A1, N_ICE      ) ) 
        ALLOCATE( Lwi4x5( I4x5, J4x5, TIMES_A1             ) )
-       Q4x5   = 0e0
        Ice4x5 = 0e0
        Lwi4x5 = 0e0
     ENDIF
@@ -1004,9 +998,15 @@ MODULE Geos57A1Module
     !=======================================================================
     ! Process data
     !=======================================================================
-!    CALL Process2dFlxNx( nFields_2dFlxNx, fields_2dFlxNx, &
-!                         foffset )
-!    CALL Process2dLndNx( nFields_2dLndNx, fields_2dLndNx, offset )
+
+    ! Data from "tavg1_2d_flx_Nx"
+    CALL Process2dFlxNx( nFields_2dFlxNx, fields_2dFlxNx,          &
+                         fOutNestCh,      fOut2x25,       fOut4x5 )
+
+    ! Data from "tavg1_2d_lnd_Nx"
+    CALL Process2dLndNx( nFields_2dLndNx, fields_2dLndNx,          &
+                         fOutNestCh,      fOut2x25,       fOut4x5 )
+
 !    CALL Process2dRadNx( nFields_2dRadNx, fields_2dRadNx, offset )
 !    CALL Process2dSlvNx( nFields_2dSlvNx, fields_2dSlvNx, offset )
     
@@ -1029,156 +1029,167 @@ MODULE Geos57A1Module
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
   END SUBROUTINE Geos57MakeA1
-!!EOC
-!!------------------------------------------------------------------------------
-!!          Harvard University Atmospheric Chemistry Modeling Group            !
-!!------------------------------------------------------------------------------
-!!BOP
-!!
-!! !IROUTINE: Process2dFlxNx
-!!
-!! !DESCRIPTION: Subroutine Process2dFlxFx regrids the MERRA met fields from 
-!!  the "tavg1\_2d\_flx\_Nx" file and saves to the GEOS-Chem file format.
-!!\\
-!!\\
-!! !INTERFACE:
-!!
-!  SUBROUTINE Process2dFlxNx( nFields, fields, offset )
-!!
-!! !INPUT PARAMETERS:
-!!
-!    INTEGER,          INTENT(IN)    :: nFields     ! # of fields to process
-!    CHARACTER(LEN=*), INTENT(IN)    :: fields(:)   ! List of field names
-!!
-!! !INPUT/OUTPUT PARAMETERS:
-!!
-!    INTEGER,          INTENT(INOUT) :: offset      ! Offset for output arrays
-!!
-!! !REVISION HISTORY: 
-!!  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A3Module.F90
-!!  12 Aug 2010 - R. Yantosca - Now use separate arrays for archiving PRECTOT
-!!  17 Aug 2010 - R. Yantosca - Now call FracSeaIceBins to compute binned
-!!                              fractional sea ice fields
-!!EOP
-!!------------------------------------------------------------------------------
-!!BOC
-!!
-!! !LOCAL VARIABLES:
-!!
-!    ! Scalars
-!    INTEGER                 :: T, F
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
 !
-!    ! Arrays
-!    REAL*4, TARGET          :: Q     (I05x0666,J05x0666,TIMES_A1)
-!    REAL*4                  :: PrcAnv(I05x0666,J05x0666,TIMES_A1)
-!    REAL*4                  :: PrcCon(I05x0666,J05x0666,TIMES_A1)
-!    REAL*4                  :: PrcLsc(I05x0666,J05x0666,TIMES_A1)
+! !IROUTINE: Process2dFlxNx
 !
-!    ! Pointer arrays
-!    REAL*4, POINTER         :: ptr_05x0666(:,:)
-!    REAL*4, POINTER         :: ptr_2x25   (:,:)
-!    REAL*4, POINTER         :: ptr_4x5    (:,:)
+! !DESCRIPTION: Subroutine Process2dFlxFx regrids the MERRA met fields from 
+!  the "tavg1\_2d\_flx\_Nx" file and saves to the GEOS-Chem file format.
+!\\
+!\\
+! !INTERFACE:
 !
-!     ! Character strings and arrays
-!    CHARACTER(LEN=8       ) :: name
-!    CHARACTER(LEN=MAX_CHAR) :: fileHDF
-!    CHARACTER(LEN=MAX_CHAR) :: fileName
-!    CHARACTER(LEN=MAX_CHAR) :: file2x25
-!    CHARACTER(LEN=MAX_CHAR) :: file4x5
-!    CHARACTER(LEN=MAX_CHAR) :: msg
+  SUBROUTINE Process2dFlxNx( nFields,    fields,            &
+                             fOutNestCh, fOut2x25, fOut4x5 )
 !
-!    !=======================================================================
-!    ! Initialization
-!    !=======================================================================
+! !INPUT PARAMETERS:
 !
-!    ! Zero all pointers
-!    NULLIFY( ptr_05x0666, ptr_2x25, ptr_4x5 )
+    INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
+    CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
+    INTEGER,          INTENT(IN) :: fOutNestCh  ! NestCh  netCDF file ID
+    INTEGER,          INTENT(IN) :: fOut2x25    ! 2 x 2.5 netCDF file ID
+    INTEGER,          INTENT(IN) :: fOut4x5     ! 4 x 5   netCDF file ID
 !
-!    ! Echo info    
-!    msg = '%%%%%% ENTERING ROUTINE Process2dFlxNx %%%%%%'
-!    WRITE( IU_LOG, '(a)' ) '%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+! !REVISION HISTORY: 
+!  05 Jan 2012 - R. Yantosca - Initial version, based on Geos57CnModule.F90
+!EOP
+!------------------------------------------------------------------------------
+!BOC
 !
-!    ! Create filename from the template
-!    fileHDF = TRIM( dataDirHDF ) // TRIM( tavg1_2d_flx_Nx_file )
-!    CALL expandDate( fileHDF, yyyymmdd, 000000 )
+! !LOCAL VARIABLES:
 !
-!    ! Echo info
-!    msg = '%%% Reading ' // TRIM( fileHDF )
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!    ! Open the HDF4-EOS file for input
-!    CALL He4SetVerbose( VERBOSE )
-!    CALL He4GridOpen( fileHDF )
-!    CALL He4GridGetDimInfo
-!    CALL He4GridReadX
-!    CALL He4GridReadY
-!    CALL He4GetNymdNhms
-!
-!    !=======================================================================
-!    ! Process data
-!    !=======================================================================
-!
-!    ! Loop over data fields
-!    DO F = 1, nFields
-!
-!       ! Save field name into an 8-char variable. 
-!       ! This will truncate field names longer than 8 chars.
-!       name = TRIM( fields(F) )
-!
-!       ! Skip if the fieldname is empty
-!       IF ( name == '' .or. name == 'PS' ) CYCLE
-!
-!       !--------------------------------
-!       ! Read data from HDF-EOS file
-!       !--------------------------------
-!       IF ( name == 'PRECTOT' ) THEN
-!
-!          ! PRECTOT isn't read from disk, but instead is the sum of the 
-!          ! PRECANV + PRECCON + PRECLSC fields, which are archived below
-!          ! We assume that PRECANV, PRECCON, PRECLSC are all read from
-!          ! disk first (i.e. put PRECTOT in the data list after all three
-!          ! of these fields).
-!          msg = '%%% Regridding   ' // name
-!          WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!          Q  = PrcAnv + PrcCon + PrcLsc
-!
-!       ELSE 
-!
-!          ! Zero data aray
-!          Q = 0e0
-!          
-!          ! Read data from HDF file
-!          msg = '%%% Reading      ' // name
-!          WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!          CALL He4GridReadData( name, Q )
-!
-!          ! Replace fill values with zeroes
-!          WHERE( Q == FILL_VALUE ) Q = 0e0
-!    
-!          !-----------------------------
-!          ! Pre-regrid handling
-!          !-----------------------------
-!          SELECT CASE( name )
-!
-!             CASE( 'PRECANV' )
-!                msg = '%%% Constructing PRECTOT from ' // name
-!                WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!                PrcAnv = Q
-!
-!             CASE( 'PRECCON' )
-!                msg = '%%% Constructing PRECTOT from ' // name
-!                WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!                PrcCon = Q
-!
-!             CASE( 'PRECLSC' )
-!                msg = '%%% Constructing PRECTOT from ' // name
-!                WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!                PrcLsc = Q
-!
-!             CASE( 'FRSEAICE' )
-!                msg = '%%% Computing fractional sea ice coverage and LWI flags'
-!                WRITE( IU_LOG, '(a)' ) TRIM( msg )
+    ! Loop and time variables
+    INTEGER                 :: H,        F,        hhmmss
+
+    ! Variables for netCDF I/O
+    INTEGER                 :: X,        Y,        T
+    INTEGER                 :: XNestCh,  YNestCh,  TNestCh
+    INTEGER                 :: X2x25,    Y2x25,    T2x25
+    INTEGER                 :: X4x5,     Y4x5,     T4x5
+    INTEGER                 :: ct3d(3),  st3d(3)
+
+    ! Data arrays
+    REAL*4, TARGET          :: Q    ( I025x03125, J025x03125 )
+    REAL*4                  :: Q2x25( I2x25,      J2x25      )
+    REAL*4                  :: Q4x5 ( I4x5,       J4x5       )
+
+    ! Pointers
+    REAL*4, POINTER         :: ptr(:,:)
+
+     ! Character strings and arrays
+    CHARACTER(LEN=8       ) :: name
+    CHARACTER(LEN=MAX_CHAR) :: fNameInput
+    CHARACTER(LEN=MAX_CHAR) :: msg
+
+    !=======================================================================
+    ! Get dimensions from output files
+    !=======================================================================
+
+    ! Echo info    
+    msg = '%%%%%% ENTERING ROUTINE Process2dFlxNx %%%%%%'
+    WRITE( IU_LOG, '(a)' ) '%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+    ! Nested China grid
+    IF ( doNestCh ) THEN
+       CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
+       CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
+       CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! 2 x 2.5 global grid       
+    IF ( do2x25 ) THEN
+       CALL NcGet_DimLen( fOut2x25,   'lon',  X2x25   )
+       CALL NcGet_DimLen( fOut2x25,   'lat',  Y2x25   ) 
+       CALL NcGet_DimLen( fOut2x25,   'time', T2x25   )
+    ENDIF
+
+    ! 4x5 global grid
+    IF ( do4x5 ) THEN
+       CALL NcGet_DimLen( fOut4x5,    'lon',  X4x5    )
+       CALL NcGet_DimLen( fOut4x5,    'lat',  Y4x5    )   
+       CALL NcGet_DimLen( fOut4x5,    'time', T4x5    )
+    ENDIF
+
+    !=======================================================================
+    ! Open input file
+    !=======================================================================
+
+    ! Loop over the number of files per day
+    DO H = 1, TIMES_A1
+
+       ! GMT time of day (hh:mm:ss)
+       hhmmss = ( a1Mins(H) / 60 ) * 10000 + 3000
+       
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%% KLUDGE FOR DEBUGGING -- Sample data is only up to hour 20:30:00
+       if ( hhmmss > 210000 ) CYCLE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+       ! Create input filename from the template
+       fNameInput = TRIM( inputDataDir ) // TRIM( tavg1_2d_flx_Nx_file )
+       CALL expandDate( fNameInput, yyyymmdd, hhmmss )
+
+       ! Echo info
+       msg = '%%% Reading ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+       ! Open the netCDF4 file for input
+       CALL NcOp_Rd( fIn, TRIM( fNameInput ) )
+       
+       ! Get the dimensions from the netCDF file
+       CALL NcGet_DimLen( fIn, 'lon',  X )
+       CALL NcGet_DimLen( fIn, 'lat',  Y ) 
+       CALL NcGet_DimLen( fIn, 'time', T )
+
+       !====================================================================
+       ! Process data
+       !====================================================================
+
+       ! Loop over data fields
+       DO F = 1, nFields
+
+          ! Save field name into an 8-char variable. 
+          ! This will truncate field names longer than 8 chars.
+          name = TRIM( fields(F) )
+
+          ! Skip if the fieldname is empty
+          IF ( name == '' .or. name == 'PS' ) CYCLE
+
+          ! Zero data arrays
+          Q     = 0e0
+          Q2x25 = 0e0
+          Q4x5  = 0e0
+          
+          !-----------------------------
+          ! Read data
+          !-----------------------------
+          msg = '%%% Reading     ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+          ! Start and count index arrays for netCDF
+          ! (There is only one data block per file)
+          st3d  = (/ 1, 1, 1 /)
+          ct3d  = (/ X, Y, 1 /)
+
+          ! Read data from file
+          CALL NcRd( Q, fIn, TRIM( name ), st3d, ct3d )
+          
+          ! Replace missing values with zeroes
+          WHERE( Q == FILL_VALUE ) Q = 0e0
+          
+          !-----------------------------
+          ! Pre-regrid handling
+          !-----------------------------
+          IF ( name == 'FRSEAICE' ) THEN
+
+             ! Echo info
+             msg = '%%% Computing fractional sea ice coverage and LWI flags'
+             WRITE( IU_LOG, '(a)' ) TRIM( msg )
 !
 !                IF ( do2x25 ) THEN 
 !
@@ -1199,267 +1210,302 @@ MODULE Geos57A1Module
 !                   CALL Geos57SeaIceBins( Q,       BINSIZE, mapNxTo4x5,   &
 !                                         Ice4x5,  I4x5,    J4x5         )
 !                ENDIF
+          ENDIF
+             
+          !--------------------------------
+          ! Regrid to 2 x 2.5 &  4 x 5
+          !--------------------------------
+          msg = '%%% Regridding  ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+          
+          ! Do the regridding
+          IF ( do2x25 ) CALL RegridGeos57To2x25( 0, Q, Q2x25 )
+          IF ( do4x5  ) CALL RegridGeos57To4x5 ( 0, Q, Q4x5  )
+
+          !-----------------------------
+          ! Post-regrid handling
+          !-----------------------------
+          SELECT CASE( name )
+             CASE( 'PRECANV', 'PRECCON', 'PRECLSC', 'PRECTOT', 'USTAR' )
+                ! These fields are always positive-definite
+                IF ( do2x25 ) WHERE( Q2x25 < 0e0 ) Q2x25 = 0e0
+                IF ( do4x5  ) WHERE( Q4x5  < 0e0 ) Q4x5  = 0e0
+             CASE DEFAULT
+                ! Do Nothing
+          END SELECT
+
+          !-----------------------------
+          ! Write netCDF output
+          !-----------------------------
+          msg = '%%% Archiving   ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+          
+          ! Nested China (point to proper slice of global data)
+          IF ( doNestCh ) THEN
+             Ptr  => Q( I0_ch:I1_ch, J0_ch:J1_ch )
+             st3d = (/ 1,       1,       H /)
+             ct3d = (/ XNestCh, YNestCh, 1 /)
+             CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st3d, ct3d )
+          ENDIF
+          
+          ! Write 2 x 2.5 data
+          IF ( do2x25 ) THEN
+             st3d = (/ 1,     1,     H  /)
+             ct3d = (/ X2x25, Y2x25, 1  /)
+             CALL NcWr( Q2x25, fOut2x25, TRIM( name ), st3d, ct3d )
+          ENDIF
+          
+          ! Write 4x5 data
+          IF ( do4x5 ) THEN
+             st3d = (/ 1,    1,    H /)
+             ct3d = (/ X4x5, Y4x5, 1 /)
+             CALL NcWr( Q4x5, fOut4x5, TRIM( name ), st3d, ct3d )
+          ENDIF
+
+       ENDDO
+    ENDDO
+
+    !=======================================================================
+    ! Cleanup & quit
+    !=======================================================================
+
+    ! Close input file
+    msg = '%%% Closing ' // TRIM( fNameInput )
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+    CALL NcCl( fIn )          
+  
+    msg = '%%%%%% LEAVING ROUTINE Process2dFlxNx %%%%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+  END SUBROUTINE Process2dFlxNx
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
 !
-!             CASE DEFAULT
-!                ! Do Nothing
-!          END SELECT
-!       ENDIF
+! !IROUTINE: Process2dLndNx
 !
-!       !--------------------------------
-!       ! Regrid to 2 x 2.5 &  4 x 5
-!       !--------------------------------
-!       msg = '%%% Regridding   ' // name
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+! !DESCRIPTION: Subroutine Process2dLndFx regrids the MERRA met fields from 
+!  the "tavg1\_2d\_lnd\_Nx" file and saves to the GEOS-Chem file format.
+!\\
+!\\
+! !INTERFACE:
 !
-!       ! Loop over the A1 times
-!       !$OMP PARALLEL DO                                 &
-!       !$OMP DEFAULT( SHARED )                           &
-!       !$OMP PRIVATE( T, ptr_05x0666, ptr_2x25, ptr_4x5 )
-!       DO T = 1, TIMES_A1
+  SUBROUTINE Process2dLndNx( nFields,    fields,            &
+                             fOutNestCh, fOut2x25, fOut4x5 )
 !
-!          !-----------------------------
-!          ! Do the regridding!
-!          !-----------------------------
+! !INPUT PARAMETERS:
 !
-!          ! Point to time-slice of native data array
-!          ptr_05x0666 => Q(:,:,T)
+    INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
+    CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
+    INTEGER,          INTENT(IN) :: fOutNestCh  ! NestCh  netCDF file ID
+    INTEGER,          INTENT(IN) :: fOut2x25    ! 2 x 2.5 netCDF file ID
+    INTEGER,          INTENT(IN) :: fOut4x5     ! 4 x 5   netCDF file ID
 !
-!          ! Regrid to 2 x 2.5
-!          IF ( do2x25 ) THEN
-!             ptr_2x25 => Q2x25(:,:,T,F+offset)
-!             CALL RegridGeos57NTo2x25( 0, ptr_05x0666, ptr_2x25 )
-!          ENDIF
+! !REVISION HISTORY: 
+!  05 Jan 2012 - R. Yantosca - Initial version, based on Geos57CnModule.F90
+!EOP
+!------------------------------------------------------------------------------
+!BOC
 !
-!          ! Regrid to 4x5 
-!          IF ( do4x5 ) THEN
-!             ptr_4x5 => Q4x5(:,:,T,F+offset)
-!             CALL RegridGeos57NTo4x5( 0, ptr_05x0666, ptr_4x5 )
-!          ENDIF
+! !LOCAL VARIABLES:
 !
-!          !-----------------------------
-!          ! Post-regrid handling
-!          !-----------------------------
-!          SELECT CASE( name )
-!
-!             ! These fields are always positive-definite
-!             CASE( 'PRECANV', 'PRECCON', 'PRECLSC', 'PRECTOT', 'USTAR' )
-!                IF ( do2x25 ) WHERE( ptr_2x25 < 0e0 ) ptr_2x25 = 0e0
-!                IF ( do4x5  ) WHERE( ptr_4x5  < 0e0 ) ptr_4x5  = 0e0
-!             CASE DEFAULT
-!                ! Do Nothing
-!          END SELECT
-!       ENDDO
-!       !!$OMP END PARALLEL DO
-!    ENDDO
-!          
-!    !=======================================================================
-!    ! Cleanup & quit
-!    !=======================================================================
-!
-!    ! Increment offset for next routine
-!    offset = offset + nFields
-!
-!    ! Nullify all pointers
-!    NULLIFY( ptr_05x0666, ptr_2x25, ptr_4x5 )
-!
-!    ! Detach from grid and close HDF file
-!    msg = '%%% Closing ' // TRIM( fileHDF )
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!    CALL He4GridClose( fileHDF )
-!    CALL He4CleanUpIndexFields
-!  
-!    msg = '%%%%%% LEAVING ROUTINE Process2dFlxNx %%%%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!  END SUBROUTINE Process2dFlxNx
-!!EOC
-!!------------------------------------------------------------------------------
-!!          Harvard University Atmospheric Chemistry Modeling Group            !
-!!------------------------------------------------------------------------------
-!!BOP
-!!
-!! !IROUTINE: Process2dLndNx
-!!
-!! !DESCRIPTION: Subroutine Process2dLndFx regrids the MERRA met fields from 
-!!  the "tavg1\_2d\_lnd\_Nx" file and saves to the GEOS-Chem file format.
-!!\\
-!!\\
-!! !INTERFACE:
-!!
-!  SUBROUTINE Process2dLndNx( nFields, fields, offset )
-!!
-!! !INPUT PARAMETERS:
-!!
-!    INTEGER,          INTENT(IN)    :: nFields     ! # of fields to process
-!    CHARACTER(LEN=*), INTENT(IN)    :: fields(:)   ! List of field names
-!!
-!! !INPUT/OUTPUT PARAMETERS:
-!!
-!    INTEGER,          INTENT(INOUT) :: offset      ! Offset for output arrays
-!!
-!! !REVISION HISTORY: 
-!!  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A3Module.F90
-!!  25 Aug 2010 - R. Yantosca - Now call Geos57AdjustSnomas to restore missing
-!!                              SNOMAS data over the poles.  Use FRLANDICE
-!!                              as a proxy for where to add the default values.
-!!EOP
-!!------------------------------------------------------------------------------
-!!BOC
-!!
-!! !LOCAL VARIABLES:
-!!
-!    ! Scalars
-!    INTEGER                 :: T, F
-!
-!    ! Arrays
-!    REAL*4, TARGET          :: Q(I05x0666,J05x0666,TIMES_A1)
-!
-!    ! Pointer arrays
-!    REAL*4, POINTER         :: ptr_05x0666(:,:)
-!    REAL*4, POINTER         :: ptr_2x25   (:,:)
-!    REAL*4, POINTER         :: ptr_4x5    (:,:)
-!
-!     ! Character strings and arrays
-!    CHARACTER(LEN=8       ) :: name
-!    CHARACTER(LEN=MAX_CHAR) :: fileHDF
-!    CHARACTER(LEN=MAX_CHAR) :: fileName
-!    CHARACTER(LEN=MAX_CHAR) :: file2x25
-!    CHARACTER(LEN=MAX_CHAR) :: file4x5
-!    CHARACTER(LEN=MAX_CHAR) :: msg
-!
-!    !=======================================================================
-!    ! Initialization
-!    !=======================================================================
-!
-!    ! Zero all pointers
-!    NULLIFY( ptr_05x0666, ptr_2x25, ptr_4x5 )
-!
-!    ! Echo info    
-!    msg = '%%%%%% ENTERING ROUTINE Process2dLndNx %%%%%%'
-!    WRITE( IU_LOG, '(a)' ) '%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!    ! Create filename from the template
-!    fileHDF = TRIM( dataDirHDF ) // TRIM( tavg1_2d_lnd_Nx_file )
-!    CALL expandDate( fileHDF, yyyymmdd, 000000 )
-!
-!    ! Echo info
-!    msg = '%%% Reading ' // TRIM( fileHDF )
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!    ! Open the HDF4-EOS file for input
-!    CALL He4SetVerbose( VERBOSE )
-!    CALL He4GridOpen( fileHDF )
-!    CALL He4GridGetDimInfo
-!    CALL He4GridReadX
-!    CALL He4GridReadY
-!    CALL He4GetNymdNhms
-!
-!    !=======================================================================
-!    ! Process data
-!    !=======================================================================
-!
-!    ! Loop over data fields
-!    DO F = 1, nFields
-!
-!       ! Save field name into an 8-char variable. 
-!       ! This will truncate field names longer than 8 chars.
-!       name = TRIM( fields(F) )
-!
-!       ! Skip if the fieldname is empty
-!       IF ( name == '' ) CYCLE
-!
-!       !-----------------------------------
-!       ! Read data 
-!       !-----------------------------------
-!
-!       ! Zero data array
-!       Q = 0e0
-!
-!       ! Read data from HDF-EOS
-!       msg = '%%% Reading    ' // name
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!       CALL He4GridReadData( name, Q )
-!
-!       ! Remove fill values
-!       WHERE( Q == FILL_VALUE ) Q = 0e0
-!
-!       !-----------------------------------
-!       ! Regrid data to 2 x 2.5 & 4 x 5
-!       !-----------------------------------
-!       msg = '%%% Regridding ' // name
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!       ! Loop over # of A-3 times
-!       !$OMP PARALLEL DO                                 &
-!       !$OMP DEFAULT( SHARED )                           &
-!       !$OMP PRIVATE( T, ptr_05x0666, ptr_2x25, ptr_4x5 )
-!       DO T = 1, TIMES_A1
-!
-!          ! Point to time-slice of native data array
-!          ptr_05x0666 => Q(:,:,T)
-!
-!          !-----------------------------
-!          ! Pre-regrid handling
-!          !-----------------------------
-!          IF ( name == 'SNOMAS' ) THEN
-!             CALL Geos57AdjustSnomas( ptr_05x0666 )  ! Restore data over poles
-!          ENDIF
-!         
-!          !-----------------------------
-!          ! Do the regridding!
-!          !-----------------------------
-!
-!          ! Regrid to 2 x 2.5
-!          IF ( do2x25 ) THEN
-!             ptr_2x25 => Q2x25(:,:,T,F+offset)
-!             CALL RegridGeos57NTo2x25( 0, ptr_05x0666, ptr_2x25 )
-!          ENDIF
-!
-!          ! Regrid to 4x5 
-!          IF ( do4x5 ) THEN
-!             ptr_4x5 => Q4x5(:,:,T,F+offset)
-!             CALL RegridGeos57NTo4x5( 0, ptr_05x0666, ptr_4x5 )
-!          ENDIF
-! 
-!          !-----------------------------
-!          ! Post-regrid handling
-!          !-----------------------------
-!          SELECT CASE( name )
-!             ! These fields are always positive-definite
-!             CASE( 'FRSNO', 'GRN',   'GWETROOT', 'GWETTOP', 'LAI',   &
-!                   'PARDF', 'PARDR', 'PRECSNO',  'SNOMAS',  'SNODP' )
-!                IF ( do2x25 ) WHERE( ptr_2x25 < 0e0 ) ptr_2x25 = 0e0
-!                IF ( do4x5  ) WHERE( ptr_4x5  < 0e0 ) ptr_4x5  = 0e0
-!             CASE DEFAULT
-!                ! Nothing
-!          END SELECT
-!       ENDDO
-!       !$OMP END PARALLEL DO
-!    ENDDO
-!
-!    !=======================================================================
-!    ! Cleanup & quit
-!    !=======================================================================
-!
-!    ! Increment offset
-!    offset = offset + nFields
-!
-!    ! Nullify all pointers
-!    NULLIFY( ptr_05x0666, ptr_2x25, ptr_4x5 )
-!
-!    ! Detach from grid and close HDF file
-!    msg = '%%% Closing ' // TRIM( fileHDF )
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!    CALL He4GridClose( fileHDF )
-!    CALL He4CleanUpIndexFields
-!
-!    ! Echo info    
-!    msg = '%%%%%% LEAVING ROUTINE Process2dLndNx %%%%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!  END SUBROUTINE Process2dLndNx
-!!EOC
+    ! Loop and time variables
+    INTEGER                 :: H,        F,        hhmmss
+
+    ! Variables for netCDF I/O
+    INTEGER                 :: X,        Y,        T
+    INTEGER                 :: XNestCh,  YNestCh,  TNestCh
+    INTEGER                 :: X2x25,    Y2x25,    T2x25
+    INTEGER                 :: X4x5,     Y4x5,     T4x5
+    INTEGER                 :: ct3d(3),  st3d(3)
+
+    ! Data arrays
+    REAL*4, TARGET          :: Q    ( I025x03125, J025x03125 )
+    REAL*4                  :: Q2x25( I2x25,      J2x25      )
+    REAL*4                  :: Q4x5 ( I4x5,       J4x5       )
+
+    ! Pointers
+    REAL*4, POINTER         :: ptr(:,:)
+
+     ! Character strings and arrays
+    CHARACTER(LEN=8       ) :: name
+    CHARACTER(LEN=MAX_CHAR) :: fNameInput
+    CHARACTER(LEN=MAX_CHAR) :: msg
+
+    !=======================================================================
+    ! Get dimensions from output files
+    !=======================================================================
+
+    ! Echo info    
+    msg = '%%%%%% ENTERING ROUTINE Process2dFlxNx %%%%%%'
+    WRITE( IU_LOG, '(a)' ) '%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+    ! Nested China grid
+    IF ( doNestCh ) THEN
+       CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
+       CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
+       CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! 2 x 2.5 global grid       
+    IF ( do2x25 ) THEN
+       CALL NcGet_DimLen( fOut2x25,   'lon',  X2x25   )
+       CALL NcGet_DimLen( fOut2x25,   'lat',  Y2x25   ) 
+       CALL NcGet_DimLen( fOut2x25,   'time', T2x25   )
+    ENDIF
+
+    ! 4x5 global grid
+    IF ( do4x5 ) THEN
+       CALL NcGet_DimLen( fOut4x5,    'lon',  X4x5    )
+       CALL NcGet_DimLen( fOut4x5,    'lat',  Y4x5    )   
+       CALL NcGet_DimLen( fOut4x5,    'time', T4x5    )
+    ENDIF
+
+    !=======================================================================
+    ! Open input file
+    !=======================================================================
+
+    ! Loop over the number of files per day
+    DO H = 1, TIMES_A1
+
+       ! GMT time of day (hh:mm:ss)
+       hhmmss = ( a1Mins(H) / 60 ) * 10000 + 3000
+       
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%% KLUDGE FOR DEBUGGING -- Sample data is only up to hour 20:30:00
+       if ( hhmmss > 210000 ) CYCLE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+       ! Create input filename from the template
+       fNameInput = TRIM( inputDataDir ) // TRIM( tavg1_2d_lnd_Nx_file )
+       CALL expandDate( fNameInput, yyyymmdd, hhmmss )
+
+       ! Echo info
+       msg = '%%% Reading ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+       ! Open the netCDF4 file for input
+       CALL NcOp_Rd( fIn, TRIM( fNameInput ) )
+       
+       ! Get the dimensions from the netCDF file
+       CALL NcGet_DimLen( fIn, 'lon',  X )
+       CALL NcGet_DimLen( fIn, 'lat',  Y ) 
+       CALL NcGet_DimLen( fIn, 'time', T )
+
+       !====================================================================
+       ! Process data
+       !====================================================================
+
+       ! Loop over data fields
+       DO F = 1, nFields
+
+          ! Save field name into an 8-char variable. 
+          ! This will truncate field names longer than 8 chars.
+          name = TRIM( fields(F) )
+
+          ! Skip if the fieldname is empty
+          IF ( name == '' ) CYCLE
+
+          ! Zero data arrays
+          Q     = 0e0
+          Q2x25 = 0e0
+          Q4x5  = 0e0
+
+          !-----------------------------
+          ! Read data
+          !-----------------------------
+          msg = '%%% Reading     ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+          ! Start and count index arrays for netCDF
+          ! (There is only one data block per file)
+          st3d  = (/ 1, 1, 1 /)
+          ct3d  = (/ X, Y, 1 /)
+
+          ! Read data from file
+          CALL NcRd( Q, fIn, TRIM( name ), st3d, ct3d )
+          
+          ! Replace missing values with zeroes
+          WHERE( Q == FILL_VALUE ) Q = 0e0
+
+          !-----------------------------
+          ! Pre-regrid handling
+          !-----------------------------
+
+          ! Adjust SNOMAS to be consistent w/ GEOS-Chem usage
+          IF ( name == 'SNOMAS' ) CALL Geos57AdjustSnomas( Q )  
+
+          !-----------------------------
+          ! Do the regridding!
+          !-----------------------------
+          msg = '%%% Regridding  ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+          ! Regrid to global grids
+          IF ( do2x25 ) CALL RegridGeos57To2x25( 0, Q, Q2x25 )
+          IF ( do4x5  ) CALL RegridGeos57To4x5 ( 0, Q, Q4x5  )
+ 
+          !-----------------------------
+          ! Post-regrid handling
+          !-----------------------------
+          SELECT CASE( name )
+             CASE( 'FRSNO', 'GRN',   'GWETROOT', 'GWETTOP', 'LAI',  &
+                   'PARDF', 'PARDR', 'SNODP',    'SNOMAS'          )
+                ! These fields are always positive-definite
+                IF ( do2x25 ) WHERE( Q2x25 < 0e0 ) Q2x25 = 0e0
+                IF ( do4x5  ) WHERE( Q4x5  < 0e0 ) Q4x5  = 0e0
+             CASE DEFAULT
+                ! Nothing
+          END SELECT
+
+          !-----------------------------
+          ! Write netCDF output
+          !-----------------------------
+          msg = '%%% Archiving   ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+          
+          ! Nested China (point to proper slice of global data)
+          IF ( doNestCh ) THEN
+             Ptr  => Q( I0_ch:I1_ch, J0_ch:J1_ch )
+             st3d = (/ 1,       1,       H /)
+             ct3d = (/ XNestCh, YNestCh, 1 /)
+             CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st3d, ct3d )
+          ENDIF
+          
+          ! Write 2 x 2.5 data
+          IF ( do2x25 ) THEN
+             st3d = (/ 1,     1,     H  /)
+             ct3d = (/ X2x25, Y2x25, 1  /)
+             CALL NcWr( Q2x25, fOut2x25, TRIM( name ), st3d, ct3d )
+          ENDIF
+          
+          ! Write 4x5 data
+          IF ( do4x5 ) THEN
+             st3d = (/ 1,    1,    H /)
+             ct3d = (/ X4x5, Y4x5, 1 /)
+             CALL NcWr( Q4x5, fOut4x5, TRIM( name ), st3d, ct3d )
+          ENDIF
+       ENDDO
+    ENDDO
+
+    !=======================================================================
+    ! Cleanup & quit
+    !=======================================================================
+
+    ! Close input file
+    msg = '%%% Closing ' // TRIM( fNameInput )
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+    CALL NcCl( fIn )          
+
+    ! Echo info    
+    msg = '%%%%%% LEAVING ROUTINE Process2dLndNx %%%%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+  END SUBROUTINE Process2dLndNx
+!EOC
 !!------------------------------------------------------------------------------
 !!          Harvard University Atmospheric Chemistry Modeling Group            !
 !!------------------------------------------------------------------------------
@@ -2164,122 +2210,122 @@ MODULE Geos57A1Module
 !    ENDDO
 !
 !  END SUBROUTINE Geos57RegridLwi
-!!EOC
-!!------------------------------------------------------------------------------
-!!          Harvard University Atmospheric Chemistry Modeling Group            !
-!!------------------------------------------------------------------------------
-!!BOP
-!!
-!! !IROUTINE: Geos57AdjustSnomas
-!!
-!! !DESCRIPTION: Routine Geos57AdjustSnomas will adjust the MERRA SNOMAS field
-!!  to make it more similar to the GEOS-5 SNOMAS field.  This is necessary for
-!!  backward compatibility with existing GEOS-Chem routines.
-!!\\
-!!\\
-!! !INTERFACE:
-!!
-!  SUBROUTINE Geos57AdjustSnomas( Q )
-!!
-!! !INPUT/OUTPUT PARAMETERS:
-!!
-!    REAL*4, INTENT(INOUT) :: Q(I05x0666,J05x0666)  ! MERRA SNOMAS data [kg/m2]
-!!
-!! !REMARKS:
-!!  The SNOMAS field in MERRA differs from that in the GEOS-5 ops data:
-!!                                                                             .
-!!  From the GEOS-5 File Specification Document:
-!!                                                                             .
-!!     SNOMAS: The mass of snow in per unit of land area in meters of 
-!!     liquid-water-equivalent depth (i.e., 10^3 kg/m2). In grid boxes 
-!!     with no land (FRLAND+FRLANDICE=0) it is set to _FillValue (= 1e15). 
-!!     Where FRLANDICE>0.9 it is arbitrarily set to 4 meters. Over other 
-!!     land areas it represents an average over the non-glaciated part.
-!!                                                                             .
-!!  From the MERRA File Specification Document:
-!!                                                                             .
-!!     SNOMAS: The mass of snow per unit of ice-free land area (FRLAND), 
-!!     in kg/m2. In grid boxes with no land it is set to _FillValue (=1e15). 
-!!     Over other land areas it represents an average over the nonglaciated
-!!     part.
-!!                                                                             .
-!!  Max Suarez (Max.J.Suarez@nasa.gov) clarifies this difference:
-!!                                                                             .
-!!     Early versions of GEOS had been writing SNOMAS in meters.  This was 
-!!     changed to mm (or kg/m^2) in  all recent versions, including 5_2, 
-!!     MERRA, and the current development tags.  But the forward processing 
-!!     spec was not updated. The MERRA spec, however, is correct.
-!!                                                                             .
-!!     To further complicate matters, the variable called SNOMAS in MERRA 
-!!     comes from a very different part of the code that in 5_x.  It is 
-!!     in a land collection intended to have representative values over 
-!!     the ice-free land portion of the grid box.  This applies to all 
-!!     variables in that collection.  SNOMAS in particular makes this 
-!!     clear in the glossary definition in the spec.
-!!                                                                             .
-!!     Forward processing (FP) puts out a grid averaged SNOMAS, including
-!!     ice-covered areas, where the "SNOMAS" was arbitrarily set to 4000 mm. 
-!!     Neither FP nor MERRA includes ocean or freshwater regions with snow 
-!!     over ice.
-!!                                                                             .
-!!     To answer your question, to convert MERRA SNOMAS to 5.2 SNOMAS,
-!!     use this equation:
-!!                                                                             .
-!!     SNOMAS_5.X = ( SNOMAS_merra * FRLAND_merra + 
-!!                    4000         * FRLANDICE_merra ) /
-!!                  ( FRLAND_merra + FRLANDICE_merra )
-!!                                                                             .
-!!     Sorry about the confusion, but it seemed silly in MERRA to continue
-!!     writing an invented value over glaciers. The next FP system will be
-!!     like MERRA in this regard.  In the longer term, we plan to have a 
-!!     better snow/ice parameterization over permanent glaciers.   
-!!                                                                             .
-!!  Therefore, we shall implement the algorithm that Max Suarez described
-!!  above.  This will make the output SNOMAS field similar to GEOS-5,
-!!  which will allow better backward compatibility w/ existing code.
-!!                                                                             .
-!!  Also note: Liquid water equivalent height is defined as such:
-!!     1 m H2O = 10^3 kg/m2   ==>  10^-3 m H2O = 1 mm H2O = 1 kg/m2. 
-!!
-!! !REVISION HISTORY: 
-!!  25 Aug 2010 - R. Yantosca - Initial version, based on GEOS-5
-!!  27 Aug 2010 - R. Yantosca - Updated to use Max Suarez algorithm
-!!EOP
-!!------------------------------------------------------------------------------
-!!BOC
-!!
-!! !LOCAL VARIABLES
-!!    
-!    INTEGER :: I, J
-!    REAL*4  :: den
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
 !
-!    ! Loop over surface grid boxes
-!    DO J = 1, J05x0666
-!    DO I = 1, I05x0666
+! !IROUTINE: Geos57AdjustSnomas
 !
-!       ! The denominator is the sum of the land ice and land fractions in 
-!       ! he grid box.  Nonzero denotes that we are over land and not ocean
-!       den = frLand(I,J) + frLandIce(I,J)
+! !DESCRIPTION: Routine Geos57AdjustSnomas will adjust the MERRA SNOMAS field
+!  to make it more similar to the GEOS-5 SNOMAS field.  This is necessary for
+!  backward compatibility with existing GEOS-Chem routines.
+!\\
+!\\
+! !INTERFACE:
 !
-!       ! Test if the division is possilble
-!       IF ( den > 0e0 ) THEN
+  SUBROUTINE Geos57AdjustSnomas( Q )
 !
-!          ! If so, then compute the SNOMAS value according to the
-!          ! algorithm described above
-!          Q(I,J) = (  Q(I,J) * frLand(I,J) + 4.0e3 * frLandIce(I,J) ) / den
+! !INPUT/OUTPUT PARAMETERS:
 !
-!       ELSE
+    REAL*4, INTENT(INOUT) :: Q(I025x03125,J025x03125)  ! Raw SNOMAS data
 !
-!          ! Otherwise, then we are over the ocean, so SNOMAS = 0
-!          Q(I,J) = 0e0
-!          
-!       ENDIF
+! !REMARKS:
+!  The SNOMAS field in MERRA differs from that in the GEOS-5 ops data:
+!                                                                             .
+!  From the GEOS-5 File Specification Document:
+!                                                                             .
+!     SNOMAS: The mass of snow in per unit of land area in meters of 
+!     liquid-water-equivalent depth (i.e., 10^3 kg/m2). In grid boxes 
+!     with no land (FRLAND+FRLANDICE=0) it is set to _FillValue (= 1e15). 
+!     Where FRLANDICE>0.9 it is arbitrarily set to 4 meters. Over other 
+!     land areas it represents an average over the non-glaciated part.
+!                                                                             .
+!  From the MERRA File Specification Document:
+!                                                                             .
+!     SNOMAS: The mass of snow per unit of ice-free land area (FRLAND), 
+!     in kg/m2. In grid boxes with no land it is set to _FillValue (=1e15). 
+!     Over other land areas it represents an average over the nonglaciated
+!     part.
+!                                                                             .
+!  Max Suarez (Max.J.Suarez@nasa.gov) clarifies this difference:
+!                                                                             .
+!     Early versions of GEOS had been writing SNOMAS in meters.  This was 
+!     changed to mm (or kg/m^2) in  all recent versions, including 5_2, 
+!     MERRA, and the current development tags.  But the forward processing 
+!     spec was not updated. The MERRA spec, however, is correct.
+!                                                                             .
+!     To further complicate matters, the variable called SNOMAS in MERRA 
+!     comes from a very different part of the code that in 5_x.  It is 
+!     in a land collection intended to have representative values over 
+!     the ice-free land portion of the grid box.  This applies to all 
+!     variables in that collection.  SNOMAS in particular makes this 
+!     clear in the glossary definition in the spec.
+!                                                                             .
+!     Forward processing (FP) puts out a grid averaged SNOMAS, including
+!     ice-covered areas, where the "SNOMAS" was arbitrarily set to 4000 mm. 
+!     Neither FP nor MERRA includes ocean or freshwater regions with snow 
+!     over ice.
+!                                                                             .
+!     To answer your question, to convert MERRA SNOMAS to 5.2 SNOMAS,
+!     use this equation:
+!                                                                             .
+!     SNOMAS_5.X = ( SNOMAS_merra * FRLAND_merra + 
+!                    4000         * FRLANDICE_merra ) /
+!                  ( FRLAND_merra + FRLANDICE_merra )
+!                                                                             .
+!     Sorry about the confusion, but it seemed silly in MERRA to continue
+!     writing an invented value over glaciers. The next FP system will be
+!     like MERRA in this regard.  In the longer term, we plan to have a 
+!     better snow/ice parameterization over permanent glaciers.   
+!                                                                             .
+!  Therefore, we shall implement the algorithm that Max Suarez described
+!  above.  This will make the output SNOMAS field similar to GEOS-5,
+!  which will allow better backward compatibility w/ existing code.
+!                                                                             .
+!  Also note: Liquid water equivalent height is defined as such:
+!     1 m H2O = 10^3 kg/m2   ==>  10^-3 m H2O = 1 mm H2O = 1 kg/m2. 
 !
-!   ENDDO
-!   ENDDO
+! !REVISION HISTORY: 
+!  25 Aug 2010 - R. Yantosca - Initial version, based on GEOS-5
+!  27 Aug 2010 - R. Yantosca - Updated to use Max Suarez algorithm
+!EOP
+!------------------------------------------------------------------------------
+!BOC
 !
-!  END SUBROUTINE Geos57AdjustSnomas
-!!EOC
+! !LOCAL VARIABLES
+!    
+    INTEGER :: I, J
+    REAL*4  :: den
+
+    ! Loop over surface grid boxes
+    DO J = 1, J025x03125
+    DO I = 1, I025x03125
+
+       ! The denominator is the sum of the land ice and land fractions in 
+       ! he grid box.  Nonzero denotes that we are over land and not ocean
+       den = frLand(I,J) + frLandIce(I,J)
+
+       ! Test if the division is possilble
+       IF ( den > 0e0 ) THEN
+
+          ! If so, then compute the SNOMAS value according to the
+          ! algorithm described above
+          Q(I,J) = (  Q(I,J) * frLand(I,J) + 4.0e3 * frLandIce(I,J) ) / den
+
+       ELSE
+
+          ! Otherwise, then we are over the ocean, so SNOMAS = 0
+          Q(I,J) = 0e0
+          
+       ENDIF
+
+   ENDDO
+   ENDDO
+
+  END SUBROUTINE Geos57AdjustSnomas
+!EOC
 !!------------------------------------------------------------------------------
 !!          Harvard University Atmospheric Chemistry Modeling Group            !
 !!------------------------------------------------------------------------------

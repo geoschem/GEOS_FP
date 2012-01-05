@@ -24,6 +24,7 @@
 #  26 Oct 2011 - R. Yantosca - Initial version, based on MerraDriver.input
 #  03 Jan 2012 - R. Yantosca - Added fields for I3 output file
 #  05 Jan 2012 - R. Yantosca - Added fields for A1 output file
+#  05 Jan 2012 - R. Yantosca - Now use a single netCDF template file
 #
 
 ==> Turn on debug print output?
@@ -61,7 +62,7 @@ none
 ==> tavg3_3d_mst_Ne
 DAS.ops.asm.tavg3_3d_mst_Ne.GEOS572.YYYYMMDD_hhmm.V01.nc4
 none
-
+, X, Y, T
 ==> tavg3_3d_mst_Nv
 DAS.ops.asm.tavg3_3d_mst_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
 none
@@ -115,10 +116,7 @@ weights_025x03125_to_2x25.txt
 weights_025x03125_to_4x5.txt
 
 ==> Template Files
-lwi_mask.05x0666.bin
-frlandice.05x0666.bin
-frland.05x0666.bin
-
+Geos57TemplateFile.nc
 #
 #EOP
 #------------------------------------------------------------------------------

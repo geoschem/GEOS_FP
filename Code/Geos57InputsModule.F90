@@ -16,6 +16,12 @@ MODULE Geos57InputsModule
 ! 
 ! !USES:
 !
+  ! Modules for reading netCDF
+  USE m_netcdf_io_open
+  USE m_netcdf_io_close     
+  USE m_netcdf_io_get_dimlen
+  USE m_netcdf_io_read
+
   IMPLICIT NONE
   PUBLIC
 !
@@ -131,9 +137,7 @@ MODULE Geos57InputsModule
   CHARACTER(LEN=MAX_CHAR) :: weightFileNxTo4x5        !  Nx grid and Fx grid
   CHARACTER(LEN=MAX_CHAR) :: weightFileFxTo2x25       !  to GEOS-Chem 2 x 2.5 
   CHARACTER(LEN=MAX_CHAR) :: weightFileFxTo4x5        !  and 4 x 5 grids
-  CHARACTER(LEN=MAX_CHAR) :: lwiMaskFile              ! Mask file for LWI
-  CHARACTER(LEN=MAX_CHAR) :: frLandIceFile            ! File for FRLANDICE
-  CHARACTER(LEN=MAX_CHAR) :: frLandFile               ! File for FRLAND
+  CHARACTER(LEN=MAX_CHAR) :: templateFile             ! Mask file for LWI
 
   ! Arrays
   INTEGER                 :: a1Mins   (TIMES_A1)               ! A1 data times
@@ -156,6 +160,7 @@ MODULE Geos57InputsModule
 !  30 Aug 2011 - R. Yantosca - Initial version, based on MerraInputsModule
 !  21 Dec 2011 - R. Yantosca - Now add a3Mins, a3MinsI, a1Mins variables
 !  03 Jan 2012 - R. Yantosca - Add Ap, Bp arrays for hybrid grid definition
+!  05 Jan 2012 - R. Yantosca - ReadTemplateFile now reads netCDF data
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -303,9 +308,7 @@ MODULE Geos57InputsModule
              READ( IU_TXT, '(a)', ERR=999 ) weightFileNxTo4x5
 
           CASE( '==> Template Files' ) 
-             READ( IU_TXT, '(a)', ERR=999 ) lwiMaskFile
-             READ( IU_TXT, '(a)', ERR=999 ) frLandIceFile
-             READ( IU_TXT, '(a)', ERR=999 ) frLandFile
+             READ( IU_TXT, '(a)', ERR=999 ) templateFile
 
           CASE DEFAULT
              ! Nothing
@@ -339,18 +342,12 @@ MODULE Geos57InputsModule
                                 I4x5,  J4x5,  nPts, mapNxTo4x5  )
     ENDIF
 
-!    !-----------------------------------------------------------------------
-!    ! Read data from template files
-!    !-----------------------------------------------------------------------
-!
-!    ! Default values for LWI regridding
-!    CALL ReadTemplateFile( lwiMaskFile, lwiMask )
-!    
-!    ! FRLANDICE data (for SNOMAS regridding)
-!    CALL ReadTemplateFile( frLandIceFile, frLandIce )
-!
-!    ! FRLAND data (for SNOMAS regridding)
-!    CALL ReadTemplateFile( frLandFile, frLand )
+    !-----------------------------------------------------------------------
+    ! Read data from template files
+    !-----------------------------------------------------------------------
+    
+    ! FRLANDICE data (for SNOMAS regridding)
+    CALL ReadTemplateFile( templateFile, lwiMask, frLand, frLandIce )
 
     !-----------------------------------------------------------------------
     ! Define hybrid-grid index arrays
@@ -444,9 +441,7 @@ MODULE Geos57InputsModule
        PRINT*, '                  ', TRIM( tavg3_3d_udt_Nv_data  )
        PRINT*, 'WeightsNxTo2x25 : ', TRIM( weightFileNxTo2x25    )
        PRINT*, 'WeightsNxTo4x5  : ', TRIM( weightFileNxTo4x5     )
-       PRINT*, 'lwiMaskFile     : ', TRIM( lwiMaskFile           )
-       PRINT*, 'frLandIceFile   : ', TRIM( frLandIceFile         )
-       PRINT*, 'frLandFile      : ', TRIM( frLandFile            )
+       PRINT*, 'lwiMaskFile     : ', TRIM( templateFile          )
     ENDIF
 
     ! Write a message to denote if we are using pressure-weighting
@@ -608,13 +603,13 @@ MODULE Geos57InputsModule
 !
 ! !IROUTINE: ReadTemplateFile
 !
-! !DESCRIPTION: This routine deallocates all previously-allocated 
-!  module arrays and pointer objects.
+! !DESCRIPTION: This routin reads template data (e.g. LWI, FRLAND, FRLANDICE)
+!  from a netCDF file into a data array.
 !\\
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE ReadTemplateFile( fileName, dataArray )
+  SUBROUTINE ReadTemplateFile( fileName, lwiMask, frLand, frLandIce )
 !
 ! !INPUT PARAMETERS:
 !
@@ -622,39 +617,38 @@ MODULE Geos57InputsModule
 !
 ! !OUTPUT PARAMETERS:
 !
-    REAL*4,           INTENT(OUT) :: dataArray(:,:)
+    REAL*4,           INTENT(OUT) :: lwiMask  (:,:)
+    REAL*4,           INTENT(OUT) :: frLand   (:,:)
+    REAL*4,           INTENT(OUT) :: frLandIce(:,:)
 !
 ! !REVISION HISTORY: 
-!  25 Aug 2010 - R. Yantosca - Initial version
+!  05 Jan 2012 - R. Yantosca - Initial version 
 !EOP
 !------------------------------------------------------------------------------
 !BOC
 !
 ! !LOCAL VARIABLES:
 !
-    INTEGER :: IOS
+    ! Scalars
+    INTEGER :: fId
 
-    ! Open the LWI mask file
-    OPEN( IU_BIN,     FILE=TRIM( fileName ), STATUS='OLD',        &
-          IOSTAT=IOS, FORM='UNFORMATTED',    ACCESS='SEQUENTIAL' )
+    ! Arrays
+    INTEGER :: ct3d(3), st3d(3)
 
-    ! Exit w/ error msg if 
-    IF ( IOS /= 0 ) THEN 
-       PRINT*, '### ERROR OPENING ', TRIM( fileName )
-       CALL EXIT(1)
-    ENDIF
+    ! Open netCDF file for input
+    CALL NcOp_Rd( fId, TRIM( fileName ) )
+    
+    ! netCDF indices (we know that the file is 0.25 x 0.3125)
+    st3d = (/ 1,          1,          1 /)
+    ct3d = (/ I025x03125, J025x03125, 1 /)
+    
+    ! Read data
+    CALL NcRd( lwiMask,   fId, 'LWI',      st3d, ct3d )
+    CALL NcRd( frLand,    fId, 'FRLAND',   st3d, ct3d )
+    CALL NcRd( frLandIce, fId, 'FRLANDIC', st3d, ct3d )
 
-    ! Read the data
-    READ( IU_BIN, IOSTAT=IOS ) dataArray
-
-    ! Exit w/ error msg if failure
-    IF ( IOS > 0 ) THEN 
-       PRINT*, '### ERROR READING DATA IN ', TRIM( fileName )
-       CALL EXIT(1)
-    ENDIF
-
-    ! Close the file
-    CLOSE( IU_BIN )
+    ! Close netCDF file
+    CALL NcCl( fId )
 
   END SUBROUTINE ReadTemplateFile
 !EOC
