@@ -1034,6 +1034,8 @@ MODULE Geos57A1Module
 ! !REVISION HISTORY: 
 !  05 Jan 2012 - R. Yantosca - Initial version, based on Geos57CnModule.F90
 !  06 Jan 2012 - R. Yantosca - Now call Geos57CreateLwi to make the LWI field
+!  06 Jan 2012 - R. Yantosca - Now call Geos57SeaIceBins to compute the
+!                              fractional sea ice bins SEAICE{00..90}
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1041,7 +1043,7 @@ MODULE Geos57A1Module
 ! !LOCAL VARIABLES:
 !
     ! Loop and time variables
-    INTEGER                 :: H,        F,        hhmmss
+    INTEGER                 :: H,        F,        S,      hhmmss
 
     ! Variables for netCDF I/O
     INTEGER                 :: X,        Y,        T
@@ -1066,6 +1068,7 @@ MODULE Geos57A1Module
 
      ! Character strings and arrays
     CHARACTER(LEN=8       ) :: name
+    CHARACTER(LEN=8       ) :: name2
     CHARACTER(LEN=MAX_CHAR) :: fNameInput
     CHARACTER(LEN=MAX_CHAR) :: msg
 
@@ -1149,9 +1152,9 @@ MODULE Geos57A1Module
           Q2x25 = 0e0
           Q4x5  = 0e0
                     
-          !-------------------------------------
+          !-----------------------------------------------------------------
           ! Read data
-          !-------------------------------------
+          !-----------------------------------------------------------------
           msg = '%%% Reading     ' // name
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
@@ -1166,38 +1169,54 @@ MODULE Geos57A1Module
           ! Replace missing values with zeroes
           WHERE( Q == FILL_VALUE ) Q = 0e0
           
-          !-------------------------------------
-          ! Pre-regrid special handling
-          !-------------------------------------
+          !-----------------------------------------------------------------
+          ! Pre-regrid special handling: create derived fields
+          !-----------------------------------------------------------------
           IF ( name == 'FRSEAICE' ) THEN
 
              ! Echo info
              msg = '%%% Computing fractional sea ice coverage and LWI flags'
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
-             ! Create the LWI fields on the global grid (if necessary)
              IF ( doNative ) THEN
-                CALL Geos57CreateLwi( Q,          mapNative,       &
-                                      I025x03125, J025x03125, lwi )
+
+                ! Create the LWI fields on the global grid (if necessary)
+                CALL Geos57CreateLwi( Q,          mapNative,              &
+                                      I025x03125, J025x03125, lwi        )
+
+                ! Bin sea ice for native grid output 
+                CALL Geos57SeaIceBins( Q,         BINSIZE,    mapNative,  &
+                                       ice,       I025x03125, J025x03125 )
              ENDIF
 
              IF ( doNestCh ) THEN
 
-                !-------------------------------
-                ! SEA4CRS land/water/ice flags
-                !-------------------------------
+                !----------------------------------------------------------
+                ! SEA4CRS NESTED CHINA GRID: land/water/ice flags
+                !----------------------------------------------------------
                 Ptr  => lwi( I0_ch:I1_ch, J0_ch:J1_ch )
                 st3d = (/ 1,       1,       H /)
                 ct3d = (/ XNestCh, YNestCh, 1 /)
                 CALL NcWr( Ptr, fOutNestCh, 'LWI', st3d, ct3d )
 
+                !----------------------------------------------------------
+                ! SEA4CRS NESTED CHINA GRID: sea ice bins
+                !----------------------------------------------------------
+                DO S = 1, N_ICE
+                   WRITE( name2, 200 ) S-1
+ 200               FORMAT( 'SEAICE', i1, '0' )
+                   st3d = (/ 1,       1,       H  /)
+                   ct3d = (/ XNestCh, YNestCh, 1  /)
+                   CALL NcWr( ice(:,:,S), fOutNestCh, name2, st3d, ct3d )
+                ENDDO
+
              ENDIF
 
              IF ( do2x25 ) THEN 
 
-                !-------------------------------
-                ! 2 x 2.5 land/water/ice flags
-                !-------------------------------
+                !-----------------------------------------------------------
+                ! 2 x 2.5 GRID: Land/water/ice flags
+                !-----------------------------------------------------------
 
                 ! Create the 2 x 2.5 LWI field
                 CALL Geos57CreateLwi( Q, mapTo2x25, I2x25, J2x25, lwi2x25 )
@@ -1207,21 +1226,29 @@ MODULE Geos57A1Module
                 ct3d = (/ X2x25, Y2x25, 1  /)
                 CALL NcWr( lwi2x25, fOut2x25, 'LWI', st3d, ct3d )
 
-                !-------------------------------
-                ! 2 x 2.5 Sea ice bins
-                !-------------------------------
+                !-----------------------------------------------------------
+                ! 2 x 2.5 GRID: Sea ice bins
+                !-----------------------------------------------------------
                 
-                !! Bin sea ice for 2 x 2.5 output 
-                !CALL Geos57SeaIceBins( Q,       BINSIZE, mapTo2x25,  &
-                !                      Ice2x25, I2x25,   J2x25        )
+                ! Bin sea ice for 2 x 2.5 output 
+                CALL Geos57SeaIceBins( Q,       BINSIZE, mapTo2x25,  &
+                                       ice2x25, I2x25,   J2x25        )
+
+                ! Write each sea ice field to disk
+                DO S = 1, N_ICE
+                   WRITE( name2, 200 ) S-1
+                   st3d = (/ 1,     1,     H  /)
+                   ct3d = (/ X2x25, Y2x25, 1  /)
+                   CALL NcWr( ice2x25(:,:,S), fOut2x25, name2, st3d, ct3d )
+                ENDDO
 
              ENDIF
 
              IF ( do4x5 ) THEN
 
-                !-------------------------------
-                ! 4 x 5 land/water/ice flags
-                !-------------------------------
+                !-----------------------------------------------------------
+                ! 4 x 5 GRID: Land/water/ice flags
+                !-----------------------------------------------------------
 
                 ! Create the 4 x 5 LWI field
                 CALL Geos57CreateLwi( Q, mapTo4x5, I4x5, J4x5, lwi4x5 )
@@ -1231,16 +1258,27 @@ MODULE Geos57A1Module
                 ct3d = (/ X4x5, Y4x5, 1  /)
                 CALL NcWr( lwi4x5, fOut4x5, 'LWI', st3d, ct3d )
 
-                !! Bin sea ice for 4x5 output
-                !CALL Geos57SeaIceBins( Q,       BINSIZE, mapTo4x5,   &
-                !                       Ice4x5,  I4x5,    J4x5         )
-             ENDIF
+                !-----------------------------------------------------------
+                ! 4 x 5 GRID: Sea ice bins
+                !-----------------------------------------------------------
 
+                ! Bin sea ice for 4x5 output
+                CALL Geos57SeaIceBins( Q,       BINSIZE, mapTo4x5,   &
+                                       ice4x5,  I4x5,    J4x5         )
+
+                ! Write each sea ice bin to disk
+                DO S = 1, N_ICE
+                   WRITE( name2, 200 ) S-1
+                   st3d = (/ 1,    1,    H  /)
+                   ct3d = (/ X4x5, Y4x5, 1  /)
+                   CALL NcWr( ice4x5(:,:,S), fOut4x5, name2, st3d, ct3d )
+                ENDDO
+             ENDIF
           ENDIF
              
-          !-------------------------------------
+          !-----------------------------------------------------------------
           ! Regrid to 2 x 2.5 &  4 x 5
-          !-------------------------------------
+          !-----------------------------------------------------------------
           msg = '%%% Regridding  ' // name
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
           
@@ -1248,9 +1286,9 @@ MODULE Geos57A1Module
           IF ( do2x25 ) CALL RegridGeos57To2x25( 0, Q, Q2x25 )
           IF ( do4x5  ) CALL RegridGeos57To4x5 ( 0, Q, Q4x5  )
 
-          !-------------------------------------
-          ! Post-regrid handling
-          !-------------------------------------
+          !-----------------------------------------------------------------
+          ! Post-regrid special handling
+          !-----------------------------------------------------------------
           SELECT CASE( name )
              CASE( 'PRECANV', 'PRECCON', 'PRECLSC', 'PRECTOT', 'USTAR' )
                 ! These fields are always positive-definite
@@ -1260,9 +1298,9 @@ MODULE Geos57A1Module
                 ! Do Nothing
           END SELECT
 
-          !-----------------------------
+          !----------------------------------------------------------------
           ! Write netCDF output
-          !-----------------------------
+          !----------------------------------------------------------------
           msg = '%%% Archiving   ' // name
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
           
