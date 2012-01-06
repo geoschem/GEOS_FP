@@ -1033,6 +1033,7 @@ MODULE Geos57A1Module
 !
 ! !REVISION HISTORY: 
 !  05 Jan 2012 - R. Yantosca - Initial version, based on Geos57CnModule.F90
+!  06 Jan 2012 - R. Yantosca - Now call Geos57CreateLwi to make the LWI field
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1175,9 +1176,9 @@ MODULE Geos57A1Module
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
              ! Create the LWI fields on the global grid (if necessary)
-             IF ( doNestCh ) THEN
-                CALL Geos57CreateLwi( frSeaIce=Q,     IMX=I025x03125,  &
-                                      JMX=J025x03125, lwiOut=lwi      )
+             IF ( doNative ) THEN
+                CALL Geos57CreateLwi( Q,          mapNative,       &
+                                      I025x03125, J025x03125, lwi )
              ENDIF
 
              IF ( doNestCh ) THEN
@@ -1939,135 +1940,141 @@ MODULE Geos57A1Module
 !    WRITE( IU_LOG, '(a)' ) TRIM( msg )
 !
 !  END SUBROUTINE Process2dSlvNx
-!!EOC
-!!------------------------------------------------------------------------------
-!!          Harvard University Atmospheric Chemistry Modeling Group            !
-!!------------------------------------------------------------------------------
-!!BOP
-!!
-!! !IROUTINE: Geos57SeaIceBins
-!!
-!! !DESCRIPTION: Subroutine Geos57SeaIceBins bins the FRSEAICE field into 
-!!  bins for 2 x 2.5 and 4 x 5 output.  For each coarse grid box, the number of 
-!!  fine grid boxes having a sea ice fraction within a particular bin is
-!!  computed.  Typically the bins will be percentage decades (e.g. 0-10%, 
-!!  10-20%, 20-30%, etc.)
-!!\\
-!!\\
-!! !INTERFACE:
-!!
-!  SUBROUTINE Geos57SeaIceBins( IceNx, BinSize, map, IceOut, IMX, JMX )
-!!
-!! !INPUT PARAMETERS: 
-!!
-!    ! Sea ice fraction (Nx grid)
-!    REAL*4,       INTENT(IN)  :: IceNx(I05x0666,J05x0666,TIMES_A1) 
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
 !
-!    ! Size of each fractional sea ice bin
-!    REAL*4,       INTENT(IN)  :: BinSize
+! !IROUTINE: Geos57SeaIceBins
 !
-!    ! Mapping weight object
-!    TYPE(MapObj), POINTER     :: map(:,:)
+! !DESCRIPTION: Subroutine Geos57SeaIceBins bins the FRSEAICE field into 
+!  bins for 2 x 2.5 and 4 x 5 output.  For each coarse grid box, the number of 
+!  fine grid boxes having a sea ice fraction within a particular bin is
+!  computed.  Typically the bins will be percentage decades (e.g. 0-10%, 
+!  10-20%, 20-30%, etc.)
+!\\
+!\\
+! !INTERFACE:
 !
-!    ! Dimensions of coarse grid
-!    INTEGER,      INTENT(IN)  :: IMX, JMX  
-!!
-!! !OUTPUT PARAMETERS:
-!!
-!    ! Binned sea ice fraction, output grid
-!    REAL*4,       INTENT(OUT) :: IceOut(IMX,JMX,TIMES_A1,N_ICE)
-!!
-!! !REMARKS:
-!!
-!! !REVISION HISTORY: 
-!!  17 Aug 2010 - R. Yantosca - Initial version, based on RegridTau
-!!  25 Aug 2010 - R. Yantosca - Renamed to "Geos57SeaIceBins"
-!!EOP
-!!------------------------------------------------------------------------------
-!!BOC
+  SUBROUTINE Geos57SeaIceBins( Ice, BinSize, map, IceOut, IMX, JMX )
 !
-!    ! Local variables
-!    INTEGER :: B, I, J, T, nPoints, Nx, Ny, X, Y 
-!    REAL*4  :: sum_Wn
+! !INPUT PARAMETERS: 
 !
-!    ! Zero output variable
-!    IceOut = 0e0
+    ! Sea ice fraction (Nx grid)
+    REAL*4,       INTENT(IN)        :: Ice(I025x03125,J025x03125)
+
+    ! Size of each fractional sea ice bin
+    REAL*4,       INTENT(IN)        :: BinSize
+
+    ! Mapping weight object
+    TYPE(MapObj), POINTER, OPTIONAL :: map(:,:)
+
+    ! Dimensions of coarse grid
+    INTEGER,      INTENT(IN)        :: IMX, JMX  
 !
-!    ! Loop over coarse grid boxes
+! !OUTPUT PARAMETERS:
+!
+    ! Binned sea ice fraction, output grid
+    REAL*4,       INTENT(OUT)       :: IceOut(IMX,JMX,N_ICE)
+!
+! !REMARKS:
+!
+! !REVISION HISTORY: 
+!  17 Aug 2010 - R. Yantosca - Initial version, based on RegridTau
+!  25 Aug 2010 - R. Yantosca - Renamed to "Geos57SeaIceBins"
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+
+    ! Local variables
+    LOGICAL :: isNative
+    INTEGER :: B, I, J, T, nPoints, Nx, Ny, X, Y 
+    REAL*4  :: sum_Wn, weight
+
+    ! Zero output variable
+    IceOut = 0e0
+
+    ! If we are processing at native resolution, then 
+    ! we don't need to pass the mapping weight object.
+    isNative = ( .not. PRESENT( map ) )
+
+    ! Loop over coarse grid boxes
 !    !$OMP PARALLEL DO  &
 !    !$OMP DEFAULT( SHARED ) &
 !    !$OMP PRIVATE( I, J, T, nPoints, Nx, Ny, X, Y, sum_Wn, B )
-!    DO T = 1, TIMES_A1
-!    DO J = 1, JMX
-!    DO I = 1, IMX
-!
-!       ! Number of "fine" grid boxes in each dimension
-!       ! that comprise a "coarse" grid box
-!       nPoints = map(I,J)%nPoints
-!
-!       !---------------------------------------------------------------
-!       ! Place fractional sea ice data into N_ICE bins
-!       !---------------------------------------------------------------
-!
-!       ! Zero mapping variables
-!       sum_Wn = 0e0
-!
-!       ! Loop over "fine" grid boxes
-!       DO Ny = 1, nPoints
-!       DO Nx = 1, nPoints
-!          
-!          ! Avoid useless clock cycles if the mapping weight is zero
-!          IF ( map(I,J)%weight(Nx,Ny) > 0d0 ) THEN
-!
-!             ! Indices of each "fine" grid box that makes up the "coarse" box
-!             X               = map(I,J)%xInd(Nx)
-!             Y               = map(I,J)%yInd(Ny)
-!
-!             ! Sum of the mapping weights over all of the "fine" grid
-!             ! boxes (X,Y) that make up the "coarse" grid box (I,J)
-!             sum_Wn          = sum_Wn + map(I,J)%weight(Nx,Ny)
-!
-!             ! Compute the bin number, based on the value of the 
-!             ! sea ice fraction on the fine "Nx" grid
-!             B               = INT( IceNx(X,Y,T) / BinSize ) + 1
-!
-!             ! Make sure B lies in the range 1...N_ICE
-!             B               = MAX( MIN( B, N_ICE ), 1 )
-!       
-!             ! Add the number of fine boxes having the particular sea ice 
-!             ! fraction to each bin B.  We just need to add the mapping 
-!             ! weight, which accounts for the fraction of the fine box 
-!             ! (X,Y) that is located inside the coarse box (I,J).
-!             IceOut(I,J,T,B) = IceOut(I,J,T,B) + map(I,J)%weight(Nx,Ny)
-!          ENDIF
-!       ENDDO
-!       ENDDO
-!
-!       !---------------------------------------------------------------
-!       ! Compute fractional sea ice coverage in each bin
-!       !---------------------------------------------------------------
-!
-!       ! Normalize each fractional sea ice bin by the total
-!       ! # of fine boxes that fit into the coarse box
-!       DO B = 1, N_ICE
-!          IceOut(I,J,T,B) = IceOut(I,J,T,B) / sum_Wn 
-!       ENDDO
-!
-!       ! Safety check!  The sum of all bins should add up to 1, 
-!       ! within roundoff tolerance of 1e-4.
-!       IF ( ABS( 1e0 - SUM( IceOut(I,J,T,:) ) ) >= 1e-4 ) THEN
-!          WRITE( 6, '(a)' ) 'SEA ICE BINS DO NOT ADD UP TO 1!'
-!          WRITE( 6, 100 ) I, J, T, SUM( IceOut(I,J,T,:) )
-!100       FORMAT( 'I, J, T, SUM: ', 3i4, 1x, f13.7 )
-!          CALL EXIT(1)
-!       ENDIF
-!
-!    ENDDO
-!    ENDDO
-!    ENDDO
-!    !$OMP END PARALLEL DO
-!
-!  END SUBROUTINE Geos57SeaIceBins
+    DO J = 1, JMX
+    DO I = 1, IMX
+
+       ! Number of "fine" grid boxes in each dimension
+       ! that comprise a "coarse" grid box
+       nPoints = map(I,J)%nPoints
+
+       !---------------------------------------------------------------
+       ! Place fractional sea ice data into N_ICE bins
+       !---------------------------------------------------------------
+
+       ! Zero mapping variables
+       sum_Wn = 0e0
+
+       ! Loop over "fine" grid boxes
+       DO Ny = 1, nPoints
+       DO Nx = 1, nPoints
+          
+          ! Mapping weight (i.e. the fraction of each fine
+          ! grid box that fits into the coarse grid box)
+          weight = map(I,J)%weight(Nx,Ny)
+
+          ! Avoid useless clock cycles if the mapping weight is zero
+          IF ( weight > 0d0 ) THEN
+
+             ! Indices of each "fine" grid box that makes up the "coarse" box
+             X               = map(I,J)%xInd(Nx)
+             Y               = map(I,J)%yInd(Ny)
+
+             ! Sum of the mapping weights over all of the "fine" grid
+             ! boxes (X,Y) that make up the "coarse" grid box (I,J)
+             sum_Wn          = sum_Wn + map(I,J)%weight(Nx,Ny)
+
+             ! Compute the bin number, based on the value of the 
+             ! sea ice fraction on the fine "Nx" grid
+             B               = INT( Ice(X,Y) / BinSize ) + 1
+
+             ! Make sure B lies in the range 1...N_ICE
+             B               = MAX( MIN( B, N_ICE ), 1 )
+       
+             ! Add the number of fine boxes having the particular sea ice 
+             ! fraction to each bin B.  We just need to add the mapping 
+             ! weight, which accounts for the fraction of the fine box 
+             ! (X,Y) that is located inside the coarse box (I,J).
+             IceOut(I,J,B) = IceOut(I,J,B) + map(I,J)%weight(Nx,Ny)
+          ENDIF
+       ENDDO
+       ENDDO
+
+       !---------------------------------------------------------------
+       ! Compute fractional sea ice coverage in each bin
+       !---------------------------------------------------------------
+
+       ! Normalize each fractional sea ice bin by the total
+       ! # of fine boxes that fit into the coarse box
+       DO B = 1, N_ICE
+          IceOut(I,J,B) = IceOut(I,J,B) / sum_Wn 
+       ENDDO
+
+       ! Safety check!  The sum of all bins should add up to 1, 
+       ! within roundoff tolerance of 1e-4.
+       IF ( ABS( 1e0 - SUM( IceOut(I,J,:) ) ) >= 1e-4 ) THEN
+          WRITE( 6, '(a)' ) 'SEA ICE BINS DO NOT ADD UP TO 1!'
+          WRITE( 6, 100 ) I, J, T, SUM( IceOut(I,J,:) )
+100       FORMAT( 'I, J, T, SUM: ', 3i4, 1x, f13.7 )
+          CALL EXIT(1)
+       ENDIF
+
+    ENDDO
+    ENDDO
+
+  END SUBROUTINE Geos57SeaIceBins
 !EOC
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -2088,18 +2095,18 @@ MODULE Geos57A1Module
 ! !INPUT PARAMETERS:
 !
     ! Sea ice fraction, from the tavg1_2d_flx_Nx file
-    REAL*4,       INTENT(IN)        :: frSeaIce(I025x03125,J025x03125)
+    REAL*4,       INTENT(IN)  :: frSeaIce(I025x03125,J025x03125)
 
     ! Object containing mapping weights
-    TYPE(MapObj), POINTER, OPTIONAL :: map(:,:)
+    TYPE(MapObj), POINTER     :: map(:,:)
 
     ! Dimensions of output array LWIOUT
-    INTEGER,      INTENT(IN)        :: IMX, JMX                     
+    INTEGER,      INTENT(IN)  :: IMX, JMX                     
 !
 ! !OUTPUT PARAMETERS:
 !
     ! Regridded land-water indices on the output grid
-    REAL*4,       INTENT(OUT)       :: lwiOut(IMX,JMX)
+    REAL*4,       INTENT(OUT) :: lwiOut(IMX,JMX)
 !
 ! !REMARKS:
 !  LWI = 0 are ocean boxes
@@ -2131,18 +2138,18 @@ MODULE Geos57A1Module
     ENDDO
     ENDDO
 
-    IF ( PRESENT( map ) ) THEN     
+    IF ( IMX == I025x03125 .and. JMX == J025x03125 ) THEN
+
+       ! Skip regridding if the output grid is the native grid.
+       ! Simply assign lwiOut = lwiIn and return.
+       lwiOut = lwiIn
+
+    ELSE
 
        ! If the MAP object is passed, then 
        ! regrid the LWI field to coarse resolution
        CALL Geos57RegridLwi( lwiIn, lwiOut, map, IMX, JMX )
  
-    ELSE
-
-       ! If the MAP object is not passed, then we are at native
-       ! resolution.  Simply assign lwiOut = lwiIn.
-       lwiOut = lwiIn
-
     ENDIF
        
   END SUBROUTINE Geos57CreateLwi

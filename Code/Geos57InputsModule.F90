@@ -74,12 +74,14 @@ MODULE Geos57InputsModule
 ! !PUBLIC DATA MEMBERS:
 !
   ! Objects
+  TYPE(MapObj),   POINTER :: mapNative(:,:)           ! Placeholder map object
   TYPE(MapObj),   POINTER :: mapTo2x25(:,:)           ! Map native -> 2 x 2.5
   TYPE(MapObj),   POINTER :: mapTo4x5(:,:)            ! Map native -> 4 x 5
 
   ! NetCDF file Handles
 
   ! Scalars
+  LOGICAL                 :: doNative                 ! Process native grid?
   LOGICAL                 :: doNestCh                 ! Save nested CH grid?
   INTEGER                 :: I0_ch,    J0_ch          ! LL corner of CH grid
   INTEGER                 :: I1_ch,    J1_ch          ! UR corner of CH grid
@@ -157,6 +159,8 @@ MODULE Geos57InputsModule
 !  21 Dec 2011 - R. Yantosca - Now add a3Mins, a3MinsI, a1Mins variables
 !  03 Jan 2012 - R. Yantosca - Add Ap, Bp arrays for hybrid grid definition
 !  05 Jan 2012 - R. Yantosca - ReadTemplateFile now reads netCDF data
+!  06 Jan 2012 - R. Yantosca - Define "doNative" logical as a convenience
+!                              variable to denote when to read native data
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -320,22 +324,29 @@ MODULE Geos57InputsModule
 
     ! Close file
     CLOSE( IU_TXT )
-    
-    ! Mapping weights
-    IF ( do2x25 ) THEN
 
-       ! Nx grid to 2 x 2.5 grid
+    ! Define a convenience switch for the native grid
+    doNative = ( doNestCh )
+
+    ! Mapping weights: native grid (use as placeholder for routines below)
+    IF ( doNative ) THEN
+       nPts = 1
+       CALL ReadMappingWeights( '',                                       &
+                                I025x03125,  J025x03125, nPts, mapNative )
+    ENDIF
+    
+    ! Mapping weights to 2 x 2.5 grid
+    IF ( do2x25 ) THEN
        nPts = ( I025x03125 / I2x25 ) + 2
-       CALL ReadMappingWeights( weightFileTo2x25,                &
-                                I2x25, J2x25, nPts, mapTo2x25 )
+       CALL ReadMappingWeights( weightFileTo2x25,                         &
+                                I2x25,      J2x25,       nPts, mapTo2x25 )
     ENDIF
 
+    ! Mapping weights to 4 x 5 grid
     IF ( do4x5 ) THEN
-
-       ! Nx grid to 4 x 5 grid
        nPts = ( I025x03125 / I4x5 ) + 2
-       CALL ReadMappingWeights( weightFileTo4x5,                 &
-                                I4x5,  J4x5,  nPts, mapTo4x5  )
+       CALL ReadMappingWeights( weightFileTo4x5,                          &
+                                I4x5,       J4x5,        nPts, mapTo4x5  )
     ENDIF
 
     !-----------------------------------------------------------------------
@@ -399,6 +410,7 @@ MODULE Geos57InputsModule
        PRINT*, 'aMins           : ', a1Mins
        PRINT*, 'a3MinsI         : ', a3MinsI
        PRINT*, 'a3Mins          : ', a3Mins
+       PRINT*, 'doNative        : ', doNative
        PRINT*, 'doNstCh         : ', doNestCh
        PRINT*, ' I0, J0, I1, J1 : ', I0_ch, J0_ch, I1_ch, J1_ch
        PRINT*, ' ICH, JCH       : ', I_NestCh, J_NestCh
@@ -490,13 +502,15 @@ MODULE Geos57InputsModule
 !
     TYPE(MapObj),     POINTER    :: map(:,:)
 !
-! !REVISION HISTORY: 
-!   25 Sep 2008 - R. Yantosca - Initial Version
-!
 ! !REMARKS:
 !   If the MAP object is not defined, ReadMappingWeights will allocate
 !   it and initialize it here.  The user is responsible for deallocating
 !   it elsewhere.
+!
+! !REVISION HISTORY: 
+!  25 Oct 2011 - R. Yantosca - Initial version, based on MERRA
+!  06 Jan 2012 - R. Yantosca - Now can define a placeholder map object
+!                              for the native grid
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -533,9 +547,27 @@ MODULE Geos57InputsModule
     ENDIF
 
     !========================================================================
+    ! Special handling: fill placeholder map object for native grid
+    !========================================================================
+    IF ( IMX == I025x03125 .and. JMX == J025x03125 ) THEN 
+
+       ! Here the fine grid is equal to the coarse grid,
+       ! so xInd=1, yInd=1, and weight=1.0
+       DO J = 1, JMX
+       DO I = 1, IMX
+          map(I,J)%xInd    = 1
+          map(I,J)%yInd    = 1
+          map(I,J)%weight  = 1e0
+       ENDDO
+       ENDDO
+
+       ! Return w/o reading data
+       RETURN
+    ENDIF
+
+    !========================================================================
     ! Read data
     !========================================================================
-
 
     ! Pick the format string for the various resolutions (as created by
     ! IDL program ctm_getweight.pro).  The format string length varies so that
@@ -662,6 +694,7 @@ MODULE Geos57InputsModule
 !
 ! !REVISION HISTORY: 
 !  25 Oct 2011 - R. Yantosca - Initial version, based on MERRA
+!  06 Jan 2012 - R. Yantosca - Now deallocate the native-grid map object
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -670,13 +703,48 @@ MODULE Geos57InputsModule
     INTEGER :: I, J
 
     !======================================================================
+    ! Deallocate native-grid mapping weight objects
+    !======================================================================
+    IF ( doNative ) THEN
+
+       ! Echo info
+       IF ( VERBOSE ) WRITE( 6, 100 ) 
+100    FORMAT( 'Deallocating mapping weight objects for native grid' )
+
+       ! Loop over 2 x 2.5 boxes
+       DO J = 1, J025x03125
+       DO I = 1, I025x03125
+
+          !-------------------------------------------------
+          ! Deallocate Nx grid to 2 x 2.5 object fields
+          !-------------------------------------------------
+          IF ( ASSOCIATED( mapNative(I,J)%xInd  ) ) THEN 
+             DEALLOCATE( mapNative(I,J)%xInd )
+          ENDIF
+ 
+          IF ( ASSOCIATED( mapNative(I,J)%yInd  ) ) THEN 
+             DEALLOCATE( mapNative(I,J)%yInd )
+          ENDIF
+          
+          IF ( ASSOCIATED( mapNative(I,J)%weight) ) THEN
+             DEALLOCATE( mapNative(I,J)%weight )
+          ENDIF
+
+       ENDDO
+       ENDDO
+
+       ! Free the objects themselves
+       IF ( ASSOCIATED( mapNative ) ) DEALLOCATE( mapNative )
+    ENDIF
+
+    !======================================================================
     ! Deallocate 2x25 mapping weight objects
     !======================================================================
     IF ( do2x25 ) THEN
 
        ! Echo info
-       IF ( VERBOSE ) WRITE( 6, 100 ) 
-100    FORMAT( 'Deallocating mapping weight objects for 2 x 2.5 grid' )
+       IF ( VERBOSE ) WRITE( 6, 110 ) 
+110    FORMAT( 'Deallocating mapping weight objects for 2 x 2.5 grid' )
 
        ! Loop over 2 x 2.5 boxes
        DO J = 1, J2x25
@@ -709,8 +777,8 @@ MODULE Geos57InputsModule
     !======================================================================
     IF ( do4x5 ) THEN
 
-       IF ( VERBOSE ) WRITE( 6, 110 ) 
-110    FORMAT( 'Deallocating mapping weight objects for 4 x 5 grid' )
+       IF ( VERBOSE ) WRITE( 6, 120 ) 
+120    FORMAT( 'Deallocating mapping weight objects for 4 x 5 grid' )
 
        ! Loop over 4 x 5 boxes
        DO J = 1, J4x5
