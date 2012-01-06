@@ -57,17 +57,10 @@ MODULE Geos57A1Module
 !  PRIVATE :: Geos57ProcessAlbedo
 !  PRIVATE :: Geos57ProcessTropp
 !
-! !PRIVATE TYPES:
-!
-  REAL*4, TARGET, ALLOCATABLE :: Ice2x25(:,:,:,:)     ! 2 x 2.5 sea ice bins
-  REAL*4, TARGET, ALLOCATABLE :: Ice4x5 (:,:,:,:)     ! 4 x 5   sea ice bins
-  REAL*4, TARGET, ALLOCATABLE :: Lwi2x25(:,:,:  )     ! 2 x 2.5 land/water/ice
-  REAL*4, TARGET, ALLOCATABLE :: Lwi4x5 (:,:,:  )     ! 4 x 5   land/water/ice
-!
 ! !DEFINED_PARAMETERS:
 !
-  INTEGER, PARAMETER          :: N_ICE   = 10         ! # of sea ice bins
-  REAL*4,  PARAMETER          :: BINSIZE = 1e0/N_ICE  ! Sea ice bin size
+  INTEGER, PARAMETER :: N_ICE   = 10         ! # of sea ice bins
+  REAL*4,  PARAMETER :: BINSIZE = 1e0/N_ICE  ! Sea ice bin size
 !
 ! !REVISION HISTORY:
 !  05 Jan 2012 - R. Yantosca - Initial version, based on MERRA
@@ -421,8 +414,8 @@ MODULE Geos57A1Module
        CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
     ENDIF
 
-    ! LWI
-    !IF ( StrPos( 'LWI', tavg1_2d__Nx_Data ) >= 0 ) THEN
+    ! LWI (derived from FRLANDICE + other fields)
+    IF ( StrPos( 'FRSEAICE', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
        vId   = vId + 1
        lName = 'Land/water/ice flags' 
@@ -432,7 +425,7 @@ MODULE Geos57A1Module
        CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
-    !ENDIF
+    ENDIF
 
     ! LWTUP
     IF ( StrPos( 'LWTUP', tavg1_2d_rad_Nx_Data ) >= 0 ) THEN
@@ -940,22 +933,6 @@ MODULE Geos57A1Module
 120 FORMAT( '%%% # of land/water/ice flags fields  : ', i5 )
 130 FORMAT( '%%% TOTAL # OF FIELDS TO BE REGRIDDED : ', i5 )
 
-    ! Allocate module arrays on 2 x 2.5 grid
-    IF ( do2x25 ) THEN 
-       ALLOCATE( Ice2x25( I2x25, J2x25, TIMES_A1, N_ICE      ) )
-       ALLOCATE( Lwi2x25( I2x25, J2x25, TIMES_A1             ) )
-       Ice2x25 = 0e0
-       Lwi2x25 = 0e0
-    ENDIF
-
-    ! Allocate 4x5 module arrays
-    IF ( do4x5 ) THEN
-       ALLOCATE( Ice4x5( I4x5, J4x5, TIMES_A1, N_ICE      ) ) 
-       ALLOCATE( Lwi4x5( I4x5, J4x5, TIMES_A1             ) )
-       Ice4x5 = 0e0
-       Lwi4x5 = 0e0
-    ENDIF
-
     !=======================================================================
     ! Open files for output; define variables, attribute, index arrays
     !=======================================================================
@@ -1073,9 +1050,15 @@ MODULE Geos57A1Module
     INTEGER                 :: ct3d(3),  st3d(3)
 
     ! Data arrays
-    REAL*4, TARGET          :: Q    ( I025x03125, J025x03125 )
-    REAL*4                  :: Q2x25( I2x25,      J2x25      )
-    REAL*4                  :: Q4x5 ( I4x5,       J4x5       )
+    REAL*4, TARGET          :: Q      ( I025x03125, J025x03125        )
+    REAL*4, TARGET          :: lwi    ( I025x03125, J025x03125        )
+    REAL*4, TARGET          :: ice    ( I025x03125, J025x03125, N_ICE )
+    REAL*4                  :: Q2x25  ( I2x25,      J2x25             )
+    REAL*4                  :: lwi2x25( I2x25,      J2x25             )
+    REAL*4                  :: ice2x25( I2x25,      J2x25,      N_ICE )
+    REAL*4                  :: Q4x5   ( I4x5,       J4x5              )
+    REAL*4                  :: lwi4x5 ( I4x5,       J4x5              )
+    REAL*4                  :: ice4x5 ( I4x5,       J4x5,       N_ICE )
 
     ! Pointers
     REAL*4, POINTER         :: ptr(:,:)
@@ -1164,10 +1147,10 @@ MODULE Geos57A1Module
           Q     = 0e0
           Q2x25 = 0e0
           Q4x5  = 0e0
-          
-          !-----------------------------
+                    
+          !-------------------------------------
           ! Read data
-          !-----------------------------
+          !-------------------------------------
           msg = '%%% Reading     ' // name
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
@@ -1182,39 +1165,81 @@ MODULE Geos57A1Module
           ! Replace missing values with zeroes
           WHERE( Q == FILL_VALUE ) Q = 0e0
           
-          !-----------------------------
-          ! Pre-regrid handling
-          !-----------------------------
+          !-------------------------------------
+          ! Pre-regrid special handling
+          !-------------------------------------
           IF ( name == 'FRSEAICE' ) THEN
 
              ! Echo info
              msg = '%%% Computing fractional sea ice coverage and LWI flags'
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!                IF ( do2x25 ) THEN 
-!
-!                   ! Create the 2 x 2.5 land/water/ice flags field
-!                   CALL Geos57CreateLwi( Q, mapNxTo2x25, I2x25, J2x25, Lwi2x25 )
-!
-!                   ! Bin sea ice for 2 x 2.5 output 
-!                   CALL Geos57SeaIceBins( Q,       BINSIZE, mapNxTo2x25,  &
-!                                         Ice2x25, I2x25,   J2x25        )
-!                ENDIF
-!
-!                IF ( do4x5 ) THEN
-!
-!                   ! Create the 4 x 5 land/water/ice flags field
-!                   CALL Geos57CreateLwi( Q, mapNxTo4x5, I4x5, J4x5, Lwi4x5 )
-!
-!                   ! Bin sea ice for 4x5 output
-!                   CALL Geos57SeaIceBins( Q,       BINSIZE, mapNxTo4x5,   &
-!                                         Ice4x5,  I4x5,    J4x5         )
-!                ENDIF
+
+             ! Create the LWI fields on the global grid (if necessary)
+             IF ( doNestCh ) THEN
+                CALL Geos57CreateLwi( frSeaIce=Q,     IMX=I025x03125,  &
+                                      JMX=J025x03125, lwiOut=lwi      )
+             ENDIF
+
+             IF ( doNestCh ) THEN
+
+                !-------------------------------
+                ! SEA4CRS land/water/ice flags
+                !-------------------------------
+                Ptr  => lwi( I0_ch:I1_ch, J0_ch:J1_ch )
+                st3d = (/ 1,       1,       H /)
+                ct3d = (/ XNestCh, YNestCh, 1 /)
+                CALL NcWr( Ptr, fOutNestCh, 'LWI', st3d, ct3d )
+
+             ENDIF
+
+             IF ( do2x25 ) THEN 
+
+                !-------------------------------
+                ! 2 x 2.5 land/water/ice flags
+                !-------------------------------
+
+                ! Create the 2 x 2.5 LWI field
+                CALL Geos57CreateLwi( Q, mapTo2x25, I2x25, J2x25, lwi2x25 )
+
+                ! Write LWI to disk
+                st3d = (/ 1,     1,     H  /)
+                ct3d = (/ X2x25, Y2x25, 1  /)
+                CALL NcWr( lwi2x25, fOut2x25, 'LWI', st3d, ct3d )
+
+                !-------------------------------
+                ! 2 x 2.5 Sea ice bins
+                !-------------------------------
+                
+                !! Bin sea ice for 2 x 2.5 output 
+                !CALL Geos57SeaIceBins( Q,       BINSIZE, mapTo2x25,  &
+                !                      Ice2x25, I2x25,   J2x25        )
+
+             ENDIF
+
+             IF ( do4x5 ) THEN
+
+                !-------------------------------
+                ! 4 x 5 land/water/ice flags
+                !-------------------------------
+
+                ! Create the 4 x 5 LWI field
+                CALL Geos57CreateLwi( Q, mapTo4x5, I4x5, J4x5, lwi4x5 )
+
+                ! Write LWI to disk
+                st3d = (/ 1,    1,    H  /)
+                ct3d = (/ X4x5, Y4x5, 1  /)
+                CALL NcWr( lwi4x5, fOut4x5, 'LWI', st3d, ct3d )
+
+                !! Bin sea ice for 4x5 output
+                !CALL Geos57SeaIceBins( Q,       BINSIZE, mapTo4x5,   &
+                !                       Ice4x5,  I4x5,    J4x5         )
+             ENDIF
+
           ENDIF
              
-          !--------------------------------
+          !-------------------------------------
           ! Regrid to 2 x 2.5 &  4 x 5
-          !--------------------------------
+          !-------------------------------------
           msg = '%%% Regridding  ' // name
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
           
@@ -1222,9 +1247,9 @@ MODULE Geos57A1Module
           IF ( do2x25 ) CALL RegridGeos57To2x25( 0, Q, Q2x25 )
           IF ( do4x5  ) CALL RegridGeos57To4x5 ( 0, Q, Q4x5  )
 
-          !-----------------------------
+          !-------------------------------------
           ! Post-regrid handling
-          !-----------------------------
+          !-------------------------------------
           SELECT CASE( name )
              CASE( 'PRECANV', 'PRECCON', 'PRECLSC', 'PRECTOT', 'USTAR' )
                 ! These fields are always positive-definite
@@ -2043,173 +2068,174 @@ MODULE Geos57A1Module
 !    !$OMP END PARALLEL DO
 !
 !  END SUBROUTINE Geos57SeaIceBins
-!!EOC
-!!------------------------------------------------------------------------------
-!!          Harvard University Atmospheric Chemistry Modeling Group            !
-!!------------------------------------------------------------------------------
-!!BOP
-!!
-!! !IROUTINE: Geos57CreateLwi
-!!
-!! !DESCRIPTION: Subroutine Geos57CreateLwi creates the GEOS-5 style 
-!!  land/water/ice (LWI) flags field and then regrids it to coarser resolution. 
-!!  LWI is used for backwards compatibility w/ existing GEOS-Chem routines.
-!!\\
-!!\\
-!! !INTERFACE:
-!!
-!  SUBROUTINE Geos57CreateLwi( frSeaIce, map, IMX, JMX, lwiOut )
-!!
-!! !INPUT PARAMETERS:
-!!
-!    ! Sea ice fraction, from the tavg1_2d_flx_Nx file
-!    REAL*4,       INTENT(IN)  :: frSeaIce(I05x0666,J05x0666,TIMES_A1)  
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
 !
-!    ! Object containing mapping weights
-!    TYPE(MapObj), POINTER     :: map(:,:)
+! !IROUTINE: Geos57CreateLwi
 !
-!    ! Dimensions of output array LWIOUT
-!    INTEGER,      INTENT(IN)  :: IMX, JMX                     
-!!
-!! !OUTPUT PARAMETERS:
-!!
-!    ! Regridded land-water indices on the output grid
-!    REAL*4,       INTENT(OUT) :: lwiOut(IMX,JMX,TIMES_A1)
-!!
-!! !REMARKS:
-!!  LWI = 0 are ocean boxes
-!!  LWI = 1 are land or land-ice boxes
-!!  LWI = 2 are sea ice boxes
-!!
-!! !REVISION HISTORY: 
-!!  25 Aug 2010 - R. Yantosca - Initial version
-!!  31 Aug 2010 - R. Yantosca - Now only assign sea ice (LWI=2) to boxes where
-!!                              FRSEAICE > 0.5.  This will eliminate spurious
-!!                              ice coverage (e.g. over Hudson Bay in summer).
-!!EOP
-!!------------------------------------------------------------------------------
-!!BOC
-!!
-!! !LOCAL VARIABLES:
-!!
-!    INTEGER        :: I, J, T
-!    REAL*4, TARGET :: lwiIn(I05x0666,J05x0666,TIMES_A1)
+! !DESCRIPTION: Subroutine Geos57CreateLwi creates the GEOS-5 style 
+!  land/water/ice (LWI) flags field and then regrids it to coarser resolution. 
+!  LWI is used for backwards compatibility w/ existing GEOS-Chem routines.
+!\\
+!\\
+! !INTERFACE:
 !
-!    ! Loop over # of A1 times
-!    !$OMP PARALLEL DO        &
-!    !$OMP DEFAULT( SHARED )  &
-!    !$OMP PRIVATE( I, J, T )
-!    DO T = 1, TIMES_A1
+  SUBROUTINE Geos57CreateLwi( frSeaIce, map, IMX, JMX, lwiOut )
 !
-!       ! Intitialize the LWI array w/ the time-invariant part
-!       lwiIn(:,:,T) = lwiMask
+! !INPUT PARAMETERS:
 !
-!       ! Also factor in the time-varying sea ice
-!       DO J = 1, J05x0666
-!       DO I = 1, I05x0666
-!          IF ( frSeaIce(I,J,T) > 0.5e0 .and. lwiIn(I,J,T) < 1e0 ) THEN
-!             lwiIn(I,J,T) = 2e0
-!          ENDIF
-!       ENDDO
-!       ENDDO
+    ! Sea ice fraction, from the tavg1_2d_flx_Nx file
+    REAL*4,       INTENT(IN)        :: frSeaIce(I025x03125,J025x03125)
+
+    ! Object containing mapping weights
+    TYPE(MapObj), POINTER, OPTIONAL :: map(:,:)
+
+    ! Dimensions of output array LWIOUT
+    INTEGER,      INTENT(IN)        :: IMX, JMX                     
 !
-!       ! Regrid the LWI field to coarse resolution
-!       CALL Geos57RegridLwi( lwiIn(:,:,T), lwiOut(:,:,T), map, IMX, JMX )
+! !OUTPUT PARAMETERS:
 !
-!    ENDDO
-!    !$OMP END PARALLEL DO
-!    
-!  END SUBROUTINE Geos57CreateLwi
-!!EOC
-!!------------------------------------------------------------------------------
-!!          Harvard University Atmospheric Chemistry Modeling Group            !
-!!------------------------------------------------------------------------------
-!!BOP
-!!
-!! !IROUTINE: Geos57RegridLwi
-!!
-!! !DESCRIPTION: This routine regrids the land-water indices (LWI) field.  
-!!  Instead of an actual area regridding, we pick the mode of the LWI values
-!!  of each 0.5 x 0.667 box that fits into a coarse grid box.
-!!\\
-!!\\
-!! !INTERFACE:
-!!
-!  SUBROUTINE Geos57RegridLwi( lwiIn, lwiOut, map, IMX, JMX )
-!!
-!! !INPUT PARAMETERS:
-!!
-!    ! Land-water indices on the 0.5. x 0.666 grid
-!    REAL*4,       INTENT(IN)  :: lwiIn(I05x0666,J05x0666)
+    ! Regridded land-water indices on the output grid
+    REAL*4,       INTENT(OUT)       :: lwiOut(IMX,JMX)
 !
-!    ! Object that contains the mapping weights to the output grid
-!    TYPE(MapObj), POINTER     :: map(:,:)
+! !REMARKS:
+!  LWI = 0 are ocean boxes
+!  LWI = 1 are land or land-ice boxes
+!  LWI = 2 are sea ice boxes
 !
-!    ! Dimensions of the output grid
-!    INTEGER,      INTENT(IN)  :: IMX, JMX
-!!
-!! !OUTPUT PARAMETERS:
-!!
-!    ! Regridded land-water indices on the output grid
-!    REAL*4,       INTENT(OUT) :: lwiOut(IMX,JMX)
-!!
-!! !REVISION HISTORY: 
-!!  25 Aug 2010 - R. Yantosca - Initial version, based on GEOS-5
-!!EOP
-!!------------------------------------------------------------------------------
-!!BOC
-!    ! Local variables
-!    INTEGER :: I, J, X, Y, Nx, Ny, nPoints, index
-!    INTEGER :: hist(0:2)
-!    REAL*4  :: mode(1)
+! !REVISION HISTORY: 
+!  06 Jan 2012 - R. Yantosca - Initial version, based on MERRA
+!  06 Jan 2012 - R. Yantosca - Skip regridding for native resolution
+!EOP
+!------------------------------------------------------------------------------
+!BOC
 !
-!    ! Loop over grid boxes
-!    DO J = 1, JMX
-!    DO I = 1, IMX
+! !LOCAL VARIABLES:
 !
-!       ! Number of "fine" grid boxes in each dimension
-!       ! that comprise a "coarse" grid box
-!       nPoints = map(I,J)%nPoints
+    INTEGER :: I, J
+    REAL*4  :: lwiIn(I025x03125,J025x03125)
+
+    ! Loop over # of A1 times
+    ! Intitialize the LWI array w/ the time-invariant part
+    lwiIn = lwiMask
+
+    ! Also factor in the time-varying sea ice
+    DO J = 1, J025x03125
+    DO I = 1, I025x03125
+       IF ( frSeaIce(I,J) > 0.5e0 .and. lwiIn(I,J) < 1e0 ) THEN
+          lwiIn(I,J) = 2e0
+       ENDIF
+    ENDDO
+    ENDDO
+
+    IF ( PRESENT( map ) ) THEN     
+
+       ! If the MAP object is passed, then 
+       ! regrid the LWI field to coarse resolution
+       CALL Geos57RegridLwi( lwiIn, lwiOut, map, IMX, JMX )
+ 
+    ELSE
+
+       ! If the MAP object is not passed, then we are at native
+       ! resolution.  Simply assign lwiOut = lwiIn.
+       lwiOut = lwiIn
+
+    ENDIF
+       
+  END SUBROUTINE Geos57CreateLwi
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
 !
-!       ! Zero the histogram array
-!       hist = 0
-!       
-!       ! Loop over "fine" grid boxes
-!       DO Ny = 1, nPoints
-!       DO Nx = 1, nPoints
-!          
-!          ! Avoid useless clock cycles if the mapping weight is zero
-!          IF ( map(I,J)%weight(Nx,Ny) > 0d0 ) THEN
+! !IROUTINE: Geos57RegridLwi
 !
-!             ! Indices of each "fine" grid box that makes up the "coarse" box
-!             X             = map(I,J)%xInd(Nx)
-!             Y             = map(I,J)%yInd(Ny)
+! !DESCRIPTION: This routine regrids the land-water indices (LWI) field.  
+!  Instead of an actual area regridding, we pick the mode of the LWI values
+!  of each 0.5 x 0.667 box that fits into a coarse grid box.
+!\\
+!\\
+! !INTERFACE:
 !
-!             ! Sort each LWI value on the "fine" grid into a histogram
-!             ! Possible values of LWI are 0, 1, 2
-!             index       = INT( lwiIn(X,Y) ) 
-!             hist(index) = hist(index) + 1 
-!          ENDIF
-!       ENDDO
-!       ENDDO
+  SUBROUTINE Geos57RegridLwi( lwiIn, lwiOut, map, IMX, JMX )
 !
-!       ! The bin in the histogram w/ the most counts is the MODE,
-!       ! so we'll use that as the regridded value of LWI.
-!       !
-!       ! NOTE: The result from MAXLOC is indexed starting from 1 and not
-!       ! from zero...so we have to subtract 1 and then save to LWIOUT.
-!       !
-!       ! ALSO NOTE: If two or more elements of HIST have the same value,
-!       ! then MAXLOC will pick the one that comes first in array order. 
-!       ! So if a coarse box is 50% water and 50% ice, this regridding scheme 
-!       ! will label the box as water. (LWIOUT(I,J)=0).  For 50% land and 50% 
-!       ! ice, the coarse box will be labeled as land (LWIOUT(I,J)=1). 
-!       mode        = MAXLOC( hist )
-!       lwiOut(I,J) = mode(1) - 1
-!    ENDDO
-!    ENDDO
+! !INPUT PARAMETERS:
 !
-!  END SUBROUTINE Geos57RegridLwi
+    ! Land-water indices on the 0.5. x 0.666 grid
+    REAL*4,       INTENT(IN)  :: lwiIn(I025x03125,J025x03125)
+
+    ! Object that contains the mapping weights to the output grid
+    TYPE(MapObj), POINTER     :: map(:,:)
+
+    ! Dimensions of the output grid
+    INTEGER,      INTENT(IN)  :: IMX, JMX
+!
+! !OUTPUT PARAMETERS:
+!
+    ! Regridded land-water indices on the output grid
+    REAL*4,       INTENT(OUT) :: lwiOut(IMX,JMX)
+!
+! !REVISION HISTORY:
+!  06 Jan 2012 - R. Yantosca - Initial version, based on MERRA
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+    ! Local variables
+    INTEGER :: I, J, X, Y, Nx, Ny, nPoints, index
+    INTEGER :: hist(0:2)
+    REAL*4  :: mode(1)
+
+    ! Loop over grid boxes
+    DO J = 1, JMX
+    DO I = 1, IMX
+
+       ! Number of "fine" grid boxes in each dimension
+       ! that comprise a "coarse" grid box
+       nPoints = map(I,J)%nPoints
+
+       ! Zero the histogram array
+       hist = 0
+       
+       ! Loop over "fine" grid boxes
+       DO Ny = 1, nPoints
+       DO Nx = 1, nPoints
+          
+          ! Avoid useless clock cycles if the mapping weight is zero
+          IF ( map(I,J)%weight(Nx,Ny) > 0d0 ) THEN
+
+             ! Indices of each "fine" grid box that makes up the "coarse" box
+             X             = map(I,J)%xInd(Nx)
+             Y             = map(I,J)%yInd(Ny)
+
+             ! Sort each LWI value on the "fine" grid into a histogram
+             ! Possible values of LWI are 0, 1, 2
+             index       = INT( lwiIn(X,Y) ) 
+             hist(index) = hist(index) + 1 
+          ENDIF
+       ENDDO
+       ENDDO
+
+       ! The bin in the histogram w/ the most counts is the MODE,
+       ! so we'll use that as the regridded value of LWI.
+       !
+       ! NOTE: The result from MAXLOC is indexed starting from 1 and not
+       ! from zero...so we have to subtract 1 and then save to LWIOUT.
+       !
+       ! ALSO NOTE: If two or more elements of HIST have the same value,
+       ! then MAXLOC will pick the one that comes first in array order. 
+       ! So if a coarse box is 50% water and 50% ice, this regridding scheme 
+       ! will label the box as water. (LWIOUT(I,J)=0).  For 50% land and 50% 
+       ! ice, the coarse box will be labeled as land (LWIOUT(I,J)=1). 
+       mode        = MAXLOC( hist )
+       lwiOut(I,J) = mode(1) - 1
+    ENDDO
+    ENDDO
+
+  END SUBROUTINE Geos57RegridLwi
 !EOC
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -2232,6 +2258,11 @@ MODULE Geos57A1Module
     REAL*4, INTENT(INOUT) :: Q(I025x03125,J025x03125)  ! Raw SNOMAS data
 !
 ! !REMARKS:
+!  NOTE: This routine was originally developed for the MERRA data processing
+!  code, but the same algorithm also can be used for GEOS-5.7.2 data.
+!
+!  Original comments:
+!  ------------------
 !  The SNOMAS field in MERRA differs from that in the GEOS-5 ops data:
 !                                                                             .
 !  From the GEOS-5 File Specification Document:
@@ -2288,8 +2319,7 @@ MODULE Geos57A1Module
 !     1 m H2O = 10^3 kg/m2   ==>  10^-3 m H2O = 1 mm H2O = 1 kg/m2. 
 !
 ! !REVISION HISTORY: 
-!  25 Aug 2010 - R. Yantosca - Initial version, based on GEOS-5
-!  27 Aug 2010 - R. Yantosca - Updated to use Max Suarez algorithm
+!  06 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !EOP
 !------------------------------------------------------------------------------
 !BOC

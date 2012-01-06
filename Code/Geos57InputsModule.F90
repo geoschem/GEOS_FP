@@ -74,10 +74,8 @@ MODULE Geos57InputsModule
 ! !PUBLIC DATA MEMBERS:
 !
   ! Objects
-  TYPE(MapObj),   POINTER :: mapNxTo2x25(:,:)         ! Mapping Nx -> 2 x 2.5
-  TYPE(MapObj),   POINTER :: mapNxTo4x5(:,:)          ! Mapping Nx -> 4 x 5
-  TYPE(MapObj),   POINTER :: mapFxTo2x25(:,:)         ! Mapping Fx -> 2 x 2.5
-  TYPE(MapObj),   POINTER :: mapFxTo4x5(:,:)          ! Mapping Fx -> 4 x 5
+  TYPE(MapObj),   POINTER :: mapTo2x25(:,:)           ! Map native -> 2 x 2.5
+  TYPE(MapObj),   POINTER :: mapTo4x5(:,:)            ! Map native -> 4 x 5
 
   ! NetCDF file Handles
 
@@ -133,10 +131,8 @@ MODULE Geos57InputsModule
   CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_slv_Nx_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg3_2d_ocn_Nx_file     ! tavg3_2d_chm_Fx 
   CHARACTER(LEN=MAX_CHAR) :: tavg3_2d_ocn_Nx_data     !  and list of data flds
-  CHARACTER(LEN=MAX_CHAR) :: weightFileNxTo2x25       ! Mapping weights for
-  CHARACTER(LEN=MAX_CHAR) :: weightFileNxTo4x5        !  Nx grid and Fx grid
-  CHARACTER(LEN=MAX_CHAR) :: weightFileFxTo2x25       !  to GEOS-Chem 2 x 2.5 
-  CHARACTER(LEN=MAX_CHAR) :: weightFileFxTo4x5        !  and 4 x 5 grids
+  CHARACTER(LEN=MAX_CHAR) :: weightFileTo2x25       ! Mapping weights for
+  CHARACTER(LEN=MAX_CHAR) :: weightFileTo4x5        !  Nx grid and Fx grid
   CHARACTER(LEN=MAX_CHAR) :: templateFile             ! Mask file for LWI
 
   ! Arrays
@@ -304,8 +300,8 @@ MODULE Geos57InputsModule
              READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_udt_Nv_data
 
           CASE( '==> Mapping Weight Files' ) 
-             READ( IU_TXT, '(a)', ERR=999 ) weightFileNxTo2x25
-             READ( IU_TXT, '(a)', ERR=999 ) weightFileNxTo4x5
+             READ( IU_TXT, '(a)', ERR=999 ) weightFileTo2x25
+             READ( IU_TXT, '(a)', ERR=999 ) weightFileTo4x5
 
           CASE( '==> Template Files' ) 
              READ( IU_TXT, '(a)', ERR=999 ) templateFile
@@ -330,16 +326,16 @@ MODULE Geos57InputsModule
 
        ! Nx grid to 2 x 2.5 grid
        nPts = ( I025x03125 / I2x25 ) + 2
-       CALL ReadMappingWeights( weightFileNxTo2x25,              &
-                                I2x25, J2x25, nPts, mapNxTo2x25 )
+       CALL ReadMappingWeights( weightFileTo2x25,                &
+                                I2x25, J2x25, nPts, mapTo2x25 )
     ENDIF
 
     IF ( do4x5 ) THEN
 
        ! Nx grid to 4 x 5 grid
        nPts = ( I025x03125 / I4x5 ) + 2
-       CALL ReadMappingWeights( weightFileNxTo4x5,               &
-                                I4x5,  J4x5,  nPts, mapNxTo4x5  )
+       CALL ReadMappingWeights( weightFileTo4x5,                 &
+                                I4x5,  J4x5,  nPts, mapTo4x5  )
     ENDIF
 
     !-----------------------------------------------------------------------
@@ -439,8 +435,8 @@ MODULE Geos57InputsModule
        PRINT*, '                  ', TRIM( tavg3_3d_rad_Nv_data  )
        PRINT*, 'tavg3_3d_udt_Nv : ', TRIM( tavg3_3d_udt_Nv_file  )
        PRINT*, '                  ', TRIM( tavg3_3d_udt_Nv_data  )
-       PRINT*, 'WeightsNxTo2x25 : ', TRIM( weightFileNxTo2x25    )
-       PRINT*, 'WeightsNxTo4x5  : ', TRIM( weightFileNxTo4x5     )
+       PRINT*, 'WeightsNxTo2x25 : ', TRIM( weightFileTo2x25      )
+       PRINT*, 'WeightsNxTo4x5  : ', TRIM( weightFileTo4x5       )
        PRINT*, 'lwiMaskFile     : ', TRIM( templateFile          )
     ENDIF
 
@@ -507,9 +503,6 @@ MODULE Geos57InputsModule
     ! Local variables
     INTEGER                      :: I, J, Nx, Ny, rc
     CHARACTER(LEN=11)            :: fmtStr
-
-    !%%% TEMPORARY EXIT FOR DEBUGGING %%%
-    RETURN
 
     !========================================================================
     ! Initialize the pointer object if necessary
@@ -668,18 +661,13 @@ MODULE Geos57InputsModule
   SUBROUTINE Geos57Cleanup
 !
 ! !REVISION HISTORY: 
-!  25 Sep 2008 - R. Yantosca - Initial Version
-!  17 Aug 2010 - R. Yantosca - Now deallocate mapNxTo2x25, mapNxTo4x5,
-!                              mapFxTo2x25, mapFxTo4x5 objects
+!  25 Oct 2011 - R. Yantosca - Initial version, based on MERRA
 !EOP
 !------------------------------------------------------------------------------
 !BOC
 
     ! Local variables
     INTEGER :: I, J
-
-    !### RETURN for testing
-    RETURN
 
     !======================================================================
     ! Deallocate 2x25 mapping weight objects
@@ -697,39 +685,23 @@ MODULE Geos57InputsModule
           !-------------------------------------------------
           ! Deallocate Nx grid to 2 x 2.5 object fields
           !-------------------------------------------------
-          IF ( ASSOCIATED( mapNxTo2x25(I,J)%xInd  ) ) THEN 
-             DEALLOCATE( mapNxTo2x25(I,J)%xInd )
+          IF ( ASSOCIATED( mapTo2x25(I,J)%xInd  ) ) THEN 
+             DEALLOCATE( mapTo2x25(I,J)%xInd )
           ENDIF
  
-          IF ( ASSOCIATED( mapNxTo2x25(I,J)%yInd  ) ) THEN 
-             DEALLOCATE( mapNxTo2x25(I,J)%yInd )
+          IF ( ASSOCIATED( mapTo2x25(I,J)%yInd  ) ) THEN 
+             DEALLOCATE( mapTo2x25(I,J)%yInd )
           ENDIF
           
-          IF ( ASSOCIATED( mapNxTo2x25(I,J)%weight) ) THEN
-             DEALLOCATE( mapNxTo2x25(I,J)%weight )
-          ENDIF
-
-          !-------------------------------------------------
-          ! Deallocate Fx grid to 2 x 2.5 object fields
-          !-------------------------------------------------
-          IF ( ASSOCIATED( mapFxTo2x25(I,J)%xInd  ) ) THEN 
-             DEALLOCATE( mapFxTo2x25(I,J)%xInd  )
-          ENDIF
-
-          IF ( ASSOCIATED( mapFxTo2x25(I,J)%yInd  ) ) THEN 
-             DEALLOCATE( mapFxTo2x25(I,J)%yInd  )
-          ENDIF
-          
-          IF ( ASSOCIATED( mapFxTo2x25(I,J)%weight) ) THEN
-             DEALLOCATE( mapFxTo2x25(I,J)%weight)
+          IF ( ASSOCIATED( mapTo2x25(I,J)%weight) ) THEN
+             DEALLOCATE( mapTo2x25(I,J)%weight )
           ENDIF
 
        ENDDO
        ENDDO
 
        ! Free the objects themselves
-       IF ( ASSOCIATED( mapNxTo2x25 ) ) DEALLOCATE( mapNxTo2x25 )
-       IF ( ASSOCIATED( mapFxTo2x25 ) ) DEALLOCATE( mapFxTo2x25 )
+       IF ( ASSOCIATED( mapTo2x25 ) ) DEALLOCATE( mapTo2x25 )
     ENDIF
 
     !======================================================================
@@ -747,39 +719,23 @@ MODULE Geos57InputsModule
           !-------------------------------------------------
           ! Deallocate Nx grid to 4x5 object fields
           !-------------------------------------------------
-          IF ( ASSOCIATED( mapNxTo4x5(I,J)%xInd  ) ) THEN 
-             DEALLOCATE( mapNxTo4x5(I,J)%xInd )
+          IF ( ASSOCIATED( mapTo4x5(I,J)%xInd  ) ) THEN 
+             DEALLOCATE( mapTo4x5(I,J)%xInd )
           ENDIF
  
-          IF ( ASSOCIATED( mapNxTo4x5(I,J)%yInd  ) ) THEN 
-             DEALLOCATE( mapNxTo4x5(I,J)%yInd )
+          IF ( ASSOCIATED( mapTo4x5(I,J)%yInd  ) ) THEN 
+             DEALLOCATE( mapTo4x5(I,J)%yInd )
           ENDIF
           
-          IF ( ASSOCIATED( mapNxTo4x5(I,J)%weight) ) THEN
-             DEALLOCATE( mapNxTo4x5(I,J)%weight )
-          ENDIF
-
-          !-------------------------------------------------
-          ! Deallocate Fx grid to 2 x 2.5 object fields
-          !-------------------------------------------------
-          IF ( ASSOCIATED( mapFxTo4x5(I,J)%xInd  ) ) THEN 
-             DEALLOCATE( mapFxTo4x5(I,J)%xInd  )
-          ENDIF
-
-          IF ( ASSOCIATED( mapFxTo4x5(I,J)%yInd  ) ) THEN 
-             DEALLOCATE( mapFxTo4x5(I,J)%yInd  )
-          ENDIF
-          
-          IF ( ASSOCIATED( mapFxTo4x5(I,J)%weight) ) THEN
-             DEALLOCATE( mapFxTo4x5(I,J)%weight)
+          IF ( ASSOCIATED( mapTo4x5(I,J)%weight) ) THEN
+             DEALLOCATE( mapTo4x5(I,J)%weight )
           ENDIF
 
        ENDDO
        ENDDO
 
        ! Free the objects themselves
-       IF ( ASSOCIATED( mapNxTo4x5 ) ) DEALLOCATE( mapNxTo4x5 )
-       IF ( ASSOCIATED( mapFxTo4x5 ) ) DEALLOCATE( mapFxTo4x5 )
+       IF ( ASSOCIATED( mapTo4x5 ) ) DEALLOCATE( mapTo4x5 )
     ENDIF
 
   END SUBROUTINE Geos57Cleanup

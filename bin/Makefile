@@ -43,9 +43,6 @@ all:
 lib:
 	$(MAKE) -C $(DIR) lib
 
-check: 
-	$(MAKE) -C $(DIR) check
-
 clean:
 	$(MAKE) -C $(DIR) clean
 
@@ -62,5 +59,8 @@ help:
 	$(MAKE) -C $(DIR) help
 
 driver: all
+
+template:
+	$(MAKE) -C $(DIR) -f Makefile_Template all
 
 #EOC
