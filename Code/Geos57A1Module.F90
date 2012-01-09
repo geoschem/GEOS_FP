@@ -48,12 +48,12 @@ MODULE Geos57A1Module
   PRIVATE :: NcOutFileDef
   PRIVATE :: Process2dFlxNx
   PRIVATE :: Process2dLndNx
-!  PRIVATE :: Process2dRadNx
-!  PRIVATE :: Process2dSlvNx
-!  PRIVATE :: Geos57SeaIceBins
-!  PRIVATE :: Geos57CreateLwi
-!  PRIVATE :: Geos57RegridLwi
-!  PRIVATE :: Geos57AdjustSnomas
+  PRIVATE :: Process2dRadNx
+  PRIVATE :: Process2dSlvNx
+  PRIVATE :: Geos57SeaIceBins
+  PRIVATE :: Geos57CreateLwi
+  PRIVATE :: Geos57RegridLwi
+  PRIVATE :: Geos57AdjustSnomas
 !  PRIVATE :: Geos57ProcessAlbedo
 !  PRIVATE :: Geos57ProcessTropp
 !
@@ -984,8 +984,13 @@ MODULE Geos57A1Module
     CALL Process2dLndNx( nFields_2dLndNx, fields_2dLndNx,          &
                          fOutNestCh,      fOut2x25,       fOut4x5 )
 
-!    CALL Process2dRadNx( nFields_2dRadNx, fields_2dRadNx, offset )
-!    CALL Process2dSlvNx( nFields_2dSlvNx, fields_2dSlvNx, offset )
+    ! Data from "tavg1_2d_rad_Nx"
+    CALL Process2dRadNx( nFields_2dRadNx, fields_2dRadNx,          &
+                         fOutNestCh,      fOut2x25,       fOut4x5 )
+
+    ! Data from "tavg1_2d_slv_Nx"
+    CALL Process2dSlvNx( nFields_2dSlvNx, fields_2dSlvNx,          &
+                         fOutNestCh,      fOut2x25,       fOut4x5 )
     
     !=======================================================================
     ! Cleanup & quit
@@ -1570,38 +1575,38 @@ MODULE Geos57A1Module
 
   END SUBROUTINE Process2dLndNx
 !EOC
-!!------------------------------------------------------------------------------
-!!          Harvard University Atmospheric Chemistry Modeling Group            !
-!!------------------------------------------------------------------------------
-!!BOP
-!!
-!! !IROUTINE: Process2dRadNx
-!!
-!! !DESCRIPTION: Subroutine Process2dRadFx regrids the MERRA met fields from 
-!!  the "tavg1\_2d\_rad\_Nx" file and saves to the GEOS-Chem file format.
-!!\\
-!!\\
-!! !INTERFACE:
-!!
-!  SUBROUTINE Process2dRadNx( nFields, fields, offset )
-!!
-!! !INPUT PARAMETERS:
-!!
-!    INTEGER,          INTENT(IN)    :: nFields     ! # of fields to process
-!    CHARACTER(LEN=*), INTENT(IN)    :: fields(:)   ! List of field names
-!!
-!! !INPUT/OUTPUT PARAMETERS:
-!!
-!    INTEGER,          INTENT(INOUT) :: offset      ! Offset for output arrays
-!!
-!! !REVISION HISTORY: 
-!!  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A3Module.F90
-!!EOP
-!!------------------------------------------------------------------------------
-!!BOC
-!!
-!! !LOCAL VARIABLES:
-!!
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: Process2dRadNx
+!
+! !DESCRIPTION: Subroutine Process2dRadFx regrids the MERRA met fields from 
+!  the "tavg1\_2d\_rad\_Nx" file and saves to the GEOS-Chem file format.
+!\\
+!\\
+! !INTERFACE:
+!
+  SUBROUTINE Process2dRadNx( nFields,    fields,            &
+                             fOutNestCh, fOut2x25, fOut4x5 )
+!
+! !INPUT PARAMETERS:
+!
+    INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
+    CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
+    INTEGER,          INTENT(IN) :: fOutNestCh  ! NestCh  netCDF file ID
+    INTEGER,          INTENT(IN) :: fOut2x25    ! 2 x 2.5 netCDF file ID
+   INTEGER,          INTENT(IN) :: fOut4x5     ! 4 x 5   netCDF file ID!!
+!
+! !REVISION HISTORY: 
+!  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A3Module.F90
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+!
+! !LOCAL VARIABLES:
+!
 !    ! Scalars
 !    INTEGER                 :: F, T
 !
@@ -1747,237 +1752,283 @@ MODULE Geos57A1Module
 !    msg = '%%%%%% LEAVING ROUTINE Process2dRadNx %%%%%%'
 !    WRITE( IU_LOG, '(a)' ) TRIM( msg )
 !
-!  END SUBROUTINE Process2dRadNx
-!!EOC
-!!------------------------------------------------------------------------------
-!!          Harvard University Atmospheric Chemistry Modeling Group            !
-!!------------------------------------------------------------------------------
-!!BOP
-!!
-!! !IROUTINE: Process2dSlvNx
-!!
-!! !DESCRIPTION: Subroutine Process2dSlvFx regrids the MERRA met fields from 
-!!  the "tavg1\_2d\_slv\_Nx" file and saves to the GEOS-Chem file format.
-!!\\
-!!\\
-!! !INTERFACE:
-!!
-!  SUBROUTINE Process2dSlvNx( nFields, fields, offset )
-!!
-!! !INPUT PARAMETERS:
-!!
-!    INTEGER,          INTENT(IN)    :: nFields     ! # of fields to process
-!    CHARACTER(LEN=*), INTENT(IN)    :: fields(:)   ! List of field names
-!!
-!! !INPUT/OUTPUT PARAMETERS:
-!!
-!    INTEGER,          INTENT(INOUT) :: offset      ! Offset for output arrays
-!!
-!! !REVISION HISTORY: 
-!!  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A3Module.F90
-!!EOP
-!!------------------------------------------------------------------------------
-!!BOC
-!!
-!! !LOCAL VARIABLES:
-!!
-!    ! Scalars
-!    INTEGER                 :: T, F
+  END SUBROUTINE Process2dRadNx
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
 !
-!    ! Arrays
-!    REAL*4, TARGET          :: Q    (I05x0666,J05x0666,TIMES_A1)
-!    REAL*4, TARGET          :: P    (I05x0666,J05x0666,TIMES_A1)
-!    REAL*4, TARGET          :: P2x25(I2x25,   J2x25,   TIMES_A1)
-!    REAL*4, TARGET          :: P4x5 (I4x5,    J4x5,    TIMES_A1)
+! !IROUTINE: Process2dSlvNx
 !
-!    ! Pointer arrays
-!    REAL*4, POINTER         :: ptr_05x0666(:,:)
-!    REAL*4, POINTER         :: ptr_2x25   (:,:)
-!    REAL*4, POINTER         :: ptr_4x5    (:,:)
+! !DESCRIPTION: Subroutine Process2dSlvFx regrids the MERRA met fields from 
+!  the "tavg1\_2d\_slv\_Nx" file and saves to the GEOS-Chem file format.
+!\\
+!\\
+! !INTERFACE:
 !
-!     ! Character strings and arrays
-!    CHARACTER(LEN=8       ) :: name
-!    CHARACTER(LEN=MAX_CHAR) :: fileHDF
-!    CHARACTER(LEN=MAX_CHAR) :: fileName
-!    CHARACTER(LEN=MAX_CHAR) :: file2x25
-!    CHARACTER(LEN=MAX_CHAR) :: file4x5
-!    CHARACTER(LEN=MAX_CHAR) :: msg
+  SUBROUTINE Process2dSlvNx( nFields,    fields,            &
+                             fOutNestCh, fOut2x25, fOut4x5 )
 !
-!    !=======================================================================
-!    ! Initialization
-!    !=======================================================================
+! !INPUT PARAMETERS:
 !
-!    ! Zero all pointers
-!    NULLIFY( ptr_05x0666, ptr_2x25, ptr_4x5 )
+    INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
+    CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
+    INTEGER,          INTENT(IN) :: fOutNestCh  ! NestCh  netCDF file ID
+    INTEGER,          INTENT(IN) :: fOut2x25    ! 2 x 2.5 netCDF file ID
+    INTEGER,          INTENT(IN) :: fOut4x5     ! 4 x 5   netCDF file ID
 !
-!    ! Echo info    
-!    msg = '%%%%%% ENTERING ROUTINE Process2dSlvNx %%%%%%'
-!    WRITE( IU_LOG, '(a)' ) '%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+! !REVISION HISTORY: 
+!  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A3Module.F90
+!EOP
+!------------------------------------------------------------------------------
+!BOC
 !
-!    ! Create filename from the template
-!    fileHDF = TRIM( dataDirHDF ) // TRIM( tavg1_2d_slv_Nx_file )
-!    CALL expandDate( fileHDF, yyyymmdd, 000000 )
+! !LOCAL VARIABLES:
 !
-!    ! Echo info
-!    msg = '%%% Reading ' // TRIM( fileHDF )
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!    ! Open the HDF4-EOS file for input
-!    CALL He4SetVerbose( VERBOSE )
-!    CALL He4GridOpen( fileHDF )
-!    CALL He4GridGetDimInfo
-!    CALL He4GridReadX
-!    CALL He4GridReadY
-!    CALL He4GetNymdNhms
-!
-!    !=======================================================================
-!    ! Process surface pressure
-!    !=======================================================================
-!
-!    ! Read surface pressure (all times)
-!    msg = '%%% Reading      PS'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!    CALL He4GridReadData( 'PS', P )
-!
-!    ! Loop over times
-!    !$OMP PARALLEL DO                               &
-!    !$OMP DEFAULT( SHARED )                         &
-!    !$OMP PRIVATE( T, ptr_05x0666, ptr_2x25, ptr_4x5 )
-!    DO T = 1, TIMES_A1
-!
-!       ! Point to time-slice of native data array
-!       ptr_05x0666 => P(:,:,T)
-!
-!       ! Regrid to 2 x 2.5
-!       IF ( do2x25 ) THEN
-!          ptr_2x25 => P2x25(:,:,T)
-!          CALL RegridGeos57NTo2x25( 0, ptr_05x0666, ptr_2x25 )
-!       ENDIF
-!
-!       ! Regrid to 4x5 
-!       IF ( do4x5 ) THEN
-!          ptr_4x5 => P4x5(:,:,T)
-!          CALL RegridGeos57NTo4x5( 0, ptr_05x0666, ptr_4x5  )
-!       ENDIF
-!    ENDDO
-!    !$OMP END PARALLEL DO
-!
-!    !=======================================================================
-!    ! Process data
-!    !=======================================================================
-!
-!    ! Loop over data fields
-!    DO F = 1, nFields
-!
-!       ! Save field name into an 8-char variable. 
-!       ! This will truncate field names longer than 8 chars.
-!       name = TRIM( fields(F) )
-!
-!       !-----------------------------
-!       ! Read data 
-!       !-----------------------------
-!
-!       ! Zero data array
-!       Q = 0e0
-!
-!       ! Read data from file
-!       msg = '%%% Reading    ' // name
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!       CALL He4GridReadData( name, Q )
-!
-!       ! Fill missing values in TROPP and other fields
-!       SELECT CASE( name )
-!          CASE( 'TROPPT', 'TROPPV', 'TROPPB' )
-!             CALL Geos57ProcessTropp( Q )
-!          CASE DEFAULT
-!             WHERE( Q == FILL_VALUE ) Q = 0e0
-!       END SELECT
-!
-!       !-----------------------------
-!       ! Pre-regrid handling
-!       !-----------------------------
-!       SELECT CASE( name )
-!          CASE( 'PS',     'SLP',              &
-!                'TROPPT', 'TROPPV', 'TROPPB' )
-!             Q = Q / 100e0                      ! Pa -> hPa 
-!          CASE( 'U10M', 'V10M' )               
-!             Q = Q * P                          ! Multiply winds by pressure
-!          CASE DEFAULT
-!             ! Nothing
-!       END SELECT
-!
-!       !-----------------------------
-!       ! Regrid data to 2x25, 4x5
-!       !-----------------------------
-!       msg = '%%% Regridding ' // name
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!       ! Loop over A1 times
-!       !$OMP PARALLEL DO                                 &
-!       !$OMP DEFAULT( SHARED )                           &
-!       !$OMP PRIVATE( T, ptr_05x0666, ptr_2x25, ptr_4x5 )
-!       DO T = 1, TIMES_A1
-!
-!          ! Point to time-slice of native data array
-!          ptr_05x0666 => Q(:,:,T)
-!
-!          ! Regrid to 2 x 2.5
-!          IF ( do2x25 ) THEN
-!             ptr_2x25 => Q2x25(:,:,T,F+offset)
-!             CALL RegridGeos57NTo2x25( 0, ptr_05x0666, ptr_2x25 )
-!          ENDIF
-!
-!          ! Regrid to 4x5 
-!          IF ( do4x5 ) THEN
-!             ptr_4x5 => Q4x5(:,:,T,F+offset)
-!             CALL RegridGeos57NTo4x5( 0, ptr_05x0666, ptr_4x5 )
-!          ENDIF
-!
-!          !---------------------------
-!          ! Post-regrid handling
-!          !---------------------------
-!          SELECT CASE( name )
-!
-!             ! These fields are always positive-definite
-!             CASE( 'QV2M',  'T2M', 'TS' )
-!                IF ( do2x25  ) WHERE( ptr_2x25 < 0e0 ) ptr_2x25 = 0e0
-!                IF ( do4x5   ) WHERE( ptr_4x5  < 0e0 ) ptr_4x5  = 0e0
-!             
-!             ! Divide winds by pressures
-!             CASE( 'U10M', 'V10M' )
-!                IF ( do2x25  ) ptr_2x25 = ptr_2x25 / P2x25(:,:,T)
-!                IF ( do4x5   ) ptr_4x5  = ptr_4x5  / P4x5 (:,:,T)
-!
-!             CASE DEFAULT
-!                ! Nothing
-!          END SELECT
-!
-!       ENDDO
-!       !$OMP END PARALLEL DO
-!    ENDDO
-!
-!    !=======================================================================
-!    ! Cleanup & quit
-!    !=======================================================================
-!
-!    ! Increment offset for next routine
-!    offset = offset + nFields
-!
-!    ! Nullify all pointers
-!    NULLIFY( ptr_05x0666, ptr_2x25, ptr_4x5 )
-!
-!    ! Detach from grid and close HDF file
-!    msg = '%%% Closing ' // TRIM( fileHDF )
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!    CALL He4GridClose( fileHDF )
-!    CALL He4CleanUpIndexFields
-!
-!    ! Echo info    
-!    msg = '%%%%%% LEAVING ROUTINE Process2dSlvNx %%%%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!  END SUBROUTINE Process2dSlvNx
+    ! Loop and time variables
+    INTEGER                 :: H,        F,        hhmmss
+
+    ! Variables for netCDF I/O
+    INTEGER                 :: X,        Y,        T
+    INTEGER                 :: XNestCh,  YNestCh,  TNestCh
+    INTEGER                 :: X2x25,    Y2x25,    T2x25
+    INTEGER                 :: X4x5,     Y4x5,     T4x5
+    INTEGER                 :: ct3d(3),  st3d(3)
+
+    ! Data arrays
+    REAL*4, TARGET          :: Q    ( I025x03125, J025x03125 )
+    REAL*4, TARGET          :: P    ( I025x03125, J025x03125 )
+    REAL*4                  :: Q2x25( I2x25,      J2x25      )
+    REAL*4                  :: P2x25( I2x25,      J2x25      )
+    REAL*4                  :: Q4x5 ( I4x5,       J4x5       )
+    REAL*4                  :: P4x5 ( I4x5,       J4x5       )
+
+    ! Pointers
+    REAL*4, POINTER         :: ptr(:,:)
+
+     ! Character strings and arrays
+    CHARACTER(LEN=8       ) :: name
+    CHARACTER(LEN=MAX_CHAR) :: fNameInput
+    CHARACTER(LEN=MAX_CHAR) :: msg
+
+    !=======================================================================
+    ! Get dimensions from output files
+    !=======================================================================
+
+    ! Echo info    
+    msg = '%%%%%% ENTERING ROUTINE Process2dSlvNx %%%%%%'
+    WRITE( IU_LOG, '(a)' ) '%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+    ! Nested China grid
+    IF ( doNestCh ) THEN
+       CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
+       CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
+       CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! 2 x 2.5 global grid       
+    IF ( do2x25 ) THEN
+       CALL NcGet_DimLen( fOut2x25,   'lon',  X2x25   )
+       CALL NcGet_DimLen( fOut2x25,   'lat',  Y2x25   ) 
+       CALL NcGet_DimLen( fOut2x25,   'time', T2x25   )
+    ENDIF
+
+    ! 4x5 global grid
+    IF ( do4x5 ) THEN
+       CALL NcGet_DimLen( fOut4x5,    'lon',  X4x5    )
+       CALL NcGet_DimLen( fOut4x5,    'lat',  Y4x5    )   
+       CALL NcGet_DimLen( fOut4x5,    'time', T4x5    )
+    ENDIF
+
+    !=======================================================================
+    ! Open input file
+    !=======================================================================
+
+    ! Loop over the number of files per day
+    DO H = 1, TIMES_A1
+
+       ! GMT time of day (hh:mm:ss)
+       hhmmss = ( a1Mins(H) / 60 ) * 10000 + 3000
+       
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%% KLUDGE FOR DEBUGGING -- Sample data is only up to hour 20:30:00
+       if ( hhmmss > 210000 ) CYCLE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+       ! Create input filename from the template
+       fNameInput = TRIM( inputDataDir ) // TRIM( tavg1_2d_slv_Nx_file )
+       CALL expandDate( fNameInput, yyyymmdd, hhmmss )
+
+       ! Echo info
+       msg = '%%% Reading ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+       ! Open the netCDF4 file for input
+       CALL NcOp_Rd( fIn, TRIM( fNameInput ) )
+       
+       ! Get the dimensions from the netCDF file
+       CALL NcGet_DimLen( fIn, 'lon',  X )
+       CALL NcGet_DimLen( fIn, 'lat',  Y ) 
+       CALL NcGet_DimLen( fIn, 'time', T )
+
+       !====================================================================
+       ! Process surface pressure (need for use below)
+       !====================================================================
+
+       msg = '%%% Reading      PS'
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+       ! Start and count index arrays for netCDF
+       ! (There is only one data block per file)
+       st3d  = (/ 1, 1, 1 /)
+       ct3d  = (/ X, Y, 1 /)
+
+       ! Read data from file
+       CALL NcRd( P, fIn, 'PS', st3d, ct3d )
+       
+       ! Replace missing values with zeroes
+       WHERE( Q == FILL_VALUE ) Q = 0e0
+
+       ! Convert from [hPa] to [Pa]
+       Q = Q / 100e0
+
+       ! Regrid to 2 x 2.5
+       IF ( do2x25 ) CALL RegridGeos57To2x25( 0, P, P2x25 )
+       IF ( do4x5  ) CALL RegridGeos57To4x5 ( 0, P, P4x5  )
+
+       !====================================================================
+       ! Process all other data fields
+       !===================================================================
+
+       ! Loop over data fields
+       DO F = 1, nFields
+
+          ! Save field name into an 8-char variable. 
+          ! This will truncate field names longer than 8 chars.
+          name = TRIM( fields(F) )
+
+          ! Skip if the fieldname is empty
+          IF ( name == '' ) CYCLE
+
+          ! Zero data arrays
+          Q     = 0e0
+          Q2x25 = 0e0
+          Q4x5  = 0e0
+
+          !-----------------------------------------------------------------
+          ! Read data
+          !-----------------------------------------------------------------
+          msg = '%%% Reading     ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+          ! Save field name into an 8-char variable. 
+          ! This will truncate field names longer than 8 chars.
+          name = TRIM( fields(F) )
+
+          ! Start and count index arrays for netCDF
+          ! (There is only one data block per file)
+          st3d  = (/ 1, 1, 1 /)
+          ct3d  = (/ X, Y, 1 /)
+
+          ! Read data from file
+          CALL NcRd( Q, fIn, TRIM( name ), st3d, ct3d )
+
+          ! Fill missing values in TROPP and other fields
+          SELECT CASE( name )
+             CASE( 'TROPPT', 'TROPPV', 'TROPPB' )
+                CALL Geos57ProcessTropp( Q )
+             CASE DEFAULT
+                WHERE( Q == FILL_VALUE ) Q = 0e0
+          END SELECT
+          
+          !-----------------------------------------------------------------
+          ! Pre-regrid handling
+          !-----------------------------------------------------------------
+          SELECT CASE( name )
+             CASE(  'SLP', 'TROPPT', 'TROPPV', 'TROPPB' )
+                Q = Q / 100e0                      ! Pa -> hPa 
+             CASE( 'U10M', 'V10M' )               
+                Q = Q * P                          ! Multiply winds by pressure
+             CASE DEFAULT
+                ! Nothing
+          END SELECT
+
+          !-----------------------------------------------------------------
+          ! Regrid data 
+          !-----------------------------------------------------------------
+          msg = '%%% Regridding ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+          ! Regrid
+          IF ( do2x25 ) CALL RegridGeos57To2x25( 0, Q, Q2x25 )
+          IF ( do4x5  ) CALL RegridGeos57To4x5 ( 0, Q, Q4x5  )
+
+          !-----------------------------------------------------------------
+          ! Post-regrid handling
+          !-----------------------------------------------------------------
+          SELECT CASE( name )
+
+             ! These fields are always positive-definite
+             CASE( 'QV2M',  'T2M', 'TS' )
+                IF ( do2x25  ) WHERE( Q2x25 < 0e0 ) Q2x25 = 0e0
+                IF ( do4x5   ) WHERE( Q4x5  < 0e0 ) Q4x5  = 0e0
+             
+             ! Divide winds by pressures
+             CASE( 'U10M', 'V10M' )
+                IF ( do2x25  ) Q2x25 = Q2x25 / P2x25
+                IF ( do4x5   ) Q4x5  = Q4x5  / P4x5
+
+             CASE DEFAULT
+                ! Nothing
+
+          END SELECT
+
+          !-----------------------------------------------------------------
+          ! Write netCDF output
+          !-----------------------------------------------------------------
+          msg = '%%% Archiving   ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+          
+          ! Nested China (point to proper slice of global data)
+          IF ( doNestCh ) THEN
+             Ptr  => Q( I0_ch:I1_ch, J0_ch:J1_ch )
+             st3d = (/ 1,       1,       H /)
+             ct3d = (/ XNestCh, YNestCh, 1 /)
+             CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st3d, ct3d )
+          ENDIF
+          
+          ! Write 2 x 2.5 data
+          IF ( do2x25 ) THEN
+             st3d = (/ 1,     1,     H  /)
+             ct3d = (/ X2x25, Y2x25, 1  /)
+             CALL NcWr( Q2x25, fOut2x25, TRIM( name ), st3d, ct3d )
+          ENDIF
+          
+          ! Write 4x5 data
+          IF ( do4x5 ) THEN
+             st3d = (/ 1,    1,    H /)
+             ct3d = (/ X4x5, Y4x5, 1 /)
+             CALL NcWr( Q4x5, fOut4x5, TRIM( name ), st3d, ct3d )
+          ENDIF
+       ENDDO
+    ENDDO
+
+    !=======================================================================
+    ! Cleanup & quit
+    !=======================================================================
+
+    ! Close input file
+    msg = '%%% Closing ' // TRIM( fNameInput )
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+    CALL NcCl( fIn )          
+
+    ! Echo info    
+    msg = '%%%%%% LEAVING ROUTINE Process2dSlvNx %%%%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+  END SUBROUTINE Process2dSlvNx
 !EOC
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -2475,148 +2526,145 @@ MODULE Geos57A1Module
 !    ENDDO
 !
 !  END SUBROUTINE Geos57ProcessAlbedo
-!!EOC
-!!------------------------------------------------------------------------------
-!!          Harvard University Atmospheric Chemistry Modeling Group            !
-!!------------------------------------------------------------------------------
-!!BOP
-!!
-!! !IROUTINE: Geos57ProcessTropp
-!!
-!! !DESCRIPTION: Subroutine "GeosProcessTropp" replaces any missing values in 
-!!  the TROPP field with a zonal mean average.
-!!\\
-!!\\
-!! !INTERFACE:
-!!
-!  SUBROUTINE Geos57ProcessTropp( Q )
-!!
-!! !INPUT/OUTPUT PARAMETERS: 
-!!
-!    REAL*4, INTENT(INOUT) :: Q(:,:,:)  ! TROPP [hPa]
-!!
-!! !REVISION HISTORY: 
-!!  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A3Module.F90
-!!
-!! !REMARKS:
-!!   Rationale for doing this: 
-!!   ----------------------------------------------------------------------
-!!   Sometimes the TROPP field has missing values, so we need to replace 
-!!   those with the average of the other boxes in the same latitude.  
-!!   Otherwise those missing values will get reset to zeroes (in routine
-!!   Geos5MakeA1Files), and those zeroes will propagate through the 
-!!   regridding process.  
-!!
-!!   If a box has a zero TROPP value, then when it is regridded to a 
-!!   coarser resolution, the resultant TROPP values will not be realistic.  
-!!   This will cause GEOS-Chem to diagnose the tropopause as much higher 
-!!   than it should.  Resetting the TROPP values according to the algorithm
-!!   below will avoid this problem.
-!!EOP
-!!------------------------------------------------------------------------------
-!!BOC
-!    ! Local variables
-!    INTEGER                 :: IX, JX, TX
-!    INTEGER                 :: I,  I2, J,  J2, T
-!    REAL*4                  :: tot, ct
-!    CHARACTER(LEN=MAX_CHAR) :: msg
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
 !
-!    !=======================================================================
-!    ! Geos5ProcessTropp begins here!
-!    !=======================================================================
+! !IROUTINE: Geos57ProcessTropp
 !
-!    ! Echo info
-!    msg = '%%%%%%%%%% ENTERING ROUTINE Geos57ProcessTropp %%%%%%%%%%'
-!    WRITE( IU_LOG, '(a)' ) '%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+! !DESCRIPTION: Subroutine "GeosProcessTropp" replaces any missing values in 
+!  the TROPP field with a zonal mean average.
+!\\
+!\\
+! !INTERFACE:
 !
-!    ! Test if missing values are found
-!    IF ( ANY( Q == FILL_VALUE ) ) THEN 
+  SUBROUTINE Geos57ProcessTropp( Q )
 !
-!       ! If yes, then echo a message
-!       msg = '%%% Missing data values found in TROPP!  Removing these ...'
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+! !INPUT/OUTPUT PARAMETERS: 
 !
-!    ELSE
+    REAL*4, INTENT(INOUT) :: Q(:,:)  ! TROPP [hPa]
 !
-!       ! If no, echo a message, then exit
-!       msg = '%%% No missing data values found in TROPP!  Continuing on ...'
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!       msg = '%%%%%%%%%% LEAVING ROUTINE Geos57ProcessTropp %%%%%%%%%%'
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!       WRITE( IU_LOG, '(a)' ) '%%%'
-!       RETURN
+! !REMARKS:
+!   Rationale for doing this: 
+!   ----------------------------------------------------------------------
+!   Sometimes the TROPP field has missing values, so we need to replace 
+!   those with the average of the other boxes in the same latitude.  
+!   Otherwise those missing values will get reset to zeroes (in routine
+!   Geos5MakeA1Files), and those zeroes will propagate through the 
+!   regridding process.  
+!                                                                             .
+!   If a box has a zero TROPP value, then when it is regridded to a 
+!   coarser resolution, the resultant TROPP values will not be realistic.  
+!   This will cause GEOS-Chem to diagnose the tropopause as much higher 
+!   than it should.  Resetting the TROPP values according to the algorithm
+!   below will avoid this problem.
 !
-!    ENDIF
-!
-!    ! Dimensions of the array
-!    IX = SIZE( Q, 1 )
-!    JX = SIZE( Q, 2 )
-!    TX = SIZE( Q, 3 )
-!
-!    ! Loop over grid boxes
-!    DO T = 1, TX
-!    DO J = 1, JX
-!    DO I = 1, IX
-!
-!       ! Replace "missing" values with a zonal average pressure
-!       IF ( Q(I,J,T) == FILL_VALUE ) THEN
-!             
-!          ! Zero summing variables
-!          tot = 0e0
-!          ct  = 0e0
-!             
-!          ! Sum up "good" boxes at this latitude
-!          DO I2 = 1, IX
-!             IF ( Q(I2,J,T) < FILL_VALUE ) THEN
-!                tot = tot + Q(I2,J,T)
-!                ct  = ct  + 1e0
-!             ENDIF
-!          ENDDO
-!          
-!          ! Avoid div by zero
-!          IF ( ct > 0e0 ) THEN 
-!
-!             ! Replace "bad" value with zonal mean of "good" values
-!             Q(I,J,T) = tot / ct 
-!             
-!          ELSE
-!                
-!             ! If ct==0 then we have no good data at this latitude
-!             IF ( J > JX/2 ) THEN
-!                
-!                ! Northern hemisphere
-!                ! Then search down until the next good value
-!                DO J2 = J, 1, -1 
-!                   IF ( Q(I,J2,T) < FILL_VALUE ) THEN
-!                      Q(I,J,T) = Q(I,J2,T)
-!                   ENDIF
-!                ENDDO
-!                
-!             ELSE
-!
-!                ! Southern hemisphere
-!                ! Then search up until the next good value
-!                DO J2 = 1, J
-!                   IF ( Q(I,J2,T) < FILL_VALUE ) THEN
-!                      Q(I,J,T) = Q(I,J2,T)
-!                   ENDIF
-!                ENDDO
-!                
-!             ENDIF
-!          ENDIF
-!       ENDIF
-!    ENDDO
-!    ENDDO
-!    ENDDO
-!
-!    ! Echo info
-!    msg = '%%%%%%%%%% LEAVING ROUTINE Geos57ProcessTropp %%%%%%%%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!    WRITE( IU_LOG, '(a)' ) '%%%'
-!
-!
-!  END SUBROUTINE Geos57ProcessTropp
+! !REVISION HISTORY: 
+!  09 Jan 2012 - R. Yantosca - Initial version, based on MERRA
+!  09 Jan 2012 - R. Yantosca - Now make Q a 2-D array
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+    ! Local variables
+    INTEGER                 :: IX, JX, TX
+    INTEGER                 :: I,  I2, J,  J2, T
+    REAL*4                  :: tot, ct
+    CHARACTER(LEN=MAX_CHAR) :: msg
+
+    !=======================================================================
+    ! Geos5ProcessTropp begins here!
+    !=======================================================================
+
+    ! Echo info
+    msg = '%%%%%%%%%% ENTERING ROUTINE Geos57ProcessTropp %%%%%%%%%%'
+    WRITE( IU_LOG, '(a)' ) '%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+    ! Test if missing values are found
+    IF ( ANY( Q == FILL_VALUE ) ) THEN 
+
+       ! If yes, then echo a message
+       msg = '%%% Missing data values found in TROPP!  Removing these ...'
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+    ELSE
+
+       ! If no, echo a message, then exit
+       msg = '%%% No missing data values found in TROPP!  Continuing on ...'
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+       msg = '%%%%%%%%%% LEAVING ROUTINE Geos57ProcessTropp %%%%%%%%%%'
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+       WRITE( IU_LOG, '(a)' ) '%%%'
+       RETURN
+
+    ENDIF
+
+    ! Dimensions of the array
+    IX = SIZE( Q, 1 )
+    JX = SIZE( Q, 2 )
+    
+    ! Loop over grid boxes
+    DO J = 1, JX
+    DO I = 1, IX
+
+       ! Replace "missing" values with a zonal average pressure
+       IF ( Q(I,J) == FILL_VALUE ) THEN
+             
+          ! Zero summing variables
+          tot = 0e0
+          ct  = 0e0
+             
+          ! Sum up "good" boxes at this latitude
+          DO I2 = 1, IX
+             IF ( Q(I2,J) < FILL_VALUE ) THEN
+                tot = tot + Q(I2,J)
+                ct  = ct  + 1e0
+             ENDIF
+          ENDDO
+          
+          ! Avoid div by zero
+          IF ( ct > 0e0 ) THEN 
+
+             ! Replace "bad" value with zonal mean of "good" values
+             Q(I,J) = tot / ct 
+             
+          ELSE
+                
+             ! If ct==0 then we have no good data at this latitude
+             IF ( J > JX/2 ) THEN
+                
+                ! Northern hemisphere
+                ! Then search down until the next good value
+                DO J2 = J, 1, -1 
+                   IF ( Q(I,J2) < FILL_VALUE ) THEN
+                      Q(I,J) = Q(I,J2)
+                   ENDIF
+                ENDDO
+                
+             ELSE
+
+                ! Southern hemisphere
+                ! Then search up until the next good value
+                DO J2 = 1, J
+                   IF ( Q(I,J2) < FILL_VALUE ) THEN
+                      Q(I,J) = Q(I,J2)
+                   ENDIF
+                ENDDO
+                
+             ENDIF
+          ENDIF
+       ENDIF
+    ENDDO
+    ENDDO
+
+    ! Echo info
+    msg = '%%%%%%%%%% LEAVING ROUTINE Geos57ProcessTropp %%%%%%%%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+    WRITE( IU_LOG, '(a)' ) '%%%'
+
+  END SUBROUTINE Geos57ProcessTropp
 !EOC
 END MODULE Geos57A1Module
 
