@@ -46,7 +46,7 @@ MODULE Geos57A3Module
 !
   PRIVATE :: NcOutFileDef
   PRIVATE :: Process3dOptDep
-  !PRIVATE :: Process3dCldNv
+  PRIVATE :: Process3dCldNv
   !PRIVATE :: Process3dMstNv
   !PRIVATE :: Process3dMstNe
   !PRIVATE :: Process3dQdtNv
@@ -111,7 +111,7 @@ MODULE Geos57A3Module
     INTEGER            :: idBp,    idTime,  vId,     omode
 
     ! Arrays
-    INTEGER            :: var1(1), var3(3), var4(4)
+    INTEGER            :: var1(1), var4(4)
 
     !=========================================================================
     ! %%% BEGINNING OF NETCDF DEFINITION SECTION %%%
@@ -304,6 +304,58 @@ MODULE Geos57A3Module
        units = 'unitless'
        gamap = 'GMAO-3D$'
        CALL NcDef_Variable      ( fOut, 'CLOUD', NF_FLOAT, 4, var4, vId      )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+    ENDIF
+
+    ! DTRAIN
+    IF ( StrPos( 'DTRAIN', tavg3_3d_cld_Nv_Data ) >= 0 ) THEN
+       var4  = (/ idLon, idLat, idLev, idTime /)    
+       vId   = vId + 1
+       lName = 'Detrainment cloud mass flux'
+       units = 'kg m-2 s-2'
+       gamap = 'GMAO-3D$'
+       CALL NcDef_Variable      ( fOut, 'DTRAIN', NF_FLOAT, 4, var4, vId     )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+    ENDIF
+
+    ! QI
+    IF ( StrPos( 'QI', tavg3_3d_cld_Nv_Data ) >= 0 ) THEN
+       var4  = (/ idLon, idLat, idLev, idTime /)    
+       vId   = vId + 1
+       lName = 'Cloud ice water mixing ratio'
+       units = 'kg kg-1'
+       gamap = 'GMAO-3D$'
+       CALL NcDef_Variable      ( fOut, 'QI', NF_FLOAT, 4, var4, vId     )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+    ENDIF
+
+    ! QL
+    IF ( StrPos( 'QL', tavg3_3d_cld_Nv_Data ) >= 0 ) THEN
+       var4  = (/ idLon, idLat, idLev, idTime /)    
+       vId   = vId + 1
+       lName = 'Cloud liquid water mixing ratio'
+       units = 'kg kg-1'
+       gamap = 'GMAO-3D$'
+       CALL NcDef_Variable      ( fOut, 'QL', NF_FLOAT, 4, var4, vId     )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+    ENDIF
+
+    ! RH
+    IF ( StrPos( 'RH', tavg3_3d_cld_Nv_Data ) >= 0 ) THEN
+       var4  = (/ idLon, idLat, idLev, idTime /)    
+       vId   = vId + 1
+       lName = 'Relative humidity'
+       units = 'fraction'
+       gamap = 'GMAO-3D$'
+       CALL NcDef_Variable      ( fOut, 'RH', NF_FLOAT, 4, var4, vId     )
        CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
@@ -502,13 +554,13 @@ MODULE Geos57A3Module
     !=======================================================================
     ! Process data
     !=======================================================================
-    CALL Process3dOptDep()
-!    CALL Process3dChmNv( nFields_3dCldNv, fields_3dCldNv ) ! tavg3_3d_cld_Nv
+    CALL Process3dCldNv ( nFields_3dCldNv, fields_3dCldNv ) ! tavg3_3d_cld_Nv
 !    CALL Process3dMstNv( nFields_3dMstNv, fields_3dMstNv ) ! tavg3_3d_mst_Nv
 !    CALL Process3dMstNe( nFields_3dMstNe, fields_3dMstNe ) ! tavg3_3d_mst_Ne
 !    CALL Process3dQdtNv( nFields_3dQdtNv, fields_3dQdtNv ) ! tavg3_3d_qdt_Nv
 !    CALL Process3dRadNv( nFields_3dRadNv, fields_3dRadNv ) ! tavg3_3d_rad_Nv
 !    CALL Process3dUdtNv( nFields_3dUdtNv, fields_3dUdtNv ) ! tavg3_3d_udt_Nv
+    CALL Process3dOptDep(                                 ) ! optical depths
     
     !=======================================================================
     ! Cleanup & quit
@@ -529,6 +581,366 @@ MODULE Geos57A3Module
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
   END SUBROUTINE Geos57MakeA3
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: Process3dCldNv
+!
+! !DESCRIPTION: Subroutine Process3dChmFv regrids the Geos57 met fields from 
+!  the "tavg3\_3d\_cld\_Nv" file and saves output to netCDF file format.
+!\\
+!\\
+! !INTERFACE:
+!
+  SUBROUTINE Process3dCldNv( nFields, fields )
+!
+! !INPUT PARAMETERS:
+!
+    INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
+    CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
+!
+! !REMARKS:
+!  The cloud fraction field CLOUD and cloud optical depth fields TAUCLI, 
+!  TAUCLW, and OPTDEPTH are processed separately in routine Process3dOptDep.  
+!  This is because these fields must all be regridded together using the
+!  algorithm developed by Hongyu Liu (in routine RegridTau).!
+!
+! !REVISION HISTORY: 
+!  09 Jan 2012 - R. Yantosca - Initial version
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+!
+! !LOCAL VARIABLES:
+!
+    ! Loop and time variables
+    INTEGER                 :: F,        H,        L,       LR
+    INTEGER                 :: hhmmss 
+
+    ! Variables for netCDF I/O
+    INTEGER                 :: X,        Y,        Z,       T
+    INTEGER                 :: XNestCh,  YNestCh,  ZNestCh, TNestCh
+    INTEGER                 :: X2x25,    Y2x25,    Z2x25,   T2x25
+    INTEGER                 :: X4x5,     Y4x5,     Z4x5,    T4x5
+    INTEGER                 :: st4d(4),  ct4d(4)
+
+    ! Data arrays (NOTE: 2d or 3d refers to spatial dimensions)
+    REAL*4,  TARGET         :: Q      ( I025x03125, J025x03125, L025x03125 )
+    REAL*4,  TARGET         :: QI     ( I025x03125, J025x03125, L025x03125 )
+    REAL*4,  TARGET         :: QL     ( I025x03125, J025x03125, L025x03125 )
+    REAL*4                  :: Q2x25  ( I2x25,      J2x25,      L2x25      )
+    REAL*4                  :: QI_2x25( I2x25,      J2x25,      L2x25      )
+    REAL*4                  :: QL_2x25( I2x25,      J2x25,      L2x25      )
+    REAL*4                  :: Q4x5   ( I4x5,       J4x5,       L4x5       )
+    REAL*4                  :: QI_4x5 ( I4x5,       J4x5,       L4x5       )
+    REAL*4                  :: QL_4x5 ( I4x5,       J4x5,       L4x5       )
+
+    ! Pointer arrays
+    REAL*4, POINTER         :: Ptr(:,:,:)
+
+    ! Character strings and arrays
+    CHARACTER(LEN=8       ) :: name
+    CHARACTER(LEN=MAX_CHAR) :: fNameInput
+    CHARACTER(LEN=MAX_CHAR) :: msg
+
+    !=======================================================================
+    ! Initialization
+    !=======================================================================
+
+     ! Echo info    
+    msg = '%%%%%% ENTERING ROUTINE Process3dChmFv %%%%%%'
+    WRITE( IU_LOG, '(a)' ) '%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+    !=======================================================================
+    ! Get dimensions from output files
+    !=======================================================================
+
+    ! Nested China grid
+    IF ( doNestCh ) THEN
+       CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
+       CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
+       CALL NcGet_DimLen( fOutNestCh, 'lev',  ZNestCh ) 
+       CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! 2 x 2.5 global grid       
+    IF ( do2x25 ) THEN
+       CALL NcGet_DimLen( fOut2x25,   'lon',  X2x25   )
+       CALL NcGet_DimLen( fOut2x25,   'lat',  Y2x25   ) 
+       CALL NcGet_DimLen( fOut2x25,   'lev',  Z2x25   ) 
+       CALL NcGet_DimLen( fOut2x25,   'time', T2x25   )
+    ENDIF
+
+    ! 4x5 global grid
+    IF ( do4x5 ) THEN
+       CALL NcGet_DimLen( fOut4x5,    'lon',  X4x5    )
+       CALL NcGet_DimLen( fOut4x5,    'lat',  Y4x5    )   
+       CALL NcGet_DimLen( fOut4x5,    'lev',  Z4x5    )   
+       CALL NcGet_DimLen( fOut4x5,    'time', T4x5    )
+    ENDIF
+
+    !=======================================================================
+    ! Open input file
+    !=======================================================================
+
+    ! Echo info    
+    msg = '%%%%%% ENTERING ROUTINE Process3dCldNv %%%%%%'
+    WRITE( IU_LOG, '(a)' ) '%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+    ! Loop over the number of files per day
+    DO H = 1, TIMES_A3
+
+       ! GMT time of day (hh:mm:ss)
+       hhmmss = ( ( a3mins(H) / 60 ) * 10000 ) + 3000
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%% KLUDGE FOR DEBUGGING -- Sample data is only up to hour 19:30:00
+       if ( hhmmss > 193000 ) CYCLE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+       ! Create input filename from the template
+       fNameInput = TRIM( inputDataDir ) // TRIM( tavg3_3d_cld_Nv_file )
+       CALL expandDate( fNameInput, yyyymmdd, hhmmss )
+
+       ! Echo info
+       msg = '%%% Opening ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+       ! Open the netCDF4 file for input
+       CALL NcOp_Rd( fIn, TRIM( fNameInput ) )
+       
+       ! Get the dimensions from the netCDF file
+       CALL NcGet_DimLen( fIn, 'lon',  X )
+       CALL NcGet_DimLen( fIn, 'lat',  Y ) 
+       CALL NcGet_DimLen( fIn, 'lev',  Z ) 
+       CALL NcGet_DimLen( fIn, 'time', T )
+
+       ! Zero QI, QL arrays
+       QI      = 0e0
+       QI_2x25 = 0e0
+       QI_4x5  = 0e0
+       QL      = 0e0
+       QL_2x25 = 0e0
+       QL_4x5  = 0e0
+
+       !====================================================================
+       ! Process data
+       !====================================================================
+       
+       ! Loop over data fields
+       DO F = 1, nFields
+          
+          ! Save field name into an 8-char variable. 
+          ! This will truncate field names longer than 8 chars.
+          name = TRIM( fields(F) )
+          
+          ! Skip certain fieldnames
+          SELECT CASE ( name ) 
+             CASE( '' )                               ! Null string
+                CYCLE
+             CASE( 'QI', 'QL' )                       ! These fields are
+                CYCLE                                 !  derived, not read
+             CASE( 'TAUCLI', 'TAUCLW', 'OPTDEPTH' )   ! These fields are
+                CYCLE                                 !  procesed elsewhere
+             CASE DEFAULT
+                ! Nothing
+          END SELECT
+
+          ! Zero data arrays
+          Q     = 0e0
+          Q2x25 = 0e0
+          Q4x5  = 0e0
+
+          !-----------------------------------------------------------------
+          ! Read data
+          !-----------------------------------------------------------------
+          msg = '%%% Reading    ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+          ! Start and count index arrays for netCDF
+          ! (There is only one data block per file)
+          st4d = (/ 1, 1, 1, 1 /)
+          ct4d = (/ X, Y, Z, 1 /)
+          
+          ! Read data
+          CALL NcRd( Q, fIn, TRIM( name ), st4d, ct4d )
+
+          ! Strip fill values
+          WHERE( Q == FILL_VALUE ) Q = 0e0    
+
+          !-----------------------------------------------------------------
+          ! Process data (or save for later special handling)
+          !-----------------------------------------------------------------
+          SELECT CASE( name )
+
+             CASE ( 'QIAN', 'QILS' )
+                QI   = QI  + Q        ! QI = QIAN + QILS; regrid below
+
+             CASE ( 'QLAN', 'QLLS' )
+                QL   = QL  + Q        ! QL = QLAN + QLLS; regrid below
+
+             CASE DEFAULT 
+
+                !-----------------------------------------------------------
+                ! Regrid data fields (all except QI, QL)
+                !-----------------------------------------------------------
+                msg = '%%% Regridding ' // name
+                WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+                ! Loop over the A-3 times and vertical levels
+                DO L = 1, L025x03125
+
+                   ! Reverse level index for output arrays
+                   LR = L025x03125 - L + 1
+
+                   ! Regrid to 2 x 2.5
+                   IF ( do2x25 ) THEN
+                      CALL RegridGeos57To2x25( 0, Q(:,:,LR), Q2x25(:,:,L) )
+                   ENDIF
+
+                    ! Regrid to 4x5 
+                   IF ( do4x5 ) THEN
+                      CALL RegridGeos57To4x5 ( 0, Q(:,:,LR), Q4x5(:,:,L)  )
+                   ENDIF
+
+                ENDDO
+                
+                !-----------------------------------------------------------
+                ! Write netCDF output (all except QI, QL)
+                !-----------------------------------------------------------
+                msg = '%%% Archiving  ' // name
+                WRITE( IU_LOG, '(a)' ) TRIM( msg )
+             
+                ! Nested China (point to proper slice of global data)
+                IF ( doNestCh ) THEN
+                   Ptr  => Q( I0_ch:I1_ch, J0_ch:J1_ch, : )
+                   st4d = (/ 1,       1,       1,          H /)
+                   ct4d = (/ XNestCh, YNestCh, L025x03125, 1 /)
+                   CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st4d, ct4d )
+                ENDIF
+                
+                ! Write 2 x 2.5 data
+                IF ( do2x25 ) THEN
+                   st4d = (/ 1,     1,     1,     H  /)
+                   ct4d = (/ X2x25, Y2x25, L2x25, 1  /)
+                   CALL NcWr( Q2x25, fOut2x25, TRIM( name ), st4d, ct4d )
+                ENDIF
+       
+                ! Write 4x5 data
+                IF ( do4x5 ) THEN
+                   st4d  = (/ 1,    1,    1,    H /)
+                   ct4d  = (/ X4x5, Y4x5, L4x5, 1 /)
+                   CALL NcWr( Q4x5, fOut4x5, TRIM( name ), st4d, ct4d )
+                ENDIF
+                
+          END SELECT
+
+       ENDDO
+
+       !====================================================================
+       ! Regrid QI and QL
+       !====================================================================   
+       msg = '%%% Regridding QI and QL'
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+       ! Loop over the A-3 times and vertical levels
+       DO L = 1, L025x03125
+          
+          ! Reverse level index for output arrays
+          LR = L025x03125 - L + 1
+
+          ! Regrid to 2 x 2.5
+          IF ( do2x25 ) THEN
+             CALL RegridGeos57To2x25( 0, QI(:,:,LR), QI_2x25(:,:,L) )
+             CALL RegridGeos57To2x25( 0, QL(:,:,LR), QL_2x25(:,:,L) )
+          ENDIF
+          
+          ! Regrid to 4x5 
+          IF ( do4x5 ) THEN
+             CALL RegridGeos57To4x5 ( 0, QI(:,:,LR), QI_4x5(:,:,L)  )
+             CALL RegridGeos57To4x5 ( 0, QL(:,:,LR), QL_4x5(:,:,L)  )
+          ENDIF
+
+       ENDDO
+
+       !====================================================================
+       ! Write QI and QL to netCDF
+       !==================================================================== 
+
+       msg = '%%% Archiving  QI and QL'
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+       !-----------------------------
+       ! SEA4CRS NESTED CHINA GRID
+       !-----------------------------
+       IF ( doNestCh ) THEN
+
+          ! netCDF indices
+          st4d = (/ 1,       1,       1,          H /)
+          ct4d = (/ XNestCh, YNestCh, L025x03125, 1 /)
+
+          ! QI
+          Ptr  => QI( I0_ch:I1_ch, J0_ch:J1_ch, : )
+          CALL NcWr( Ptr, fOutNestCh, 'QI', st4d, ct4d )
+
+          ! QL
+          Ptr  => QL( I0_ch:I1_ch, J0_ch:J1_ch, : )
+          CALL NcWr( Ptr, fOutNestCh, 'QL', st4d, ct4d )
+
+       ENDIF
+       
+       !-----------------------------
+       ! 2 x 2.5 GLOBAL GRID
+       !-----------------------------
+       IF ( do2x25 ) THEN
+
+          ! netCDF indices
+          st4d = (/ 1,     1,     1,     H  /)
+          ct4d = (/ X2x25, Y2x25, L2x25, 1  /)
+
+          ! Write data
+          CALL NcWr( QI_2x25, fOut2x25, 'QI', st4d, ct4d )
+          CALL NcWr( QL_2x25, fOut2x25, 'QL', st4d, ct4d )
+
+       ENDIF
+
+       !-----------------------------
+       ! 4 x 5 GLOBAL GRID
+       !-----------------------------
+       IF ( do4x5 ) THEN
+
+          ! netCDF indices
+          st4d  = (/ 1,    1,    1,    H /)
+          ct4d  = (/ X4x5, Y4x5, L4x5, 1 /)
+
+          ! Write data
+          CALL NcWr( QI_4x5, fOut4x5, 'QI', st4d, ct4d )
+          CALL NcWr( QL_4x5, fOut4x5, 'QL', st4d, ct4d )
+
+       ENDIF
+
+       !--------------------------------------------------------------------
+       ! Close input file
+       !--------------------------------------------------------------------
+       msg = '%%% Closing ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+       CALL NcCl( fIn )       
+    ENDDO
+
+    !=======================================================================
+    ! Quit
+    !=======================================================================
+
+    ! Echo info    
+    msg = '%%%%%% LEAVING ROUTINE Process3dCldNv %%%%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+  END SUBROUTINE Process3dCldNv
 !EOC
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -836,510 +1248,7 @@ MODULE Geos57A3Module
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
   END SUBROUTINE Process3dOptDep
-!!EOC
-!!------------------------------------------------------------------------------
-!!          Harvard University Atmospheric Chemistry Modeling Group            !
-!!------------------------------------------------------------------------------
-!!BOP
-!!
-!! !IROUTINE: Process3dCldNv
-!!
-!! !DESCRIPTION: Subroutine Process3dChmFv regrids the Geos57 met fields from 
-!!  the "tavg3\_3d\_chm\_Fv" file and saves to the GEOS-Chem file format.
-!!\\
-!!\\
-!! !INTERFACE:
-!!
-!  SUBROUTINE Process3dCldNv( nFields, fields )
-!!
-!! !INPUT PARAMETERS:
-!!
-!    INTEGER,          INTENT(IN)    :: nFields     ! # of fields to process
-!    CHARACTER(LEN=*), INTENT(IN)    :: fields(:)   ! List of field names
-!!
-!! !INPUT/OUTPUT PARAMETERS:
-!!
-!    INTEGER,          INTENT(INOUT) :: offset      ! Offset for output arrays
-!!
-!! !REMARKS:
-!!  Assumes that the derived met fields CLOUD, OPTDEPTH are placed at the
-!!  end of the list of field names.  This is so that we can read the data
-!!  for these fields first.
-!!                                                                             .
-!!  OPTDEPTH = TAUCLI + TAUCLW         (total optical depth )
-!!  CLOUD    = CFAN   + CFCU   + CFLS  (total cloud fraction)
-!!                                                                             .
-!!  The OPTDEPTH and CLOUD fields are regridded following the algorithm of
-!!  Hongyu Liu (cf. routine RegridTau).
-!!
-!! !REVISION HISTORY: 
-!!  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A6Module.F90
-!!  17 Aug 2010 - R. Yantosca - Now use map objects to mapFxto2x25, mapFxTo4x5
-!!EOP
-!!------------------------------------------------------------------------------
-!!BOC
-!!
-!! !LOCAL VARIABLES:
-!!
-!    ! Loop and time variables
-!    INTEGER                 :: F,        H,        L,       LR
-!    INTEGER                 :: hhmmss 
-!
-!    ! Variables for netCDF I/O
-!    INTEGER                 :: X,        Y,        Z,       T
-!    INTEGER                 :: XNestCh,  YNestCh,  ZNestCh, TNestCh
-!    INTEGER                 :: X2x25,    Y2x25,    Z2x25,   T2x25
-!    INTEGER                 :: X4x5,     Y4x5,     Z4x5,    T4x5
-!    INTEGER                 :: st3d(3),  st4d(4)
-!    INTEGER                 :: ct3d(3),  ct4d(4)
-!
-!    ! Data arrays (NOTE: 2d or 3d refers to spatial dimensions)
-!    REAL*4,  TARGET         :: Q    ( I025x03125, J025x03125, L025x03125 )
-!    REAL*4                  :: Cld  ( I025x03125, J025x03125, L025x03125 )
-!    REAL*4                  :: Opt  ( I025x03125, J025x03125, L025x03125 )
-!    REAL*4                  :: TauI ( I025x03125, J025x03125, L025x03125 )
-!    REAL*4                  :: TauW ( I025x03125, J025x03125, L025x03125 )
-!    REAL*4                  :: QI   ( I025x03125, J025x03125, L025x03125 )
-!    REAL*4                  :: QL   ( I025x03125, J025x03125, L025x03125 )
-!    REAL*4                  :: Q2x25( I2x25,      J2x25,      L2x25      )
-!    REAL*4                  :: Q4x5 ( I4x5,       J4x5,       L4x5       )
-!
-!    ! Arrays
-!    REAL*4, TARGET          :: Q    ( I1x125, J1x125, L1x125 )
-!    REAL*4, TARGET          :: P    ( I1x125, J1x125         )
-!    REAL*4, TARGET          :: P2x25( I2x25,  J2x25          )
-!    REAL*4, TARGET          :: P4x5 ( I4x5,   J4x5           )
-!
-!    ! Pointer arrays
-!    REAL*4, POINTER         :: ptr(:,:)
-!
-!    ! Character strings and arrays
-!    CHARACTER(LEN=8       ) :: name
-!    CHARACTER(LEN=MAX_CHAR) :: fileIn
-!    CHARACTER(LEN=MAX_CHAR) :: msg
-!
-!    !=======================================================================
-!    ! Initialization
-!    !=======================================================================
-!
-!    Cld   = 0e0
-!    Opt   = 0e0
-!    TauI  = 0e0
-!    Tauw  = 0e0
-!    P     = 0e0
-!    p2x25 = 0e0
-!    p4x5  = 0e0
-!
-!    ! Echo info    
-!    msg = '%%%%%% ENTERING ROUTINE Process3dChmFv %%%%%%'
-!    WRITE( IU_LOG, '(a)' ) '%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!    !=======================================================================
-!    ! Get dimensions from output files
-!    !=======================================================================
-!
-!    ! Nested China grid
-!    IF ( doNestCh ) THEN
-!       CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
-!       CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
-!       CALL NcGet_DimLen( fOutNestCh, 'lev',  ZNestCh ) 
-!       CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
-!    ENDIF
-!
-!    ! 2 x 2.5 global grid       
-!    IF ( do2x25 ) THEN
-!       CALL NcGet_DimLen( fOut2x25,   'lon',  X2x25   )
-!       CALL NcGet_DimLen( fOut2x25,   'lat',  Y2x25   ) 
-!       CALL NcGet_DimLen( fOut2x25,   'lev',  Z2x25   ) 
-!       CALL NcGet_DimLen( fOut2x25,   'time', T2x25   )
-!    ENDIF
-!
-!    ! 4x5 global grid
-!    IF ( do4x5 ) THEN
-!       CALL NcGet_DimLen( fOut4x5,    'lon',  X4x5    )
-!       CALL NcGet_DimLen( fOut4x5,    'lat',  Y4x5    )   
-!       CALL NcGet_DimLen( fOut4x5,    'lev',  Z4x5    )   
-!       CALL NcGet_DimLen( fOut4x5,    'time', T4x5    )
-!    ENDIF
-!
-!    !=======================================================================
-!    ! Process surface pressure in tavg3_2d_chm_Fx file
-!    !=======================================================================
-!
-!    ! Create filename from the template
-!    fileHDF = TRIM( dataDirHDF ) // TRIM( tavg3_2d_chm_Fx_file )
-!    CALL expandDate( fileHDF, yyyymmdd, 000000 )
-!
-!    ! Echo info
-!    msg = '%%% Reading ' // TRIM( fileHDF )
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!    ! Open the HDF4-EOS file for input
-!    CALL He4SetVerbose( VERBOSE )
-!    CALL He4GridOpen( fileHDF )
-!    CALL He4GridGetDimInfo
-!    CALL He4GridReadX
-!    CALL He4GridReadY
-!    CALL He4GetNymdNhms
-!
-!    ! Read surface pressure (all times)
-!    msg = '%%% Reading    PS'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!    CALL He4GridReadData( 'PS', P )
-!
-!    ! Regrid PS
-!    msg = '%%% Regridding PS'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!    ! Loop over times
-!    !%%% For some reason the parallel loop doesn't work, disable it %%%
-!    DO T = 1, TIMES_A3
-!
-!       ! Point to time-slice of native data array
-!       ptr_1x125 => P(:,:,T)
-!
-!       ! Regrid to 2 x 2.5
-!       IF ( do2x25 ) THEN
-!          ptr_2x25  => P2x25(:,:,T)
-!          CALL RegridGeos57FTo2x25( 0, ptr_1x125, ptr_2x25 )
-!       ENDIF
-!
-!       ! Regrid to 4x5 
-!       IF ( do4x5 ) THEN
-!          ptr_4x5   => P4x5(:,:,T)
-!          CALL RegridGeos57FTo4x5( 0, ptr_1x125, ptr_4x5  )
-!       ENDIF
-!    ENDDO
-!    !!$OMP END PARALLEL DO
-!
-!    ! Detach from grid and close HDF file
-!    msg = '%%% Closing ' // TRIM( fileHDF )
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!    CALL He4GridClose( fileHDF )
-!    CALL He4CleanUpIndexFields
-!
-!    !=======================================================================
-!    ! Open input file
-!    !=======================================================================
-!
-!    ! Echo info    
-!    msg = '%%%%%% ENTERING ROUTINE Process3dCldNv %%%%%%'
-!    WRITE( IU_LOG, '(a)' ) '%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!    ! Loop over the number of files per day
-!    DO H = 1, TIMES_A3
-!
-!       ! GMT time of day (hh:mm:ss)
-!       hhmmss = ( a3minsI(H) / 60 ) * 10000
-!
-!       ! Create input filename from the template
-!       fNameInput = TRIM( inputDataDir ) // TRIM( inst3_3d_asm_Nv_file )
-!       CALL expandDate( fNameInput, yyyymmdd, hhmmss )
-!
-!       ! Echo info
-!       msg = '%%% Reading ' // TRIM( fNameInput )
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!       ! Open the netCDF4 file for input
-!       CALL NcOp_Rd( fIn, TRIM( fNameInput ) )
-!       
-!       ! Get the dimensions from the netCDF file
-!       CALL NcGet_DimLen( fIn, 'lon',  X )
-!       CALL NcGet_DimLen( fIn, 'lat',  Y ) 
-!       CALL NcGet_DimLen( fIn, 'lev',  Z ) 
-!       CALL NcGet_DimLen( fIn, 'time', T )
-!
-!       ! Zero cloud arrays for each hour
-!       Cld  = 0e0
-!       TauI = 0e0
-!       TauW = 0e0
-!       OptD = 0e0
-!       QI   = 0e0
-!       QL   = 0e0
-!
-!       !====================================================================
-!       ! Process data
-!       !====================================================================
-!       
-!       ! Loop over data fields
-!       DO F = 1, nFields
-!          
-!          ! Save field name into an 8-char variable. 
-!          ! This will truncate field names longer than 8 chars.
-!          name = TRIM( fields(F) )
-!          
-!          ! Skip if the fieldname is empty
-!          IF ( name == '' ) CYCLE
-!
-!          ! Zero data arrays
-!          Q     = 0e0
-!          Q2x25 = 0e0
-!          Q4x5  = 0e0
-!
-!          !-----------------------------------------------------------------
-!          ! Read data
-!          !-----------------------------------------------------------------
-!          msg = '%%% Reading     ' // name
-!          WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!          ! Start and count index arrays for netCDF
-!          ! (There is only one data block per file)
-!          st4d = (/ 1, 1, 1, 1 /)
-!          ct4d = (/ X, Y, T, 1 /)
-!
-!          ! Read data
-!          SELECT CASE( name ) 
-!             CASE( 'OPTDEPTH' )
-!                ! Do nothing, OPTDEPTH is a derived field
-!
-!             CASE DEFAULT
-!                ! Read all other fields from disk
-!                msg = '%%% Reading      ' // name
-!                WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!                CALL NcRd( Q2d, fIn, TRIM( name ), st3d, ct3d )
-!                                
-!                ! Strip fill values
-!                WHERE( Q == FILL_VALUE ) Q = 0e0    
-!
-!          END SELECT
-!
-!          !-----------------------------------------------------------------
-!          ! Process data (or save for later special handling)
-!          !-----------------------------------------------------------------
-!          SELECT CASE( name )
-!
-!             CASE( 'CLOUD' )
-!                Cld  = Cld + Q        ! Save CLOUD data for special processing
-!                
-!             CASE( 'TAUCLI' )
-!                TauI = Q              ! Save TAUCLI for special processing
-!                Opt  = Opt + Q        ! Sum TAUCLI into OPTDEPTH
-!
-!             CASE( 'TAUCLW' )
-!                TauW = Q              ! Save TAUCLW for special processing
-!                Opt  = Opt + Q        ! Sum TAUCLW into OPTDEPTH
-! 
-!             CASE ( 'QIAN', 'QILS' )
-!                QI   = QI  + Q        ! QI = QIAN + QILS
-!
-!             CASE ( 'QLAN', 'QLLS' )
-!                QL   = QL  + Q        ! QL = QLAN + QLLS
-!
-!             CASE DEFAULT 
-!
-!                !-----------------------------------------------------------
-!                ! Regrid other data fields
-!                !-----------------------------------------------------------
-!                msg = '%%% Regridding ' // name
-!                WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!                ! Loop over the A-3 times and vertical levels
-!                DO L = 1, L025x03125
-!
-!                   ! Reverse level index for output arrays
-!                   LR = L025x03125 - L + 1
-!
-!                   ! Regrid to 2 x 2.5
-!                   IF ( do2x25 ) THEN
-!                      CALL RegridGeos57To2x25( 0, Q(:,:,LR), Q2x25(:,:,L) )
-!                   ENDIF
-!
-!                    ! Regrid to 4x5 
-!                   IF ( do4x5 ) THEN
-!                      CALL RegridGeos57To4x5 ( 0, Q(:,:,LR), Q4x5(:,:,L)  )
-!                   ENDIF
-!
-!                ENDDO
-!                
-!             !--------------------------------------------------------------
-!             ! Write netCDF output
-!             !--------------------------------------------------------------
-!             msg = '%%% Archiving ' // name
-!             WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!             
-!             ! Nested China (point to proper slice of global data)
-!             IF ( doNestCh ) THEN
-!                Ptr  => Q3d( I0_ch:I1_ch, J0_ch:J1_ch, : )
-!                st4d = (/ 1,       1,       1,          H /)
-!                ct4d = (/ XNestCh, YNestCh, L025x03125, 1 /)
-!                CALL NcWr( Ptr_3d, fOutNestCh, TRIM( name ), st4d, ct4d )
-!             ENDIF
-!             
-!             ! Write 2 x 2.5 data
-!             IF ( do2x25 ) THEN
-!                st4d = (/ 1,     1,     1,     H  /)
-!                ct4d = (/ X2x25, Y2x25, L2x25, 1  /)
-!                CALL NcWr( Q2x25, fOut2x25, TRIM( name ), st4d, ct4d )
-!             ENDIF
-!       
-!             ! Write 4x5 data
-!             IF ( do4x5 ) THEN
-!                st4d  = (/ 1,    1,    1,    H /)
-!                ct4d  = (/ X4x5, Y4x5, L4x5, 1 /)
-!                CALL NcWr( Q4x5, fOut4x5, TRIM( name ), st4d, ct4d )
-!             ENDIF
-!
-!          END SELECT
-!
-!       ENDDO
-!
-!       !====================================================================
-!       ! Special handling for QI
-!       !====================================================================   
-!
-!       !%%%%% Regrid data %%%%%
-!       msg = '%%% Regridding QI'
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!       ! Loop over the A-3 times and vertical levels
-!       DO L = 1, L025x03125
-!          
-!          ! Reverse level index for output arrays
-!          LR = L025x03125 - L + 1
-!
-!          ! Regrid to 2 x 2.5
-!          IF ( do2x25 ) THEN
-!             CALL RegridGeos57To2x25( 0, QI(:,:,LR), Q2x25(:,:,L) )
-!          ENDIF
-!          
-!          ! Regrid to 4x5 
-!          IF ( do4x5 ) THEN
-!             CALL RegridGeos57To4x5 ( 0, QI(:,:,LR), Q4x5(:,:,L)  )
-!          ENDIF
-!
-!       ENDDO
-!
-!       !%%%%% Save netCDF output %%%%%
-!       msg = '%%% Archiving QI'
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!       
-!       ! Nested China (point to proper slice of global data)
-!       IF ( doNestCh ) THEN
-!          Ptr  => Q3d( I0_ch:I1_ch, J0_ch:J1_ch, : )
-!          st4d = (/ 1,       1,       1,          H /)
-!          ct4d = (/ XNestCh, YNestCh, L025x03125, 1 /)
-!          CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st4d, ct4d )
-!       ENDIF
-!       
-!       ! Write 2 x 2.5 data
-!       IF ( do2x25 ) THEN
-!          st4d = (/ 1,     1,     1,     H  /)
-!          ct4d = (/ X2x25, Y2x25, L2x25, 1  /)
-!          CALL NcWr( Q2x25, fOut2x25, TRIM( name ), st4d, ct4d )
-!       ENDIF
-!       
-!       ! Write 4x5 data
-!       IF ( do4x5 ) THEN
-!          st4d  = (/ 1,    1,    1,    H /)
-!          ct4d  = (/ X4x5, Y4x5, L4x5, 1 /)
-!          CALL NcWr( Q4x5, fOut4x5, TRIM( name ), st4d, ct4d )
-!       ENDIF
-!
-!       !====================================================================
-!       ! Special handling for QL
-!       !====================================================================   
-!
-!       !%%%%% Regrid data %%%%%
-!       msg = '%%% Regridding QL'
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!       ! Loop over the A-3 times and vertical levels
-!       DO L = 1, L025x03125
-!          
-!          ! Reverse level index for output arrays
-!          LR = L025x03125 - L + 1
-!
-!          ! Regrid to 2 x 2.5
-!          IF ( do2x25 ) THEN
-!             CALL RegridGeos57To2x25( 0, QL(:,:,LR), Q2x25(:,:,L) )
-!          ENDIF
-!          
-!          ! Regrid to 4x5 
-!          IF ( do4x5 ) THEN
-!             CALL RegridGeos57To4x5 ( 0, QL(:,:,LR), Q4x5(:,:,L)  )
-!          ENDIF
-!
-!       ENDDO
-!
-!       !%%%%% Save netCDF output %%%%%
-!       msg = '%%% Archiving QL'
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!       
-!       ! Nested China (point to proper slice of global data)
-!       IF ( doNestCh ) THEN
-!          Ptr  => Q3d( I0_ch:I1_ch, J0_ch:J1_ch, : )
-!          st4d = (/ 1,       1,       1,          H /)
-!          ct4d = (/ XNestCh, YNestCh, L025x03125, 1 /)
-!          CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st4d, ct4d )
-!       ENDIF
-!       
-!       ! Write 2 x 2.5 data
-!       IF ( do2x25 ) THEN
-!          st4d = (/ 1,     1,     1,     H  /)
-!          ct4d = (/ X2x25, Y2x25, L2x25, 1  /)
-!          CALL NcWr( Q2x25, fOut2x25, TRIM( name ), st4d, ct4d )
-!       ENDIF
-!       
-!       ! Write 4x5 data
-!       IF ( do4x5 ) THEN
-!          st4d  = (/ 1,    1,    1,    H /)
-!          ct4d  = (/ X4x5, Y4x5, L4x5, 1 /)
-!          CALL NcWr( Q4x5, fOut4x5, TRIM( name ), st4d, ct4d )
-!       ENDIF
-!
-!       !====================================================================
-!       ! Special handling for CLOUD and OPTDEPTH
-!       !====================================================================
-!
-!       msg = '%%% Regridding CLOUD, TAUCLI, TAUCLW, OPTDEPTH'
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!    
-!       ! Regrid to 2 x 2.5 (reverse levels of output array Q2x25)
-!       IF ( do2x25 ) THEN
-!          CALL RegridTau( Opt , Q2x25(:,:,:,T,IndF_Opt ), &
-!                          Taui, Q2x25(:,:,:,T,IndF_TauI), &
-!                          TauW, Q2x25(:,:,:,T,IndF_TauW), &
-!                          Cld , Q2x25(:,:,:,T,IndF_Cld ), &
-!                          mapTo2x25, I2x25,                    &
-!                          J2x25,         L2x25  )
-!       ENDIF
-!       
-!       ! Regrid to 4x5 (reverse levels of output array Q4x5)
-!       IF ( do4x5 ) THEN
-!          CALL RegridTau( Opt (:,:,:,T), Q4x5(:,:,:,T,IndF_Opt ),  &
-!                          Taui(:,:,:,T), Q4x5(:,:,:,T,IndF_TauI),  &
-!                          TauW(:,:,:,T), Q4x5(:,:,:,T,IndF_TauW),  &
-!                          Cld (:,:,:,T), Q4x5(:,:,:,T,IndF_Cld ),  &
-!                          mapFxTo4x5,    I4x5,                     &
-!                          J4x5,          L4x5  )
-!       ENDIF
-!    ENDDO
-!    
-!    !=======================================================================
-!    ! Cleanup & quit
-!    !=======================================================================
-!
-!    ! Increment offset for next routine
-!    offset = offset + nFields
-!
-!    ! Nullify all pointers
-!    NULLIFY( ptr_1x125, ptr_2x25, ptr_4x5  )
-!
-!    ! Detach from grid and close HDF file
-!    msg = '%%% Closing ' // TRIM( fileHDF )
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!    CALL He4GridClose( fileHDF )
-!    CALL He4CleanUpIndexFields
-!
-!    ! Echo info    
-!    msg = '%%%%%% LEAVING ROUTINE Process3dChmFv %%%%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!  END SUBROUTINE Process3dChmFv
-!
-!
+
 !!EOC
 !!------------------------------------------------------------------------------
 !!          Harvard University Atmospheric Chemistry Modeling Group            !
