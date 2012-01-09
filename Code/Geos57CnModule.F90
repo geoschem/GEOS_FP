@@ -589,7 +589,7 @@ CONTAINS
     CALL expandDate( fNameInput, yyyymmdd, 000000 )
 
     ! Echo info
-    msg = '%%% Reading ' // TRIM( fNameInput )
+    msg = '%%% Opening ' // TRIM( fNameInput )
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
     ! Open the netCDF4 file for input

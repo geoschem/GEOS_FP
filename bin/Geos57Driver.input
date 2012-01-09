@@ -57,7 +57,7 @@ QV2M,SLP,TROPPT,TS,T2M,U10M,V10M
 
 ==> tavg3_3d_cld_Nv
 DAS.ops.asm.tavg3_3d_cld_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
-none
+TAUCLI,TAUCLW,OPTDEPTH
 
 ==> tavg3_3d_mst_Ne
 DAS.ops.asm.tavg3_3d_mst_Ne.GEOS572.YYYYMMDD_hhmm.V01.nc4
@@ -77,7 +77,7 @@ none
 
 ==> tavg3_3d_rad_Nv
 DAS.ops.asm.tavg3_3d_rad_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
-none
+CLOUD
 
 ==> tavg3_3d_udt_Nv
 DAS.ops.asm.tavg3_3d_udt_Nv.GEOS572.20111001_0130.V01.nc4

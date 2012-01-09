@@ -1131,7 +1131,7 @@ MODULE Geos57A1Module
        CALL expandDate( fNameInput, yyyymmdd, hhmmss )
 
        ! Echo info
-       msg = '%%% Reading ' // TRIM( fNameInput )
+       msg = '%%% Opening ' // TRIM( fNameInput )
        WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
        ! Open the netCDF4 file for input
@@ -1455,7 +1455,7 @@ MODULE Geos57A1Module
        CALL expandDate( fNameInput, yyyymmdd, hhmmss )
 
        ! Echo info
-       msg = '%%% Reading ' // TRIM( fNameInput )
+       msg = '%%% Opening ' // TRIM( fNameInput )
        WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
        ! Open the netCDF4 file for input
@@ -1683,7 +1683,7 @@ MODULE Geos57A1Module
        CALL expandDate( fNameInput, yyyymmdd, hhmmss )
        
        ! Echo info
-       msg = '%%% Reading ' // TRIM( fNameInput )
+       msg = '%%% Opening ' // TRIM( fNameInput )
        WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
        ! Open the netCDF4 file for input
@@ -1913,7 +1913,7 @@ MODULE Geos57A1Module
        CALL expandDate( fNameInput, yyyymmdd, hhmmss )
 
        ! Echo info
-       msg = '%%% Reading ' // TRIM( fNameInput )
+       msg = '%%% Opening ' // TRIM( fNameInput )
        WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
        ! Open the netCDF4 file for input
@@ -2193,7 +2193,7 @@ MODULE Geos57A1Module
        CALL expandDate( fNameInput, yyyymmdd, hhmmss )
        
        ! Echo info
-       msg = '%%% Reading ' // TRIM( fNameInput )
+       msg = '%%% Opening ' // TRIM( fNameInput )
        WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
        ! Open the netCDF4 file for input

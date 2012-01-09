@@ -437,7 +437,7 @@ MODULE Geos57I3Module
     IF ( doNestCh ) THEN
        fName = dataTmplNestCh
        gName = 'SEA4CRS'
-       CALL ExpandDate  ( fName,     yyyymmdd,  000000                  )      
+       CALL ExpandDate  ( fName,     yyyymmdd,  000000                 )      
        CALL StrRepl     ( fName,     '%%',     'i3'                    )
        CALL NcOutFileDef( I_NestCh,  J_NestCh,  L025x03125, TIMES_A3,   &
                           xMid_025x03125(I0_ch:I1_ch),                  &
@@ -604,7 +604,7 @@ MODULE Geos57I3Module
        CALL expandDate( fNameInput, yyyymmdd, hhmmss )
 
        ! Echo info
-       msg = '%%% Reading ' // TRIM( fNameInput )
+       msg = '%%% Opening ' // TRIM( fNameInput )
        WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
        ! Open the netCDF4 file for input
