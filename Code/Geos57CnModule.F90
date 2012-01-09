@@ -370,7 +370,7 @@ CONTAINS
 ! !DESCRIPTION: Routine Geos57MakeCn is the the driver routine for 
 ! \begin{enumerate}
 ! \item Extracting constant data fields (surface values) from 
-!       the MERRA raw data files (HDF4-EOS format),
+!       the GEOS-5.7.2 raw data files (netCDF-4 format)
 ! \item Regridding the fields to GEOS-Chem data resolution, and 
 ! \item Saving the regridded data to netCDF format.
 ! \end{enumerate}
@@ -473,8 +473,7 @@ CONTAINS
     !=======================================================================
 
     ! Regrid fields from the various raw data files
-    CALL ProcessCn2dAsmNx( nFields,    fields,               &
-                           fOutNestCh, fOut2x25, fOut4x5    )
+    CALL ProcessCn2dAsmNx( nFields, fields )
     
     !=======================================================================
     ! Cleanup & quit
@@ -508,19 +507,17 @@ CONTAINS
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE ProcessCn2dAsmNx( nFields,    fields,  &
-                               fOutNestCh, fOut2x25, fOut4x5 )
+  SUBROUTINE ProcessCn2dAsmNx( nFields, fields )
 !
 ! !INPUT PARAMETERS:
 !
     INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
     CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
-    INTEGER,          INTENT(IN) :: fOutNestCh  ! NestCh  netCDF file ID
-    INTEGER,          INTENT(IN) :: fOut2x25    ! 2 x 2.5 netCDF file ID
-    INTEGER,          INTENT(IN) :: fOut4x5     ! 4 x 5   netCDF file ID
 !
 ! !REVISION HISTORY: 
 !  04 Jan 2012 - R. Yantosca - Initial version, based on MERRA
+!  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
+!                              the module Geos57InputsModule.F90
 !EOP
 !------------------------------------------------------------------------------
 !BOC

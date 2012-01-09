@@ -6,7 +6,7 @@
 ! !MODULE: Geos57A1Module
 !
 ! !DESCRIPTION: Module Geos57A1Module contains routines to create the 
-!  GEOS-Chem average 1-hr data files from the MERRA raw data.
+!  GEOS-Chem average 1-hr data files from the GEOS-5.7.2 raw data.
 !\\
 !\\
 ! !INTERFACE: 
@@ -50,12 +50,13 @@ MODULE Geos57A1Module
   PRIVATE :: Process2dLndNx
   PRIVATE :: Process2dRadNx
   PRIVATE :: Process2dSlvNx
+  PRIVATE :: Process2dAlbedo
   PRIVATE :: Geos57SeaIceBins
   PRIVATE :: Geos57CreateLwi
   PRIVATE :: Geos57RegridLwi
   PRIVATE :: Geos57AdjustSnomas
-!  PRIVATE :: Geos57ProcessAlbedo
-!  PRIVATE :: Geos57ProcessTropp
+  PRIVATE :: Geos57ProcessAlbedo
+  PRIVATE :: Geos57ProcessTropp
 !
 ! !DEFINED_PARAMETERS:
 !
@@ -64,6 +65,8 @@ MODULE Geos57A1Module
 !
 ! !REVISION HISTORY:
 !  05 Jan 2012 - R. Yantosca - Initial version, based on MERRA
+!  09 Jan 2012 - R. Yantosca - Add driver routine Process2dAlbedo
+!  09 Jan 2012 - R. Yantosca - Updated comments, cosmetic changes
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -426,6 +429,20 @@ MODULE Geos57A1Module
        CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
     ENDIF
+
+    ! LWGNT
+    IF ( StrPos( 'LWGNT', tavg1_2d_rad_Nx_Data ) >= 0 ) THEN
+       var3  = (/ idLon, idLat, idTime /)    
+       vId   = vId + 1
+       lName = 'Net longwave flux at the ground' 
+       units = ''
+       gamap = 'GMAO-2D'
+       CALL NcDef_Variable      ( fOut, 'LWGNT', NF_FLOAT, 3, var3, vId      )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+    ENDIF
+
 
     ! LWTUP
     IF ( StrPos( 'LWTUP', tavg1_2d_rad_Nx_Data ) >= 0 ) THEN
@@ -855,9 +872,9 @@ MODULE Geos57A1Module
 ! !DESCRIPTION: Routine Geos57MakeA1
 ! \begin{enumerate}
 ! \item Extracting 3-hr time-averaged data fields (surface values) from 
-!       the MERRA raw data files (HDF4-EOS format),
+!       the GEOS-5.7.2 raw data files (netCDF-4 format),
 ! \item Regridding the fields to GEOS-Chem data resolution, and 
-! \item Saving the regridded data in a format that GEOS-Chem can read.
+! \item Saving the regridded data to disk in netCDF format
 ! \end{enumerate}
 ! This routine is called directly from the main program Geos57Driver.F90
 !\\
@@ -975,22 +992,11 @@ MODULE Geos57A1Module
     !=======================================================================
     ! Process data
     !=======================================================================
-
-    ! Data from "tavg1_2d_flx_Nx"
-    CALL Process2dFlxNx( nFields_2dFlxNx, fields_2dFlxNx,          &
-                         fOutNestCh,      fOut2x25,       fOut4x5 )
-
-    ! Data from "tavg1_2d_lnd_Nx"
-    CALL Process2dLndNx( nFields_2dLndNx, fields_2dLndNx,          &
-                         fOutNestCh,      fOut2x25,       fOut4x5 )
-
-    ! Data from "tavg1_2d_rad_Nx"
-    CALL Process2dRadNx( nFields_2dRadNx, fields_2dRadNx,          &
-                         fOutNestCh,      fOut2x25,       fOut4x5 )
-
-    ! Data from "tavg1_2d_slv_Nx"
-    CALL Process2dSlvNx( nFields_2dSlvNx, fields_2dSlvNx,          &
-                         fOutNestCh,      fOut2x25,       fOut4x5 )
+    CALL Process2dFlxNx ( nFields_2dFlxNx, fields_2dFlxNx )  ! tavg1_2d_flx_Nx
+    CALL Process2dLndNx ( nFields_2dLndNx, fields_2dLndNx )  ! tavg1_2d_lnd_Nx 
+    CALL Process2dRadNx ( nFields_2dRadNx, fields_2dRadNx )  ! tavg1_2d_rad_Nx
+    CALL Process2dSlvNx ( nFields_2dSlvNx, fields_2dSlvNx )  ! tavg1_2d_slv_Nx
+    CALL Process2dAlbedo(                                 )  ! Sfc albedo
     
     !=======================================================================
     ! Cleanup & quit
@@ -1019,28 +1025,26 @@ MODULE Geos57A1Module
 !
 ! !IROUTINE: Process2dFlxNx
 !
-! !DESCRIPTION: Subroutine Process2dFlxFx regrids the MERRA met fields from 
-!  the "tavg1\_2d\_flx\_Nx" file and saves to the GEOS-Chem file format.
+! !DESCRIPTION: Subroutine Process2dFlxNx regrids the GEOS-5.7.2 met fields 
+!  from the "tavg1\_2d\_flx\_Nx" file and saves output to netCDF format.
 !\\
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE Process2dFlxNx( nFields,    fields,            &
-                             fOutNestCh, fOut2x25, fOut4x5 )
+  SUBROUTINE Process2dFlxNx( nFields, fields )
 !
 ! !INPUT PARAMETERS:
 !
     INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
     CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
-    INTEGER,          INTENT(IN) :: fOutNestCh  ! NestCh  netCDF file ID
-    INTEGER,          INTENT(IN) :: fOut2x25    ! 2 x 2.5 netCDF file ID
-    INTEGER,          INTENT(IN) :: fOut4x5     ! 4 x 5   netCDF file ID
 !
 ! !REVISION HISTORY: 
 !  05 Jan 2012 - R. Yantosca - Initial version, based on Geos57CnModule.F90
 !  06 Jan 2012 - R. Yantosca - Now call Geos57CreateLwi to make the LWI field
 !  06 Jan 2012 - R. Yantosca - Now call Geos57SeaIceBins to compute the
 !                              fractional sea ice bins SEAICE{00..90}
+!  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
+!                              the module Geos57InputsModule.F90
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1330,19 +1334,19 @@ MODULE Geos57A1Module
              ct3d = (/ X4x5, Y4x5, 1 /)
              CALL NcWr( Q4x5, fOut4x5, TRIM( name ), st3d, ct3d )
           ENDIF
-
        ENDDO
+
+       !--------------------------------------------------------------------
+       ! Close input file
+       !--------------------------------------------------------------------
+       msg = '%%% Closing ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+       CALL NcCl( fIn )          
     ENDDO
 
     !=======================================================================
-    ! Cleanup & quit
+    ! Quit
     !=======================================================================
-
-    ! Close input file
-    msg = '%%% Closing ' // TRIM( fNameInput )
-    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-    CALL NcCl( fIn )          
-  
     msg = '%%%%%% LEAVING ROUTINE Process2dFlxNx %%%%%%'
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
@@ -1355,25 +1359,23 @@ MODULE Geos57A1Module
 !
 ! !IROUTINE: Process2dLndNx
 !
-! !DESCRIPTION: Subroutine Process2dLndFx regrids the MERRA met fields from 
-!  the "tavg1\_2d\_lnd\_Nx" file and saves to the GEOS-Chem file format.
+! !DESCRIPTION:  Subroutine Process2dLndNx regrids the GEOS-5.7.2 met fields 
+!  from the "tavg1\_2d\_lnd\_Nx" file and saves output to netCDF format.
 !\\
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE Process2dLndNx( nFields,    fields,            &
-                             fOutNestCh, fOut2x25, fOut4x5 )
+  SUBROUTINE Process2dLndNx( nFields, fields )
 !
 ! !INPUT PARAMETERS:
 !
     INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
     CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
-    INTEGER,          INTENT(IN) :: fOutNestCh  ! NestCh  netCDF file ID
-    INTEGER,          INTENT(IN) :: fOut2x25    ! 2 x 2.5 netCDF file ID
-    INTEGER,          INTENT(IN) :: fOut4x5     ! 4 x 5   netCDF file ID
 !
 ! !REVISION HISTORY: 
 !  05 Jan 2012 - R. Yantosca - Initial version, based on Geos57CnModule.F90
+!  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
+!                              the module Geos57InputsModule.F90
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1483,9 +1485,9 @@ MODULE Geos57A1Module
           Q2x25 = 0e0
           Q4x5  = 0e0
 
-          !-----------------------------
+          !-----------------------------------------------------------------
           ! Read data
-          !-----------------------------
+          !-----------------------------------------------------------------
           msg = '%%% Reading     ' // name
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
@@ -1500,16 +1502,16 @@ MODULE Geos57A1Module
           ! Replace missing values with zeroes
           WHERE( Q == FILL_VALUE ) Q = 0e0
 
-          !-----------------------------
+          !-----------------------------------------------------------------
           ! Pre-regrid handling
-          !-----------------------------
+          !-----------------------------------------------------------------
 
           ! Adjust SNOMAS to be consistent w/ GEOS-Chem usage
           IF ( name == 'SNOMAS' ) CALL Geos57AdjustSnomas( Q )  
 
-          !-----------------------------
+          !-----------------------------------------------------------------
           ! Do the regridding!
-          !-----------------------------
+          !-----------------------------------------------------------------
           msg = '%%% Regridding  ' // name
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
@@ -1517,9 +1519,9 @@ MODULE Geos57A1Module
           IF ( do2x25 ) CALL RegridGeos57To2x25( 0, Q, Q2x25 )
           IF ( do4x5  ) CALL RegridGeos57To4x5 ( 0, Q, Q4x5  )
  
-          !-----------------------------
+          !-----------------------------------------------------------------
           ! Post-regrid handling
-          !-----------------------------
+          !-----------------------------------------------------------------
           SELECT CASE( name )
              CASE( 'FRSNO', 'GRN',   'GWETROOT', 'GWETTOP', 'LAI',  &
                    'PARDF', 'PARDR', 'SNODP',    'SNOMAS'          )
@@ -1530,9 +1532,9 @@ MODULE Geos57A1Module
                 ! Nothing
           END SELECT
 
-          !-----------------------------
+          !-----------------------------------------------------------------
           ! Write netCDF output
-          !-----------------------------
+          !-----------------------------------------------------------------
           msg = '%%% Archiving   ' // name
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
           
@@ -1558,16 +1560,18 @@ MODULE Geos57A1Module
              CALL NcWr( Q4x5, fOut4x5, TRIM( name ), st3d, ct3d )
           ENDIF
        ENDDO
+
+       !--------------------------------------------------------------------
+       ! Close input file
+       !--------------------------------------------------------------------
+       msg = '%%% Closing ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+       CALL NcCl( fIn )      
     ENDDO
 
     !=======================================================================
-    ! Cleanup & quit
+    ! Quit
     !=======================================================================
-
-    ! Close input file
-    msg = '%%% Closing ' // TRIM( fNameInput )
-    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-    CALL NcCl( fIn )          
 
     ! Echo info    
     msg = '%%%%%% LEAVING ROUTINE Process2dLndNx %%%%%%'
@@ -1582,176 +1586,225 @@ MODULE Geos57A1Module
 !
 ! !IROUTINE: Process2dRadNx
 !
-! !DESCRIPTION: Subroutine Process2dRadFx regrids the MERRA met fields from 
-!  the "tavg1\_2d\_rad\_Nx" file and saves to the GEOS-Chem file format.
+! !DESCRIPTION:  Subroutine Process2dRadNx regrids the GEOS-5.7.2 met fields 
+!  from the "tavg1\_2d\_rad\_Nx" file and saves output to netCDF format.
 !\\
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE Process2dRadNx( nFields,    fields,            &
-                             fOutNestCh, fOut2x25, fOut4x5 )
+  SUBROUTINE Process2dRadNx( nFields, fields )
 !
 ! !INPUT PARAMETERS:
 !
     INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
     CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
-    INTEGER,          INTENT(IN) :: fOutNestCh  ! NestCh  netCDF file ID
-    INTEGER,          INTENT(IN) :: fOut2x25    ! 2 x 2.5 netCDF file ID
-   INTEGER,          INTENT(IN) :: fOut4x5     ! 4 x 5   netCDF file ID!!
 !
 ! !REVISION HISTORY: 
 !  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A3Module.F90
+!  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
+!                              the module Geos57InputsModule.F90
 !EOP
 !------------------------------------------------------------------------------
 !BOC
 !
 ! !LOCAL VARIABLES:
 !
-!    ! Scalars
-!    INTEGER                 :: F, T
-!
-!    ! Arrays
-!    REAL*4, TARGET          :: Q(I05x0666,J05x0666,TIMES_A1)
-!
-!    ! Pointer arrays
-!    REAL*4, POINTER         :: ptr_05x0666(:,:)
-!    REAL*4, POINTER         :: ptr_2x25   (:,:)
-!    REAL*4, POINTER         :: ptr_4x5    (:,:)
-!
-!     ! Character strings and arrays
-!    CHARACTER(LEN=8       ) :: name
-!    CHARACTER(LEN=MAX_CHAR) :: fileHDF
-!    CHARACTER(LEN=MAX_CHAR) :: fileName
-!    CHARACTER(LEN=MAX_CHAR) :: file2x25
-!    CHARACTER(LEN=MAX_CHAR) :: file4x5
-!    CHARACTER(LEN=MAX_CHAR) :: msg
-!
-!    !=======================================================================
-!    ! Initialization
-!    !=======================================================================
-!
-!    ! Zero all pointers
-!    NULLIFY( ptr_05x0666, ptr_2x25, ptr_4x5 )
-!
-!    ! Echo info    
-!    msg = '%%%%%% ENTERING ROUTINE Process2dRadNx %%%%%%'
-!    WRITE( IU_LOG, '(a)' ) '%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!    ! Create filename from the template
-!    fileHDF = TRIM( dataDirHDF ) // TRIM( tavg1_2d_rad_Nx_file )
-!    CALL expandDate( fileHDF, yyyymmdd, 000000 )
-!
-!    ! Echo info
-!    msg = '%%% Reading ' // TRIM( fileHDF )
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!    ! Open the HDF4-EOS file for input
-!    CALL He4SetVerbose( VERBOSE )
-!    CALL He4GridOpen( fileHDF )
-!    CALL He4GridGetDimInfo
-!    CALL He4GridReadX
-!    CALL He4GridReadY
-!    CALL He4GetNymdNhms
-!
-!    !=======================================================================
-!    ! Process data
-!    !=======================================================================
-!
-!    ! Loop over data fields
-!    DO F = 1, nFields
-!
-!       ! Save field name into an 8-char variable. 
-!       ! This will truncate field names longer than 8 chars.
-!       name = TRIM( fields(F) )
-!
-!       ! Skip if the field is empty
-!       IF ( name == '' ) CYCLE
-!
-!       !--------------------------------
-!       ! Read data 
-!       !--------------------------------
-!       Q = 0e0
-!       msg = '%%% Reading    ' // name
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!       CALL He4GridReadData( name, Q )
-!          
-!       ! Remove fill values
-!       WHERE( Q == FILL_VALUE ) Q = 0e0
-!
-!       !--------------------------------
-!       ! Special ALBEDO handling
-!       !--------------------------------
-!       IF ( name == 'ALBEDO' ) THEN
-!          CALL Geos57ProcessAlbedo( Q ) 
-!       ENDIF
-!            
-!       !--------------------------------
-!       ! Regrid to 2 x 2.5 & 4 x 5
-!       !--------------------------------
-!       msg = '%%% Regridding ' // name
-!       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
-!       ! Loop over times
-!       !$OMP PARALLEL DO                                 &
-!       !$OMP DEFAULT( SHARED )                           &
-!       !$OMP PRIVATE( T, ptr_05x0666, ptr_2x25, ptr_4x5 )
-!       DO T = 1, TIMES_A1
-!
-!          !-----------------------------
-!          ! Do the regridding!
-!          !-----------------------------
-!
-!          ! Point to time-slice of native data array
-!          ptr_05x0666 => Q(:,:,T)
-!
-!          ! Regrid to 2 x 2.5
-!          IF ( do2x25 ) THEN
-!             ptr_2x25 => Q2x25(:,:,T,F+offset)
-!             CALL RegridGeos57NTo2x25( 0, ptr_05x0666, ptr_2x25 )
-!          ENDIF
-!
-!          ! Regrid to 4x5 
-!          IF ( do4x5 ) THEN
-!             ptr_4x5 => Q4x5(:,:,T,F+offset)
-!             CALL RegridGeos57NTo4x5( 0, ptr_05x0666, ptr_4x5 )
-!          ENDIF
-!
-!          !-----------------------------
-!          ! Post-regrid handling
-!          !-----------------------------
-!          SELECT CASE( name )
-!             ! These fields should be positive-definite
-!             CASE( 'ALBEDO', 'CLDTOT', 'LWTUP', 'SWGDN' )
-!                IF ( do2x25 ) WHERE( ptr_2x25 < 0e0 ) ptr_2x25 = 0e0
-!                IF ( do4x5  ) WHERE( ptr_4x5  < 0e0 ) ptr_4x5  = 0e0
-!             CASE DEFAULT
-!                ! Do Nothing
-!          END SELECT
-!       ENDDO
-!       !$OMP END PARALLEL DO
-!    ENDDO
-!          
-!    !=======================================================================
-!    ! Cleanup & quit
-!    !=======================================================================
-!
-!    ! Increment offset for next routine
-!    offset = offset + nFields
-!
-!    ! Nullify all pointers
-!    NULLIFY( ptr_05x0666, ptr_2x25, ptr_4x5 )
-!
-!    ! Detach from grid and close HDF file
-!    msg = '%%% Closing ' // TRIM( fileHDF )
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!    CALL He4GridClose( fileHDF )
-!    CALL He4CleanUpIndexFields
-!
-!    ! Echo info    
-!    msg = '%%%%%% LEAVING ROUTINE Process2dRadNx %%%%%%'
-!    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!
+    ! Loop and time variables
+    INTEGER                 :: H,        F,        hhmmss
+
+    ! Variables for netCDF I/O
+    INTEGER                 :: X,        Y,        T
+    INTEGER                 :: XNestCh,  YNestCh,  TNestCh
+    INTEGER                 :: X2x25,    Y2x25,    T2x25
+    INTEGER                 :: X4x5,     Y4x5,     T4x5
+    INTEGER                 :: ct3d(3),  st3d(3)
+
+    ! Data arrays
+    REAL*4, TARGET          :: Q    ( I025x03125, J025x03125 )
+    REAL*4                  :: Q2x25( I2x25,      J2x25      )
+    REAL*4                  :: Q4x5 ( I4x5,       J4x5       )
+
+    ! Pointers
+    REAL*4, POINTER         :: ptr(:,:)
+
+     ! Character strings and arrays
+    CHARACTER(LEN=8       ) :: name
+    CHARACTER(LEN=8       ) :: name2
+    CHARACTER(LEN=MAX_CHAR) :: fNameInput
+    CHARACTER(LEN=MAX_CHAR) :: msg
+
+    !=======================================================================
+    ! Get dimensions from output files
+    !=======================================================================
+
+    ! Echo info    
+    msg = '%%%%%% ENTERING ROUTINE Process2dRadNx %%%%%%'
+    WRITE( IU_LOG, '(a)' ) '%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+    ! Nested China grid
+    IF ( doNestCh ) THEN
+       CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
+       CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
+       CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! 2 x 2.5 global grid       
+    IF ( do2x25 ) THEN
+       CALL NcGet_DimLen( fOut2x25,   'lon',  X2x25   )
+       CALL NcGet_DimLen( fOut2x25,   'lat',  Y2x25   ) 
+       CALL NcGet_DimLen( fOut2x25,   'time', T2x25   )
+    ENDIF
+
+    ! 4x5 global grid
+    IF ( do4x5 ) THEN
+       CALL NcGet_DimLen( fOut4x5,    'lon',  X4x5    )
+       CALL NcGet_DimLen( fOut4x5,    'lat',  Y4x5    )   
+       CALL NcGet_DimLen( fOut4x5,    'time', T4x5    )
+    ENDIF
+
+    !=======================================================================
+    ! Open input file
+    !=======================================================================
+
+    ! Loop over the number of files per day
+    DO H = 1, TIMES_A1
+
+       ! GMT time of day (hh:mm:ss)
+       hhmmss = ( a1Mins(H) / 60 ) * 10000 + 3000
+       
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%% KLUDGE FOR DEBUGGING -- Sample data is only up to hour 20:30:00
+       if ( hhmmss > 210000 ) CYCLE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+       ! Create input filename from the template
+       fNameInput = TRIM( inputDataDir ) // TRIM( tavg1_2d_rad_Nx_file )
+       CALL expandDate( fNameInput, yyyymmdd, hhmmss )
+       
+       ! Echo info
+       msg = '%%% Reading ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+       ! Open the netCDF4 file for input
+       CALL NcOp_Rd( fIn, TRIM( fNameInput ) )
+       
+       ! Get the dimensions from the netCDF file
+       CALL NcGet_DimLen( fIn, 'lon',  X )
+       CALL NcGet_DimLen( fIn, 'lat',  Y ) 
+       CALL NcGet_DimLen( fIn, 'time', T )
+       
+       !====================================================================
+       ! Process data
+       !====================================================================
+
+       ! Loop over data fields
+       DO F = 1, nFields
+
+          ! Save field name into an 8-char variable. 
+          ! This will truncate field names longer than 8 chars.
+          name = TRIM( fields(F) )
+
+          ! Skip certain fields
+          IF ( name == '' .or. name == 'PS' .or. name == 'ALBEDO' ) CYCLE
+          
+          ! Zero data arrays
+          Q     = 0e0
+          Q2x25 = 0e0
+          Q4x5  = 0e0
+          
+          ! Save field name into an 8-char variable. 
+          ! This will truncate field names longer than 8 chars.
+          name = TRIM( fields(F) )
+          
+          ! Skip if the field is empty
+          IF ( name == '' ) CYCLE
+            
+          !-----------------------------------------------------------------
+          ! Read data
+          !-----------------------------------------------------------------
+          msg = '%%% Reading    ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+          ! Start and count index arrays for netCDF
+          ! (There is only one data block per file)
+          st3d  = (/ 1, 1, 1 /)
+          ct3d  = (/ X, Y, 1 /)
+
+          ! Read data from file
+          CALL NcRd( Q, fIn, TRIM( name ), st3d, ct3d )
+          
+          ! Replace missing values with zeroes
+          WHERE( Q == FILL_VALUE ) Q = 0e0
+
+          !-----------------------------------------------------------------
+          ! Regrid to coarse resolution
+          !-----------------------------------------------------------------
+          msg = '%%% Regridding ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+          
+          ! Regrid
+          IF ( do2x25 ) CALL RegridGeos57To2x25( 0, Q, Q2x25 )
+          IF ( do4x5  ) CALL RegridGeos57To4x5 ( 0, Q, Q4x5  )
+
+          !-----------------------------------------------------------------
+          ! Post-regrid handling
+          !-----------------------------------------------------------------
+          SELECT CASE( name )
+
+             ! These fields should be positive-definite
+             CASE( 'CLDTOT', 'LWGNT', 'LWTUP', 'SWGDN', 'SWTUP' )
+                IF ( do2x25 ) WHERE( Q2x25 < 0e0 ) Q2x25 = 0e0
+                IF ( do4x5  ) WHERE( Q4x5  < 0e0 ) Q4x5  = 0e0
+
+             CASE DEFAULT
+                ! Do Nothing
+
+          END SELECT
+
+          !-----------------------------------------------------------------
+          ! Write netCDF output
+          !-----------------------------------------------------------------
+          msg = '%%% Archiving  ' // name
+          WRITE( IU_LOG, '(a)' ) TRIM( msg )
+          
+          ! Nested China (point to proper slice of global data)
+          IF ( doNestCh ) THEN
+             Ptr  => Q( I0_ch:I1_ch, J0_ch:J1_ch )
+             st3d = (/ 1,       1,       H /)
+             ct3d = (/ XNestCh, YNestCh, 1 /)
+             CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st3d, ct3d )
+          ENDIF
+          
+          ! Write 2 x 2.5 data
+          IF ( do2x25 ) THEN
+             st3d = (/ 1,     1,     H  /)
+             ct3d = (/ X2x25, Y2x25, 1  /)
+             CALL NcWr( Q2x25, fOut2x25, TRIM( name ), st3d, ct3d )
+          ENDIF
+          
+          ! Write 4x5 data
+          IF ( do4x5 ) THEN
+             st3d = (/ 1,    1,    H /)
+             ct3d = (/ X4x5, Y4x5, 1 /)
+             CALL NcWr( Q4x5, fOut4x5, TRIM( name ), st3d, ct3d )
+          ENDIF
+       ENDDO
+
+       !--------------------------------------------------------------------
+       ! Close input file
+       !--------------------------------------------------------------------
+       msg = '%%% Closing ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+       CALL NcCl( fIn )      
+    ENDDO
+          
+    !=======================================================================
+    ! Quit
+    !=======================================================================
+    msg = '%%%%%% LEAVING ROUTINE Process2dRadNx %%%%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
   END SUBROUTINE Process2dRadNx
 !EOC
 !------------------------------------------------------------------------------
@@ -1761,25 +1814,23 @@ MODULE Geos57A1Module
 !
 ! !IROUTINE: Process2dSlvNx
 !
-! !DESCRIPTION: Subroutine Process2dSlvFx regrids the MERRA met fields from 
-!  the "tavg1\_2d\_slv\_Nx" file and saves to the GEOS-Chem file format.
+! !DESCRIPTION:  Subroutine Process2dSlvNx regrids the GEOS-5.7.2 met fields 
+!  from the "tavg1\_2d\_slv\_Nx" file and saves output to netCDF format.
 !\\
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE Process2dSlvNx( nFields,    fields,            &
-                             fOutNestCh, fOut2x25, fOut4x5 )
+  SUBROUTINE Process2dSlvNx( nFields, fields )
 !
 ! !INPUT PARAMETERS:
 !
     INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
     CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
-    INTEGER,          INTENT(IN) :: fOutNestCh  ! NestCh  netCDF file ID
-    INTEGER,          INTENT(IN) :: fOut2x25    ! 2 x 2.5 netCDF file ID
-    INTEGER,          INTENT(IN) :: fOut4x5     ! 4 x 5   netCDF file ID
 !
 ! !REVISION HISTORY: 
 !  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A3Module.F90
+!  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
+!                              the module Geos57InputsModule.F90
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1877,7 +1928,7 @@ MODULE Geos57A1Module
        ! Process surface pressure (need for use below)
        !====================================================================
 
-       msg = '%%% Reading      PS'
+       msg = '%%% Reading     PS'
        WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
        ! Start and count index arrays for netCDF
@@ -1900,7 +1951,7 @@ MODULE Geos57A1Module
 
        !====================================================================
        ! Process all other data fields
-       !===================================================================
+       !====================================================================
 
        ! Loop over data fields
        DO F = 1, nFields
@@ -1920,7 +1971,7 @@ MODULE Geos57A1Module
           !-----------------------------------------------------------------
           ! Read data
           !-----------------------------------------------------------------
-          msg = '%%% Reading     ' // name
+          msg = '%%% Reading    ' // name
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
           ! Save field name into an 8-char variable. 
@@ -1988,7 +2039,7 @@ MODULE Geos57A1Module
           !-----------------------------------------------------------------
           ! Write netCDF output
           !-----------------------------------------------------------------
-          msg = '%%% Archiving   ' // name
+          msg = '%%% Archiving  ' // name
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
           
           ! Nested China (point to proper slice of global data)
@@ -2013,22 +2064,235 @@ MODULE Geos57A1Module
              CALL NcWr( Q4x5, fOut4x5, TRIM( name ), st3d, ct3d )
           ENDIF
        ENDDO
+
+       !--------------------------------------------------------------------
+       ! Close input file
+       !--------------------------------------------------------------------
+       msg = '%%% Closing ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+       CALL NcCl( fIn )    
     ENDDO
 
     !=======================================================================
-    ! Cleanup & quit
+    ! Quit
     !=======================================================================
-
-    ! Close input file
-    msg = '%%% Closing ' // TRIM( fNameInput )
-    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-    CALL NcCl( fIn )          
 
     ! Echo info    
     msg = '%%%%%% LEAVING ROUTINE Process2dSlvNx %%%%%%'
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
   END SUBROUTINE Process2dSlvNx
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: Process2dAlbedo
+!
+! !DESCRIPTION: Subroutine Process2dAlbedo creates the daily average albedo
+!  field.  This routine is a wrapper for Geos57ProcessAlbedo.
+!\\
+!\\
+! !INTERFACE:
+!
+  SUBROUTINE Process2dAlbedo()
+!
+! !REMARKS:
+!   Rationale for doing this: 
+!   ----------------------------------------------------------------------
+!   The GEOS-5.7.2 ALBEDO field is only defined where it is daylight.
+!   Some places in GEOS-Chem require an ALBEDO field even at night (i.e.
+!   as a proxy for determining land surface).  Therefore compute the
+!   daily average albedo and return to the data processing routine above.
+!
+! !REVISION HISTORY: 
+!  11 Aug 2010 - R. Yantosca - Initial version
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+!
+! !LOCAL VARIABLES:
+!
+    ! Loop and time variables
+    INTEGER                 :: H,        F,        hhmmss
+
+    ! Variables for netCDF I/O
+    INTEGER                 :: X,        Y,        T
+    INTEGER                 :: XNestCh,  YNestCh,  TNestCh
+    INTEGER                 :: X2x25,    Y2x25,    T2x25
+    INTEGER                 :: X4x5,     Y4x5,     T4x5
+    INTEGER                 :: ct3d(3),  st3d(3)
+
+    ! Data arrays
+    REAL*4, TARGET          :: Q    ( I025x03125, J025x03125, TIMES_A1 )
+    REAL*4                  :: Q2x25( I2x25,      J2x25                )
+    REAL*4                  :: Q4x5 ( I4x5,       J4x5                 )
+
+    ! Pointers
+    REAL*4, POINTER         :: ptr(:,:)
+
+     ! Character strings and arrays
+    CHARACTER(LEN=MAX_CHAR) :: fNameInput
+    CHARACTER(LEN=MAX_CHAR) :: msg
+
+    !=======================================================================
+    ! Get dimensions from output files
+    !=======================================================================
+
+    ! Echo info    
+    msg = '%%%%%% ENTERING ROUTINE Process2dAlbedo %%%%%%'
+    WRITE( IU_LOG, '(a)' ) '%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+    ! Nested China grid
+    IF ( doNestCh ) THEN
+       CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
+       CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
+       CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! 2 x 2.5 global grid       
+    IF ( do2x25 ) THEN
+       CALL NcGet_DimLen( fOut2x25,   'lon',  X2x25   )
+       CALL NcGet_DimLen( fOut2x25,   'lat',  Y2x25   ) 
+       CALL NcGet_DimLen( fOut2x25,   'time', T2x25   )
+    ENDIF
+
+    ! 4x5 global grid
+    IF ( do4x5 ) THEN
+       CALL NcGet_DimLen( fOut4x5,    'lon',  X4x5    )
+       CALL NcGet_DimLen( fOut4x5,    'lat',  Y4x5    )   
+       CALL NcGet_DimLen( fOut4x5,    'time', T4x5    )
+    ENDIF
+
+    !=======================================================================
+    ! Read each hour of ALBEDO data and store into the Q array
+    !=======================================================================
+
+    ! Zero data arrays
+    Q     = 0e0
+
+    ! Loop over the number of files per day
+    DO H = 1, TIMES_A1
+
+       !-----------------------------------------------------------------
+       ! Prepare for file input
+       !-----------------------------------------------------------------
+
+       ! GMT time of day (hh:mm:ss)
+       hhmmss = ( a1Mins(H) / 60 ) * 10000 + 3000
+       
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%% KLUDGE FOR DEBUGGING -- Sample data is only up to hour 20:30:00
+       if ( hhmmss > 210000 ) CYCLE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+       ! Create input filename from the template
+       fNameInput = TRIM( inputDataDir ) // TRIM( tavg1_2d_rad_Nx_file )
+       CALL expandDate( fNameInput, yyyymmdd, hhmmss )
+       
+       ! Echo info
+       msg = '%%% Reading ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+       ! Open the netCDF4 file for input
+       CALL NcOp_Rd( fIn, TRIM( fNameInput ) )
+       
+       ! Get the dimensions from the netCDF file
+       CALL NcGet_DimLen( fIn, 'lon',  X )
+       CALL NcGet_DimLen( fIn, 'lat',  Y ) 
+       CALL NcGet_DimLen( fIn, 'time', T )
+              
+       !-----------------------------------------------------------------
+       ! Read data
+       !-----------------------------------------------------------------
+       msg = '%%% Reading ALBEDO'
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+       
+       ! Start and count index arrays for netCDF
+       ! (There is only one data block per file)
+       st3d  = (/ 1, 1, 1 /)
+       ct3d  = (/ X, Y, 1 /)
+
+       ! Read data from file
+       CALL NcRd( Q(:,:,H), fIn, 'ALBEDO', st3d, ct3d )
+       
+       ! Replace missing values with zeroes
+       WHERE( Q == FILL_VALUE ) Q = 0e0
+
+       !-----------------------------------------------------------------
+       ! Close input file
+       !-----------------------------------------------------------------
+       msg = '%%% Closing ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+       CALL NcCl( fIn )          
+
+    ENDDO
+
+    !=======================================================================
+    ! Process ALBEDO data
+    !=======================================================================
+
+    ! Compute daily average albedo
+    CALL Geos57ProcessAlbedo( Q )
+
+    !-----------------------------------------------------------------
+    ! Regrid to coarse resolution
+    !-----------------------------------------------------------------
+    msg = '%%% Regridding ALBEDO'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+    ! Regrid
+    IF ( do2x25 ) CALL RegridGeos57To2x25( 0, Q(:,:,1), Q2x25 )
+    IF ( do4x5  ) CALL RegridGeos57To4x5 ( 0, Q(:,:,1), Q4x5  )
+
+    ! Make sure ALBEDO is positive-definite
+    IF ( do2x25 ) WHERE( Q2x25 < 0e0 ) Q2x25 = 0e0
+    IF ( do4x5  ) WHERE( Q4x5  < 0e0 ) Q4x5  = 0e0
+   
+    !-----------------------------------------------------------------
+    ! Write average daily albedo to netCDF files
+    !-----------------------------------------------------------------
+
+    ! Save to disk
+    msg = '%%% Archiving  ALBEDO'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+    ! Write the daily average albedo to disk
+    DO H = 1, TIMES_A1
+          
+       ! Nested China (point to proper slice of global data)
+       IF ( doNestCh ) THEN
+          Ptr  => Q( I0_ch:I1_ch, J0_ch:J1_ch, 1 )
+          st3d = (/ 1,       1,       H /)
+          ct3d = (/ XNestCh, YNestCh, 1 /)
+          CALL NcWr( Ptr, fOutNestCh, 'ALBEDO', st3d, ct3d )
+       ENDIF
+       
+       ! Write 2 x 2.5 data
+       IF ( do2x25 ) THEN
+          st3d = (/ 1,     1,     H  /)
+          ct3d = (/ X2x25, Y2x25, 1  /)
+          CALL NcWr( Q2x25, fOut2x25, 'ALBEDO', st3d, ct3d )
+       ENDIF
+       
+       ! Write 4x5 data
+       IF ( do4x5 ) THEN
+          st3d = (/ 1,    1,    H /)
+          ct3d = (/ X4x5, Y4x5, 1 /)
+          CALL NcWr( Q4x5, fOut4x5, 'ALBEDO', st3d, ct3d )
+       ENDIF
+       
+    ENDDO
+
+    !=======================================================================
+    ! Quit
+    !=======================================================================
+    msg = '%%%%%% LEAVING ROUTINE Process2dAlbedo %%%%%%'
+    WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+  END SUBROUTINE Process2dAlbedo
 !EOC
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -2089,9 +2353,6 @@ MODULE Geos57A1Module
     isNative = ( .not. PRESENT( map ) )
 
     ! Loop over coarse grid boxes
-!    !$OMP PARALLEL DO  &
-!    !$OMP DEFAULT( SHARED ) &
-!    !$OMP PRIVATE( I, J, T, nPoints, Nx, Ny, X, Y, sum_Wn, B )
     DO J = 1, JMX
     DO I = 1, IMX
 
@@ -2340,9 +2601,9 @@ MODULE Geos57A1Module
 !
 ! !IROUTINE: Geos57AdjustSnomas
 !
-! !DESCRIPTION: Routine Geos57AdjustSnomas will adjust the MERRA SNOMAS field
-!  to make it more similar to the GEOS-5 SNOMAS field.  This is necessary for
-!  backward compatibility with existing GEOS-Chem routines.
+! !DESCRIPTION: Routine Geos57AdjustSnomas will adjust the GEOS-5.7.2 SNOMAS 
+!  field to make it more similar to the GEOS-5 SNOMAS field.  This is necessary
+!  for backward compatibility with existing GEOS-Chem routines.
 !\\
 !\\
 ! !INTERFACE:
@@ -2356,9 +2617,9 @@ MODULE Geos57A1Module
 ! !REMARKS:
 !  NOTE: This routine was originally developed for the MERRA data processing
 !  code, but the same algorithm also can be used for GEOS-5.7.2 data.
-!
-!  Original comments:
-!  ------------------
+!                                                                             .
+!  Original comments from MERRA code:
+!  ----------------------------------
 !  The SNOMAS field in MERRA differs from that in the GEOS-5 ops data:
 !                                                                             .
 !  From the GEOS-5 File Specification Document:
@@ -2452,80 +2713,84 @@ MODULE Geos57A1Module
 
   END SUBROUTINE Geos57AdjustSnomas
 !EOC
-!!------------------------------------------------------------------------------
-!!          Harvard University Atmospheric Chemistry Modeling Group            !
-!!------------------------------------------------------------------------------
-!!BOP
-!!
-!! !IROUTINE: Geos57ProcessAlbedo
-!!
-!! !DESCRIPTION: Subroutine Geos57ProcessAlbedo computes the daily average
-!!  albedo from the MERRA raw data.
-!!\\
-!!\\
-!! !INTERFACE:
-!!
-!  SUBROUTINE Geos57ProcessAlbedo( Q )
-!!
-!! !INPUT/OUTPUT PARAMETERS: 
-!!
-!    REAL*4, INTENT(INOUT) :: Q(:,:,:)  ! TROPP [hPa]
-!!
-!! !REVISION HISTORY: 
-!!  23 Jul 2010 - R. Yantosca - Initial version, based on Geos5RegridModule.f90
-!!
-!! !REMARKS:
-!!   Rationale for doing this: 
-!!   ----------------------------------------------------------------------
-!!   The MERRA ALBEDO field is only defined where it is daylight.
-!!   Some places in GEOS-Chem require an ALBEDO field even at night (i.e.
-!!   as a proxy for determining land surface).  Therefore compute the
-!!   daily average albedo and return to the data processing routine above.
-!!EOP
-!!------------------------------------------------------------------------------
-!!BOC
-!!
-!! !LOCAL VARIABLES:
-!!
-!    ! Scalars
-!    INTEGER :: I, J, T
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
 !
-!    ! Arrays
-!    ! For albedo processing
-!    REAL*4  :: A ( SIZE( Q, 1 ), SIZE( Q, 2 ) )
-!    INTEGER :: Ct( SIZE( Q, 1 ), SIZE( Q, 2 ) )
+! !IROUTINE: Geos57ProcessAlbedo
 !
-!    ! Initialization
-!    A  = 0e0
-!    Ct = 0
+! !DESCRIPTION: Subroutine Geos57ProcessAlbedo computes the daily average
+!  albedo from the MERRA raw data.
+!\\
+!\\
+! !INTERFACE:
 !
-!    ! Sum up albedo over the entire day
-!    DO T = 1, SIZE( Q, 3 )
-!    DO J = 1, SIZE( Q, 2 )
-!    DO I = 1, SIZE( Q, 1 )
-!       IF ( Q(I,J,T) > 0e0 ) THEN
-!          A (I,J) = A (I,J) + Q(I,J,T)
-!          Ct(I,J) = Ct(I,J) + 1
-!       ENDIF
-!    ENDDO
-!    ENDDO
-!    ENDDO
+  SUBROUTINE Geos57ProcessAlbedo( Q )
 !
-!    ! Compute average albedo
-!    ! Assign 0.85 for snow/ice over poles 
-!    DO T = 1, SIZE( Q, 3 )
-!    DO J = 1, SIZE( Q, 2 )
-!    DO I = 1, SIZE( Q, 1 )
-!       IF ( ct(I,J) > 0 ) THEN
-!          Q(I,J,T) = A(I,J) / REAL( ct(I,J) )
-!       ELSE
-!          Q(I,J,T) = 0.85e0
-!       ENDIF
-!    ENDDO
-!    ENDDO
-!    ENDDO
+! !INPUT/OUTPUT PARAMETERS: 
 !
-!  END SUBROUTINE Geos57ProcessAlbedo
+    ! Input:  surface albedo [unitless] for each hour of the day
+    ! Output: daily average surface albedo [unitless]
+    REAL*4, INTENT(INOUT) :: Q( I025x03125, J025x03125, TIMES_A1 ) 
+!
+! !REMARKS:
+!   Rationale for doing this: 
+!   ----------------------------------------------------------------------
+!   The GEOS-5.7.2 ALBEDO field is only defined where it is daylight.
+!   Some places in GEOS-Chem require an ALBEDO field even at night (i.e.
+!   as a proxy for determining land surface).  Therefore compute the
+!   daily average albedo and return to the data processing routine above.
+!
+! !REVISION HISTORY: 
+!  09 Jan 2012 - R. Yantosca - Initial version, based on MERRA
+!  09 Jan 2012 - R. Yantosca - Now return avg albedo in 1st slot of Q
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+!
+! !LOCAL VARIABLES:
+!
+    ! Scalars
+    INTEGER :: I, J, T
+
+    ! Arrays
+    ! For albedo processing
+    REAL*4  :: A ( I025x03125, J025x03125 )
+    INTEGER :: Ct( I025x03125, J025x03125 )
+
+    ! Initialization
+    A  = 0e0
+    Ct = 0
+
+    ! Sum up albedo over the entire day
+    DO T = 1, TIMES_A1
+    DO J = 1, J025x03125
+    DO I = 1, I025x03125
+       IF ( Q(I,J,T) > 0e0 ) THEN
+          A (I,J) = A (I,J) + Q(I,J,T)
+          Ct(I,J) = Ct(I,J) + 1
+       ENDIF
+    ENDDO
+    ENDDO
+    ENDDO
+    
+    ! Zero data in Q array
+    Q = 0e0
+
+    ! Compute average albedo, store in 1st slot of Q
+    ! Assign 0.85 for snow/ice over poles 
+    DO J = 1, J025x03125
+    DO I = 1, I025x03125
+       IF ( ct(I,J) > 0 ) THEN
+          Q(I,J,1) = A(I,J) / REAL( ct(I,J) )
+       ELSE
+          Q(I,J,1) = 0.85e0
+       ENDIF
+    ENDDO
+    ENDDO
+
+  END SUBROUTINE Geos57ProcessAlbedo
 !EOC
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !

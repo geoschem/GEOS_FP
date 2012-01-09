@@ -50,6 +50,7 @@ MODULE Geos57I3Module
 ! !REVISION HISTORY:
 !  03 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  04 Jan 2012 - R. Yantosca - Add extra global attributes
+!  09 Jan 2012 - R. Yantosca - Now close input file w/in the hourly do loop
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -468,8 +469,7 @@ MODULE Geos57I3Module
     ENDIF
 
     ! Regrid fields from the various raw data files
-    CALL ProcessI33dAsmNv( nFields,    fields,            &
-                           fOutNestCh, fOut2x25, fOut4x5 )
+    CALL ProcessI33dAsmNv( nFields, fields )
     
     !=======================================================================
     ! Cleanup & quit
@@ -504,19 +504,18 @@ MODULE Geos57I3Module
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE ProcessI33dAsmNv( nFields,    fields,  &
-                               fOutNestCh, fOut2x25, fOut4x5 )
+  SUBROUTINE ProcessI33dAsmNv( nFields, fields )
 !
 ! !INPUT PARAMETERS:
 !
     INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
     CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
-    INTEGER,          INTENT(IN) :: fOUtNestCh  ! NestCh  netCDF file ID
-    INTEGER,          INTENT(IN) :: fOut2x25    ! 2 x 2.5 netCDF file ID
-    INTEGER,          INTENT(IN) :: fOut4x5     ! 4 x 5   netCDF file ID
 !
 ! !REVISION HISTORY: 
 !  04 Jan 2012 - R. Yantosca - Initial version, based on MERRA
+!  09 Jan 2012 - R. Yantosca - Now close input file w/in the hourly do loop
+!  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
+!                              the module Geos57InputsModule.F90
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -652,9 +651,9 @@ MODULE Geos57I3Module
              st3d = (/ 1, 1, 1 /)
              ct3d = (/ X, Y, 1 /)
 
-             !-----------------------------
+             !--------------------------------------------------------------
              ! Read data
-             !-----------------------------
+             !--------------------------------------------------------------
              msg = '%%% Reading     ' // name
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
              CALL NcRd( Q2d, fIn, TRIM( name ), st3d, ct3d )
@@ -665,9 +664,9 @@ MODULE Geos57I3Module
              ! Convert from [Pa] to [hPa]
              Q2d = Q2d / 100e0
 
-             !-----------------------------
+             !--------------------------------------------------------------
              ! Regrid data
-             !-----------------------------
+             !--------------------------------------------------------------
              msg = '%%% Regridding  ' // name
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
              
@@ -681,9 +680,9 @@ MODULE Geos57I3Module
                 CALL RegridGeos57To4x5 ( 0, Q2d, Q2d_4x5  )
              ENDIF
  
-             !-----------------------------
+             !--------------------------------------------------------------
              ! Write netCDF output
-             !-----------------------------
+             !--------------------------------------------------------------
              msg = '%%% Archiving   ' // name
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
              
@@ -725,9 +724,9 @@ MODULE Geos57I3Module
              name8 = name
              IF ( TRIM( name8 ) == 'PV' ) name8 = 'EPV'
 
-             !-----------------------------
+             !--------------------------------------------------------------
              ! Read data
-             !-----------------------------
+             !--------------------------------------------------------------
              msg = '%%% Reading     ' // name8
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
              CALL NcRd( Q3d, fIn, TRIM( name8 ), st4d, ct4d )
@@ -735,9 +734,9 @@ MODULE Geos57I3Module
              ! Replace missing values with zeroes
              WHERE( Q3d == FILL_VALUE ) Q3d = 0e0
 
-             !-----------------------------
+             !--------------------------------------------------------------
              ! Regrid data
-             !-----------------------------
+             !--------------------------------------------------------------
              msg = '%%% Regridding  ' // name
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
              
@@ -759,9 +758,9 @@ MODULE Geos57I3Module
                 
              ENDDO
 
-             !-----------------------------
+             !--------------------------------------------------------------
              ! Write netCDF output
-             !-----------------------------
+             !--------------------------------------------------------------
              msg = '%%% Archiving   ' // name
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
              
@@ -788,21 +787,19 @@ MODULE Geos57I3Module
              ENDIF
 
           ENDIF
-
        ENDDO
 
+       !-----------------------------------------------------------------
+       ! Close input file
+       !-----------------------------------------------------------------
+       msg = '%%% Closing ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+       CALL NcCl( fIn )
     ENDDO
 
     !=======================================================================
-    ! Cleanup & quit
+    ! Quit
     !=======================================================================
-
-    ! Close input file
-    msg = '%%% Closing ' // TRIM( fNameInput )
-    WRITE( IU_LOG, '(a)' ) TRIM( msg )
-    CALL NcCl( fIn )
-
-    ! Echo info    
     msg = '%%%%%% EXITING ROUTINE ProcessI33dAsmNv %%%%%%'
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
