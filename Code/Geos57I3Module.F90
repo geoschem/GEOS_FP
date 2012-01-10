@@ -248,7 +248,7 @@ MODULE Geos57I3Module
     var1    = (/ idLev /)
     vId     = vId + 1
     lName   = 'levels'
-    units   = 'degrees_north'
+    units   = 'unitless'
     CALL NcDef_Variable      ( fOut, 'lev', NF_FLOAT, 1, var1, vId           )
     CALL NcDef_Var_attributes( fOut, vId, 'long_name',      TRIM( lName )    )
     CALL NcDef_Var_attributes( fOut, vId, 'units',          TRIM( units )    ) 
@@ -516,6 +516,7 @@ MODULE Geos57I3Module
 !  09 Jan 2012 - R. Yantosca - Now close input file w/in the hourly do loop
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
 !                              the module Geos57InputsModule.F90
+!  10 Jan 2012 - R. Yantosca - Activate parallel loop over vertical levels
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -741,6 +742,9 @@ MODULE Geos57I3Module
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
              
              ! Loop over vertical levels
+!$OMP PARALLEL DO       &
+!$OMP DEFAULT( SHARED ) &
+!$OMP PRIVATE( L, LR )
              DO L = 1, L025x03125 
 
                 ! Reverse level indices
@@ -757,6 +761,7 @@ MODULE Geos57I3Module
                 ENDIF
                 
              ENDDO
+!$OMP END PARALLEL DO
 
              !--------------------------------------------------------------
              ! Write netCDF output

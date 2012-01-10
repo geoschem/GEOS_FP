@@ -25,6 +25,7 @@
 #  03 Jan 2012 - R. Yantosca - Added fields for I3 output file
 #  05 Jan 2012 - R. Yantosca - Added fields for A1 output file
 #  05 Jan 2012 - R. Yantosca - Now use a single netCDF template file
+#  10 Jan 2012 - R. Yantosca - Added fields for A3 output file
 #
 
 ==> Turn on debug print output?
@@ -80,8 +81,8 @@ DAS.ops.asm.tavg3_3d_rad_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
 CLOUD
 
 ==> tavg3_3d_udt_Nv
-DAS.ops.asm.tavg3_3d_udt_Nv.GEOS572.20111001_0130.V01.nc4
-none
+DAS.ops.asm.tavg3_3d_udt_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
+OMEGA,U,V
 
 ==> Local Raw Data Path
 /as/cache-old/2011-08/bmy/
