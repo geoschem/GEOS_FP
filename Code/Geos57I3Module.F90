@@ -388,6 +388,8 @@ MODULE Geos57I3Module
 !
 ! !REVISION HISTORY: 
 !  03 Jan 2012 - Initial version, based on MERRA
+!  11 Jan 2012 - R. Yantosca - Now call StrCompress to remove white space
+!                              in the input file name.
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -438,7 +440,8 @@ MODULE Geos57I3Module
        fName = dataTmplNestCh
        gName = 'SEA4CRS'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                 )      
-       CALL StrRepl     ( fName,     '%%',     'i3'                    )
+       CALL StrRepl     ( fName,     '%%%%%',   'I3   '                )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                  )
        CALL NcOutFileDef( I_NestCh,  J_NestCh,  L025x03125, TIMES_A3,   &
                           xMid_025x03125(I0_ch:I1_ch),                  &
                           yMid_025x03125(J0_ch:J1_ch),                  &
@@ -451,7 +454,8 @@ MODULE Geos57I3Module
        fName = dataTmpl2x25
        gName = '2 x 2.5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                 )      
-       CALL StrRepl     ( fName,     '%%',      'i3'                   )
+       CALL StrRepl     ( fName,     '%%%%%',   'I3   '                )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                  )
        CALL NcOutFileDef( I2x25,     J2x25,     L2x25,      TIMES_A3,   &
                           xMid_2x25, yMid_2x25, zMid_2x25,  a3MinsI,    &
                           gName,     fName,     fOut2x25               )
@@ -462,7 +466,8 @@ MODULE Geos57I3Module
        fName = dataTmpl4x5
        gName = '4 x 5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                 )      
-       CALL StrRepl     ( fName,     '%%',     'i3'                    )
+       CALL StrRepl     ( fName,     '%%%%%',   'I3   '                )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                  )
        CALL NcOutFileDef( I4x5,      J4x5,      L4x5,       TIMES_A3,   &
                           xMid_4x5,  yMid_4x5,  zMid_4x5,   a3MinsI,    &
                           gName,     fName,     fOut4x5                )
@@ -745,10 +750,10 @@ MODULE Geos57I3Module
 !$OMP PARALLEL DO       &
 !$OMP DEFAULT( SHARED ) &
 !$OMP PRIVATE( L, LR )
-             DO L = 1, L025x03125 
+             DO L = 1, Z 
 
                 ! Reverse level indices
-                LR = L025x03125 - L + 1
+                LR = Z - L + 1
 
                 ! Regrid to 2 x 2.5
                 IF ( do2x25 ) THEN
@@ -772,22 +777,22 @@ MODULE Geos57I3Module
              ! Nested China (point to proper slice of global data)
              IF ( doNestCh ) THEN
                 Ptr_3d => Q3d( I0_ch:I1_ch, J0_ch:J1_ch, : )
-                st4d   = (/ 1,       1,       1,          H /)
-                ct4d   = (/ XNestCh, YNestCh, L025x03125, 1 /)
+                st4d   = (/ 1,       1,       1,       H /)
+                ct4d   = (/ XNestCh, YNestCh, ZNestCh, 1 /)
                 CALL NcWr( Ptr_3d, fOutNestCh, TRIM( name ), st4d, ct4d )
              ENDIF
              
              ! Write 2 x 2.5 data
              IF ( do2x25 ) THEN
                 st4d  = (/ 1,     1,     1,     H  /)
-                ct4d  = (/ X2x25, Y2x25, L2x25, 1  /)
+                ct4d  = (/ X2x25, Y2x25, Z2x25, 1  /)
                 CALL NcWr( Q3d_2x25, fOut2x25, TRIM( name ), st4d, ct4d )
              ENDIF
        
              ! Write 4x5 data
              IF ( do4x5 ) THEN
                 st4d  = (/ 1,    1,    1,    H /)
-                ct4d  = (/ X4x5, Y4x5, L4x5, 1 /)
+                ct4d  = (/ X4x5, Y4x5, Z4x5, 1 /)
                 CALL NcWr( Q3d_4x5, fOut4x5, TRIM( name ), st4d, ct4d )
              ENDIF
 

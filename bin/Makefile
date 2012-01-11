@@ -31,23 +31,24 @@ DIR   = ../Code
 EXE   = Geos57Driver.x
 
 #==============================================================================
-# Makefile targets
+# Makefile targets (for now, build w/ the sample data)
 #==============================================================================
 
 .PHONY: all driver lib check clean realclean doc docclean help
 
 all: 
-	$(MAKE) -C $(DIR) all
+	$(MAKE) -C $(DIR) all USE_SAMPLE_DATA=yes
 	$(EXE) < 20110815
 
 lib:
-	$(MAKE) -C $(DIR) lib
+	$(MAKE) -C $(DIR) lib USE_SAMPLE_DATA=yes
 
 clean:
 	$(MAKE) -C $(DIR) clean
 
 realclean:
 	$(MAKE) -C $(DIR) realclean
+	rm -f GEOS572*.nc         # For testing
 
 doc:
 	$(MAKE) -C $(DIR) doc

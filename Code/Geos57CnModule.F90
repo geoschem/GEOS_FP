@@ -384,6 +384,8 @@ CONTAINS
 ! !REVISION HISTORY: 
 !  27 Jul 2010 - R. Yantosca - Initial version, based on GEOS-5
 !  04 Jan 2012 - R. Yantosca - Updated comments
+!  11 Jan 2012 - R. Yantosca - Now call StrCompress to remove white space
+!                              in the input file name.
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -438,7 +440,8 @@ CONTAINS
        fName = dataTmplNestCh
        gName = 'SEA4CRS'
        CALL ExpandDate  ( fName,     20110101,  000000      )      
-       CALL StrRepl     ( fName,     '%%',     'cn'         )
+       CALL StrRepl     ( fName,     '%%%%%',   'CN   '     )
+       CALL StrCompress ( fName, RemoveAll=.TRUE.           )
        CALL NcOutFileDef( I_NestCh,  J_NestCh,  1,           &
                           xMid_025x03125(I0_ch:I1_ch),       &
                           yMid_025x03125(J0_ch:J1_ch),       &
@@ -451,7 +454,8 @@ CONTAINS
        fName = dataTmpl2x25
        gName = '2 x 2.5 global'
        CALL ExpandDate  ( fName,     20110101,  000000      )      
-       CALL StrRepl     ( fName,     '%%',      'cn'        )
+       CALL StrRepl     ( fName,     '%%%%%',   'CN   '     )
+       CALL StrCompress ( fName, RemoveAll=.TRUE.           )
        CALL NcOutFileDef( I2x25,     J2x25,     1,           &
                           xMid_2x25, yMid_2x25, time,        &
                           gName,     fName,     fOut2x25    )
@@ -462,7 +466,8 @@ CONTAINS
        fName = dataTmpl4x5
        gName = '4 x 5 global'
        CALL ExpandDate  ( fName,     20110101,  000000      )      
-       CALL StrRepl     ( fName,     '%%',     'cn'         )
+       CALL StrRepl     ( fName,     '%%%%%',   'CN   '     )
+       CALL StrCompress ( fName, RemoveAll=.TRUE.           )
        CALL NcOutFileDef( I4x5,      J4x5,      1,           &
                           xMid_4x5,  yMid_4x5,  time,        &
                           gName,     fName,     fOut4x5     )

@@ -66,7 +66,7 @@ ifeq ($(COMPILER),mpif90)
 
 # Pick correct options for debug run or regular run 
 ifdef DEBUG
-FFLAGS   := -cpp -w -noalign -convert big_endian -g -traceback -CU
+FFLAGS   := -cpp -w -noalign -convert big_endian -g -traceback
 else
 FFLAGS   := -cpp -w -O2 -auto -noalign -convert big_endian -openmp
 endif
@@ -95,9 +95,14 @@ ifeq ($(COMPILER),ifort)
 
 # Pick correct options for debug run or regular run 
 ifdef DEBUG
-FFLAGS   := -cpp -w -noalign -convert big_endian -g -traceback -CU
+FFLAGS   := -cpp -w -O0 -auto -noalign -convert big_endian -g -traceback
 else
 FFLAGS   := -cpp -w -O2 -auto -noalign -convert big_endian -openmp
+endif
+
+# Add flag to denote if we are using the sample data (wh
+ifdef USE_SAMPLE_DATA
+FFLAGS   += -DUSE_SAMPLE_DATA
 endif
 
 # Add option for "array out of bounds" checking

@@ -67,6 +67,7 @@ MODULE Geos57A1Module
 !  05 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  09 Jan 2012 - R. Yantosca - Add driver routine Process2dAlbedo
 !  09 Jan 2012 - R. Yantosca - Updated comments, cosmetic changes
+!  11 Jan 2012 - R. Yantosca - Now put debugging kludges in #if blocks
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -883,11 +884,10 @@ MODULE Geos57A1Module
 !
   SUBROUTINE Geos57MakeA1
 !
-! !REVISION HISTORY: 
-!  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A3Module.F90
-!  17 Aug 2010 - R. Yantosca - Added Ice2x25, Ice4x5 arrays for computing
-!                              binned fractional sea ice fields
-!  24 Aug 2010 - R. Yantosca - Now also construct land/water/ice flags field
+! !REVISION HISTORY:
+!  05 Jan 2012 - R. Yantosca - Initial version, based on Geos57A3Module.F90
+!  11 Jan 2012 - R. Yantosca - Now call StrCompress to remove white space
+!                              in the input file name.
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -959,7 +959,8 @@ MODULE Geos57A1Module
        fName = dataTmplNestCh
        gName = 'SEA4CRS'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000      )      
-       CALL StrRepl     ( fName,     '%%',     'a1'         )
+       CALL StrRepl     ( fName,     '%%%%%',   'A1   '     )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.       )
        CALL NcOutFileDef( I_NestCh,  J_NestCh,  TIMES_A1,    &
                           xMid_025x03125(I0_ch:I1_ch),       &
                           yMid_025x03125(J0_ch:J1_ch),       &
@@ -972,7 +973,8 @@ MODULE Geos57A1Module
        fName = dataTmpl2x25
        gName = '2 x 2.5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000      )      
-       CALL StrRepl     ( fName,     '%%',      'a1'        )
+       CALL StrRepl     ( fName,     '%%%%%',   'A1   '     )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.       )
        CALL NcOutFileDef( I2x25,     J2x25,     TIMES_A1,    &
                           xMid_2x25, yMid_2x25, a1Mins,      &
                           gName,     fName,     fOut2x25    )
@@ -983,7 +985,8 @@ MODULE Geos57A1Module
        fName = dataTmpl4x5
        gName = '4 x 5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000      )      
-       CALL StrRepl     ( fName,     '%%',     'a1'         )
+       CALL StrRepl     ( fName,     '%%%%%',   'A1   '     )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.       )
        CALL NcOutFileDef( I4x5,      J4x5,      TIMES_A1,    &
                           xMid_4x5,  yMid_4x5,  a1Mins,      &
                           gName,     fName,     fOut4x5     )
@@ -1045,6 +1048,7 @@ MODULE Geos57A1Module
 !                              fractional sea ice bins SEAICE{00..90}
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
 !                              the module Geos57InputsModule.F90
+!  11 Jan 2012 - R. Yantosca - Now put debugging kludge in an #if block
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1123,7 +1127,9 @@ MODULE Geos57A1Module
        
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !%%% KLUDGE FOR DEBUGGING -- Sample data is only up to hour 20:30:00
+#if defined( USE_SAMPLE_DATA )
        if ( hhmmss > 210000 ) CYCLE
+#endif
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
        ! Create input filename from the template
@@ -1376,6 +1382,7 @@ MODULE Geos57A1Module
 !  05 Jan 2012 - R. Yantosca - Initial version, based on Geos57CnModule.F90
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
 !                              the module Geos57InputsModule.F90
+!  11 Jan 2012 - R. Yantosca - Now put debugging kludge in an #if block
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1447,7 +1454,9 @@ MODULE Geos57A1Module
        
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !%%% KLUDGE FOR DEBUGGING -- Sample data is only up to hour 20:30:00
+#if defined( USE_SAMPLE_DATA )
        if ( hhmmss > 210000 ) CYCLE
+#endif
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
        ! Create input filename from the template
@@ -1600,9 +1609,10 @@ MODULE Geos57A1Module
     CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
 !
 ! !REVISION HISTORY: 
-!  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A3Module.F90
+!  05 Jan 2012 - R. Yantosca - Initial version, based on Geos57A3Module.F90
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
 !                              the module Geos57InputsModule.F90
+!  11 Jan 2012 - R. Yantosca - Now put debugging kludge in an #if block
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1675,7 +1685,9 @@ MODULE Geos57A1Module
        
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !%%% KLUDGE FOR DEBUGGING -- Sample data is only up to hour 20:30:00
-       if ( hhmmss > 210000 ) CYCLE
+#if defined( USE_SAMPLE_DATA )
+       IF ( hhmmss > 210000 ) CYCLE
+#endif
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
        ! Create input filename from the template
@@ -1831,6 +1843,7 @@ MODULE Geos57A1Module
 !  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A3Module.F90
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
 !                              the module Geos57InputsModule.F90
+!  11 Jan 2012 - R. Yantosca - Now put debugging kludge in an #if block
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1905,7 +1918,9 @@ MODULE Geos57A1Module
        
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !%%% KLUDGE FOR DEBUGGING -- Sample data is only up to hour 20:30:00
-       if ( hhmmss > 210000 ) CYCLE
+#if defined( USE_SAMPLE_DATA )
+       IF ( hhmmss > 210000 ) CYCLE
+#endif
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
        ! Create input filename from the template

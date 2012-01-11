@@ -108,11 +108,13 @@ MODULE Geos57InputsModule
   CHARACTER(LEN=MAX_CHAR) :: inst3_3d_asm_Nv_file     ! inst3_3d_asm_Nv file
   CHARACTER(LEN=MAX_CHAR) :: inst3_3d_asm_Nv_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_cld_Nv_file     ! tavg3_3d_cld_Nv file
-  CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_cld_Nv_data     !  and list of data flds
+  CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_cld_Nv_data_c   !  and list of data flds
+  CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_cld_Nv_data_d   !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_mst_Nv_file     ! tavg3_3d_mst_Nv file
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_mst_Nv_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_mst_Ne_file     ! tavg3_3d_mst_Ne file
-  CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_mst_Ne_data     !  and list of data flds
+  CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_mst_Ne_data_d   !  and list of data flds
+  CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_mst_Ne_data_m   !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_rad_Nv_file     ! tavg3_3d_rad_Nv file
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_rad_Nv_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_odt_Nv_file     ! tavg3_3d_odt_Nv file
@@ -161,6 +163,8 @@ MODULE Geos57InputsModule
 !  05 Jan 2012 - R. Yantosca - ReadTemplateFile now reads netCDF data
 !  06 Jan 2012 - R. Yantosca - Define "doNative" logical as a convenience
 !                              variable to denote when to read native data
+!  11 Jan 2012 - R. Yantosca - Now split fields from tavg3_3d_cld_Nv and
+!                              tavg3_3d_mst_Ne into output files
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -185,6 +189,9 @@ MODULE Geos57InputsModule
 ! !REVISION HISTORY: 
 !  30 Aug 2011 - R. Yantosca - Initial version, based on MerraInputsModule
 !  21 Dec 2011 - R. Yantosca - Now also initialize a3Mins, a3MinsI, a1Mins
+!  11 Jan 2012 - R. Yantosca - Split fields from the tavg3_3d_cld_Nv and 
+!                              tavg3_3d_Mst_Ne collections into multiple
+!                              netCDF output files.
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -230,10 +237,10 @@ MODULE Geos57InputsModule
        SELECT CASE( TRIM( line ) )
 
           CASE( '==> Turn on debug print output?' )
-             READ( IU_TXT,   *,   ERR=999 ) VERBOSE
+             READ( IU_TXT,   *,      ERR=999 ) VERBOSE
 
           CASE( '==> Local Raw Data Path' )
-             READ( IU_TXT, '(a)', ERR=999 ) inputDataDir
+             READ( IU_TXT, '(a)',    ERR=999 ) inputDataDir
 
           CASE( '==> Nested China output' )
              READ( IU_TXT, '(a)', ERR=999 ) dataTmplNestCh
@@ -243,72 +250,74 @@ MODULE Geos57InputsModule
              J_NestCh = J1_ch - J0_ch + 1
 
           CASE( '==> 2 x 2.5 Output' )
-             READ( IU_TXT, '(a)', ERR=999 ) dataTmpl2x25
-             READ( IU_TXT,   *,   ERR=999 ) do2x25
+             READ( IU_TXT, '(a)',    ERR=999 ) dataTmpl2x25
+             READ( IU_TXT,   *,      ERR=999 ) do2x25
 
           CASE( '==> 4 x 5 Output' )
-             READ( IU_TXT, '(a)', ERR=999 ) dataTmpl4x5
-             READ( IU_TXT,   *,   ERR=999 ) do4x5
+             READ( IU_TXT, '(a)',    ERR=999 ) dataTmpl4x5
+             READ( IU_TXT,   *,      ERR=999 ) do4x5
 
           CASE( '==> const_2d_asm_Nx' )
-             READ( IU_TXT, '(a)', ERR=999 ) const_2d_asm_Nx_file
-             READ( IU_TXT, '(a)', ERR=999 ) const_2d_asm_Nx_data
-             READ( IU_TXT,   *,   ERR=999 ) doMakeCn
+             READ( IU_TXT, '(a)',    ERR=999 ) const_2d_asm_Nx_file
+             READ( IU_TXT, '(a)',    ERR=999 ) const_2d_asm_Nx_data
+             READ( IU_TXT,   *,      ERR=999 ) doMakeCn
 
           CASE( '==> inst3_3d_asm_Nv' )
-             READ( IU_TXT, '(a)', ERR=999 ) inst3_3d_asm_Nv_file
-             READ( IU_TXT, '(a)', ERR=999 ) inst3_3d_asm_Nv_data
+             READ( IU_TXT, '(a)',    ERR=999 ) inst3_3d_asm_Nv_file
+             READ( IU_TXT, '(a)',    ERR=999 ) inst3_3d_asm_Nv_data
 
           CASE( '==> tavg1_2d_flx_Nx' )
-             READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_flx_Nx_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_flx_Nx_data
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg1_2d_flx_Nx_file
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg1_2d_flx_Nx_data
 
           CASE( '==> tavg1_2d_lnd_Nx' )
-             READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_lnd_Nx_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_lnd_Nx_data
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg1_2d_lnd_Nx_file
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg1_2d_lnd_Nx_data
 
           CASE( '==> tavg1_2d_rad_Nx' )
-             READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_rad_Nx_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_rad_Nx_data
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg1_2d_rad_Nx_file
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg1_2d_rad_Nx_data
 
           CASE( '==> tavg1_2d_slv_Nx' )
-             READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_slv_Nx_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg1_2d_slv_Nx_data
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg1_2d_slv_Nx_file
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg1_2d_slv_Nx_data
 
           CASE( '==> tavg3_3d_cld_Nv' ) 
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_cld_Nv_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_cld_Nv_data
-
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_cld_Nv_file
+             READ( IU_TXT, '(7x,a)', ERR=999 ) tavg3_3d_cld_Nv_data_c
+             READ( IU_TXT, '(7x,a)', ERR=999 ) tavg3_3d_cld_Nv_data_d
+             
           CASE( '==> tavg3_3d_mst_Ne' )
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_mst_Ne_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_mst_Ne_data
-            
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_mst_Ne_file
+             READ( IU_TXT, '(7x,a)', ERR=999 ) tavg3_3d_mst_Ne_data_d
+             READ( IU_TXT, '(7x,a)', ERR=999 ) tavg3_3d_mst_Ne_data_m
+
           CASE( '==> tavg3_3d_mst_Nv' )
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_mst_Nv_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_mst_Nv_data
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_mst_Nv_file
+             READ( IU_TXT, '(7x,a)', ERR=999 ) tavg3_3d_mst_Nv_data
 
           CASE( '==> tavg3_3d_odt_Nv' )
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_odt_Nv_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_odt_Nv_data
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_odt_Nv_file
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_odt_Nv_data
 
           CASE( '==> tavg3_3d_qdt_Nv' )
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_qdt_Nv_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_qdt_Nv_data
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_qdt_Nv_file
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_qdt_Nv_data
 
           CASE( '==> tavg3_3d_rad_Nv' )
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_rad_Nv_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_rad_Nv_data
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_rad_Nv_file
+             READ( IU_TXT, '(7x,a)', ERR=999 ) tavg3_3d_rad_Nv_data
 
           CASE( '==> tavg3_3d_udt_Nv' )
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_udt_Nv_file
-             READ( IU_TXT, '(a)', ERR=999 ) tavg3_3d_udt_Nv_data
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_udt_Nv_file
+             READ( IU_TXT, '(7x,a)', ERR=999 ) tavg3_3d_udt_Nv_data
 
           CASE( '==> Mapping Weight Files' ) 
-             READ( IU_TXT, '(a)', ERR=999 ) weightFileTo2x25
-             READ( IU_TXT, '(a)', ERR=999 ) weightFileTo4x5
+             READ( IU_TXT, '(a)',    ERR=999 ) weightFileTo2x25
+             READ( IU_TXT, '(a)',    ERR=999 ) weightFileTo4x5
 
           CASE( '==> Template Files' ) 
-             READ( IU_TXT, '(a)', ERR=999 ) templateFile
+             READ( IU_TXT, '(a)',    ERR=999 ) templateFile
 
           CASE DEFAULT
              ! Nothing
@@ -417,39 +426,41 @@ MODULE Geos57InputsModule
        PRINT*, 'do2x25          : ', do2x25
        PRINT*, 'do4x5           : ', do4x5
        PRINT*, 'doMakeCn        : ', doMakeCn
-       PRINT*, 'dataDirHDF      : ', TRIM( inputDataDir          )
-       PRINT*, 'dataFileNestCh  : ', TRIM( dataTmplNestCh        )
-       PRINT*, 'dataFile2x25    : ', TRIM( dataTmpl2x25          )
-       PRINT*, 'dataFile4x5     : ', TRIM( dataTmpl4x5           )
-       PRINT*, 'const_2d_asm_Nx : ', TRIM( const_2d_asm_Nx_file  )
-       PRINT*, '                  ', TRIM( const_2d_asm_Nx_data  )
-       PRINT*, 'inst3_3d_asm_Nv : ', TRIM( inst3_3d_asm_Nv_file  )
-       PRINT*, '                  ', TRIM( inst3_3d_asm_Nv_data  )
-       PRINT*, 'tavg1_2d_flx_Nx : ', TRIM( tavg1_2d_flx_Nx_file  )
-       PRINT*, '                  ', TRIM( tavg1_2d_flx_Nx_data  )
-       PRINT*, 'tavg1_2d_lnd_Nx : ', TRIM( tavg1_2d_lnd_Nx_file  )
-       PRINT*, '                  ', TRIM( tavg1_2d_lnd_Nx_data  )
-       PRINT*, 'tavg1_2d_rad_Nx : ', TRIM( tavg1_2d_rad_Nx_file  )
-       PRINT*, '                  ', TRIM( tavg1_2d_rad_Nx_data  )
-       PRINT*, 'tavg1_2d_slv_Nx : ', TRIM( tavg1_2d_slv_Nx_file  )
-       PRINT*, '                  ', TRIM( tavg1_2d_slv_Nx_data  )
-       PRINT*, 'tavg3_3d_cld_Nv : ', TRIM( tavg3_3d_cld_Nv_file  )
-       PRINT*, '                  ', TRIM( tavg3_3d_cld_Nv_data  )
-       PRINT*, 'tavg3_3d_mst_Nv : ', TRIM( tavg3_3d_mst_Ne_file  )
-       PRINT*, '                  ', TRIM( tavg3_3d_mst_Ne_data  )
-       PRINT*, 'tavg3_3d_mst_Ne : ', TRIM( tavg3_3d_mst_Nv_file  )
-       PRINT*, '                  ', TRIM( tavg3_3d_mst_Nv_data  )
-       PRINT*, 'tavg3_3d_odt_Nv : ', TRIM( tavg3_3d_odt_Nv_file  )
-       PRINT*, '                  ', TRIM( tavg3_3d_odt_Nv_data  )
-       PRINT*, 'tavg3_3d_qdt_Nv : ', TRIM( tavg3_3d_qdt_Nv_file  )
-       PRINT*, '                  ', TRIM( tavg3_3d_qdt_Nv_data  )
-       PRINT*, 'tavg3_3d_rad_Nv : ', TRIM( tavg3_3d_rad_Nv_file  )
-       PRINT*, '                  ', TRIM( tavg3_3d_rad_Nv_data  )
-       PRINT*, 'tavg3_3d_udt_Nv : ', TRIM( tavg3_3d_udt_Nv_file  )
-       PRINT*, '                  ', TRIM( tavg3_3d_udt_Nv_data  )
-       PRINT*, 'WeightsNxTo2x25 : ', TRIM( weightFileTo2x25      )
-       PRINT*, 'WeightsNxTo4x5  : ', TRIM( weightFileTo4x5       )
-       PRINT*, 'lwiMaskFile     : ', TRIM( templateFile          )
+       PRINT*, 'dataDirHDF      : ', TRIM( inputDataDir            )
+       PRINT*, 'dataFileNestCh  : ', TRIM( dataTmplNestCh          )
+       PRINT*, 'dataFile2x25    : ', TRIM( dataTmpl2x25            )
+       PRINT*, 'dataFile4x5     : ', TRIM( dataTmpl4x5             )
+       PRINT*, 'const_2d_asm_Nx : ', TRIM( const_2d_asm_Nx_file    )
+       PRINT*, '                  ', TRIM( const_2d_asm_Nx_data    )
+       PRINT*, 'inst3_3d_asm_Nv : ', TRIM( inst3_3d_asm_Nv_file    )
+       PRINT*, '                  ', TRIM( inst3_3d_asm_Nv_data    )
+       PRINT*, 'tavg1_2d_flx_Nx : ', TRIM( tavg1_2d_flx_Nx_file    )
+       PRINT*, '                  ', TRIM( tavg1_2d_flx_Nx_data    )
+       PRINT*, 'tavg1_2d_lnd_Nx : ', TRIM( tavg1_2d_lnd_Nx_file    )
+       PRINT*, '                  ', TRIM( tavg1_2d_lnd_Nx_data    )
+       PRINT*, 'tavg1_2d_rad_Nx : ', TRIM( tavg1_2d_rad_Nx_file    )
+       PRINT*, '                  ', TRIM( tavg1_2d_rad_Nx_data    )
+       PRINT*, 'tavg1_2d_slv_Nx : ', TRIM( tavg1_2d_slv_Nx_file    )
+       PRINT*, '                  ', TRIM( tavg1_2d_slv_Nx_data    )
+       PRINT*, 'tavg3_3d_cld_Nv : ', TRIM( tavg3_3d_cld_Nv_file    )
+       PRINT*, '                  ', TRIM( tavg3_3d_cld_Nv_data_c  )
+       PRINT*, '                  ', TRIM( tavg3_3d_cld_Nv_data_d  )
+       PRINT*, 'tavg3_3d_mst_Nv : ', TRIM( tavg3_3d_mst_Ne_file    )
+       PRINT*, '                  ', TRIM( tavg3_3d_mst_Ne_data_d  )
+       PRINT*, '                  ', TRIM( tavg3_3d_mst_Ne_data_m  )
+       PRINT*, 'tavg3_3d_mst_Ne : ', TRIM( tavg3_3d_mst_Nv_file    )
+       PRINT*, '                  ', TRIM( tavg3_3d_mst_Nv_data    )
+       PRINT*, 'tavg3_3d_odt_Nv : ', TRIM( tavg3_3d_odt_Nv_file    )
+       PRINT*, '                  ', TRIM( tavg3_3d_odt_Nv_data    )
+       PRINT*, 'tavg3_3d_qdt_Nv : ', TRIM( tavg3_3d_qdt_Nv_file    )
+       PRINT*, '                  ', TRIM( tavg3_3d_qdt_Nv_data    )
+       PRINT*, 'tavg3_3d_rad_Nv : ', TRIM( tavg3_3d_rad_Nv_file    )
+       PRINT*, '                  ', TRIM( tavg3_3d_rad_Nv_data    )
+       PRINT*, 'tavg3_3d_udt_Nv : ', TRIM( tavg3_3d_udt_Nv_file    )
+       PRINT*, '                  ', TRIM( tavg3_3d_udt_Nv_data    )
+       PRINT*, 'WeightsNxTo2x25 : ', TRIM( weightFileTo2x25        )
+       PRINT*, 'WeightsNxTo4x5  : ', TRIM( weightFileTo4x5         )
+       PRINT*, 'lwiMaskFile     : ', TRIM( templateFile            )
     ENDIF
 
     ! Write a message to denote if we are using pressure-weighting
