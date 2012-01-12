@@ -6,7 +6,7 @@
 ! !MODULE: Geos57A3DynModule
 !
 ! !DESCRIPTION: Module Geos57A3DynModule contains routines to create the 
-!  GEOS-Chem average 3-hr data files (winds etc.) from the Geos57 raw data.
+!  GEOS-Chem average 3-hr data files (winds etc.) from the GEOS-5.7.x raw data.
 !\\
 !\\
 ! !INTERFACE: 
@@ -132,7 +132,7 @@ MODULE Geos57A3DynModule
     !-------------------------------------------------------------------------
  
     ! Title string
-    lName = 'GEOS-5.7.2 time-averaged 3-hour dynamical fields (A3Dyn) for GEOS-Chem'
+    lName = 'GEOS-5.7.2 time-averaged 3-hour dynamical fields (A3dyn) for GEOS-Chem'
     CALL NcDef_Glob_Attributes( fOut, 'Title',       TRIM( lName )   )
 
     ! Contact
@@ -399,10 +399,10 @@ MODULE Geos57A3DynModule
 !
 ! !DESCRIPTION: Routine Geos57MakeA3Dyn is the the driver routine for 
 ! \begin{enumerate}
-! \item Extracting 3-hr time-averaged data fields (surface values) from 
-!       the Geos57 raw data files (netCDF-4 format),
+! \item Extracting 3-hr time-averaged data fields (dynamical fields) from 
+!       the GEOS-5.7.x raw data files (netCDF-4 format),
 ! \item Regridding the fields to GEOS-Chem data resolution, and 
-! \item Saving the regridded data in a format that GEOS-Chem can read.
+! \item Saving the regridded data to netCDF format.
 ! \end{enumerate}
 ! This routine is called directly from the main program Geos57Driver.F90
 !\\
@@ -474,8 +474,9 @@ MODULE Geos57A3DynModule
     IF ( doNestCh ) THEN
        fName = dataTmplNestCh
        gName = 'SEA4CRS'
-       CALL ExpandDate  ( fName,     yyyymmdd,  000000                )      
-       CALL StrRepl     ( fName,     '%%%%%',   'A3dyn'               )
+       CALL ExpandDate  ( fName,     yyyymmdd,  000000                )
+       CALL StrRepl     ( fName,     '%%%%%%', 'A3dyn '               )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                 )      
        CALL NcOutFileDef( I_NestCh,  J_NestCh,  L025x03125, TIMES_A3,  &
                           xMid_025x03125(I0_ch:I1_ch),                 &
                           yMid_025x03125(J0_ch:J1_ch),                 &
@@ -488,7 +489,8 @@ MODULE Geos57A3DynModule
        fName = dataTmpl2x25
        gName = '2 x 2.5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                )      
-       CALL StrRepl     ( fName,     '%%%%%',   'A3dyn'               )
+       CALL StrRepl     ( fName,     '%%%%%%', 'A3dyn '               )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                 )      
        CALL NcOutFileDef( I2x25,     J2x25,     L2x25,      TIMES_A3,  &
                           xMid_2x25, yMid_2x25, zMid_2x25,  a3Mins,    &
                           gName,     fName,     fOut2x25              )
@@ -498,8 +500,9 @@ MODULE Geos57A3DynModule
     IF ( do4x5 ) THEN
        fName = dataTmpl4x5
        gName = '4 x 5 global'
-       CALL ExpandDate  ( fName,     yyyymmdd,  000000                )      
-       CALL StrRepl     ( fName,     '%%%%%',   'A3dyn'               )
+       CALL ExpandDate  ( fName,     yyyymmdd,  000000                ) 
+       CALL StrRepl     ( fName,     '%%%%%%', 'A3dyn '               )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                 )      
        CALL NcOutFileDef( I4x5,      J4x5,      L4x5,       TIMES_A3,  &
                           xMid_4x5,  yMid_4x5,  zMid_4x5,   a3Mins,    &
                           gName,     fName,     fOut4x5               )
@@ -539,8 +542,8 @@ MODULE Geos57A3DynModule
 !
 ! !IROUTINE: Process3dCldNv
 !
-! !DESCRIPTION: Subroutine Process3dCldNv regrids the Geos57 met fields from 
-!  the "tavg3\_3d\_cld\_Nv" file and saves output to netCDF file format.
+! !DESCRIPTION: Subroutine Process3dCldNv regrids the GEOS-5.7.x met fields 
+!  from the "tavg3\_3d\_cld\_Nv" file and saves output to netCDF file format.
 !\\
 !\\
 ! !INTERFACE:
@@ -775,8 +778,8 @@ MODULE Geos57A3DynModule
 !
 ! !IROUTINE: Process3dMstNe
 !
-! !DESCRIPTION: Subroutine Process3dMstNe regrids the Geos57 met fields from 
-!  the "tavg3\_3d\_mst\_Ne" file and saves output to netCDF file format.
+! !DESCRIPTION: Subroutine Process3dMstNe regrids the GEOS-5.7.x met fields 
+!  from the "tavg3\_3d\_mst\_Ne" file and saves output to netCDF file format.
 !\\
 !\\
 ! !INTERFACE:
@@ -1002,8 +1005,8 @@ MODULE Geos57A3DynModule
 !
 ! !IROUTINE: Process3dUdtNv
 !
-! !DESCRIPTION: Subroutine Process3dUdtNv regrids the Geos57 met fields from 
-!  the "tavg3\_3d\_udt\_Nv" file and saves output to netCDF file format.
+! !DESCRIPTION: Subroutine Process3dUdtNv regrids the GEOS-5.7.x met fields 
+!  from the "tavg3\_3d\_udt\_Nv" file and saves output to netCDF file format.
 !\\
 !\\
 ! !INTERFACE:

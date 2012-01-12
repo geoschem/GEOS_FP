@@ -6,7 +6,7 @@
 ! !MODULE: Geos57A3CldModule
 !
 ! !DESCRIPTION: Module Geos57A3CldModule contains routines to create the 
-!  GEOS-Chem average 3-hr data files (w/ cloud parameters) from the Geos57 
+!  GEOS-Chem average 3-hr data files (w/ cloud parameters) from the GEOS-5.7.x
 !  raw data.
 !\\
 !\\
@@ -133,7 +133,7 @@ MODULE Geos57A3CldModule
     !-------------------------------------------------------------------------
  
     ! Title string
-    lName = 'GEOS-5.7.2 time-averaged 3-hour cloud fields (A3Cld) for GEOS-Chem'
+    lName = 'GEOS-5.7.2 time-averaged 3-hour cloud fields (A3cld) for GEOS-Chem'
     CALL NcDef_Glob_Attributes( fOut, 'Title',       TRIM( lName )   )
 
     ! Contact
@@ -414,7 +414,7 @@ MODULE Geos57A3CldModule
 ! !DESCRIPTION: Routine Geos57MakeA3Cld is the the driver routine for 
 ! \begin{enumerate}
 ! \item Extracting 3-hr time-averaged data fields (cloud parameters) from 
-!       the Geos57 raw data files (netCDF-4 format),
+!       the GEOS-5.7.x raw data files (netCDF-4 format),
 ! \item Regridding the fields to GEOS-Chem data resolution, and 
 ! \item Saving the regridded data to netCDF format.
 ! \end{enumerate}
@@ -427,6 +427,8 @@ MODULE Geos57A3CldModule
 !
 ! !REVISION HISTORY: 
 !  11 Jan 2012 - R. Yantosca - Initial version, based on MERRA
+!  12 Jan 2012 - R. Yantosca - Now call StrCompress to remove white space
+!                              in the file name after the token replacement
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -435,11 +437,7 @@ MODULE Geos57A3CldModule
 !
     ! Scalars
     INTEGER                 :: nFields_3dCldNv
-    INTEGER                 :: nFields_3dMstNv
-    INTEGER                 :: nFields_3dMstNe
-    INTEGER                 :: nFields_3dQdtNv
     INTEGER                 :: nFields_3dRadNv
-    INTEGER                 :: nFields_3dUdtNv
     INTEGER                 :: nAllFields
     CHARACTER(LEN=MAX_CHAR) :: allFieldsList
     CHARACTER(LEN=MAX_CHAR) :: msg
@@ -449,11 +447,7 @@ MODULE Geos57A3CldModule
     ! Arrays
     CHARACTER(LEN=MAX_CHAR) :: allFields     (MAX_FLDS)
     CHARACTER(LEN=MAX_CHAR) :: fields_3dCldNv(MAX_FLDS)
-    CHARACTER(LEN=MAX_CHAR) :: fields_3dMstNv(MAX_FLDS)
-    CHARACTER(LEN=MAX_CHAR) :: fields_3dMstNe(MAX_FLDS)
-    CHARACTER(LEN=MAX_CHAR) :: fields_3dQdtNv(MAX_FLDS)
     CHARACTER(LEN=MAX_CHAR) :: fields_3dRadNv(MAX_FLDS)
-    CHARACTER(LEN=MAX_CHAR) :: fields_3dUdtNv(MAX_FLDS)
 
     !=======================================================================
     ! Initialization
@@ -492,7 +486,8 @@ MODULE Geos57A3CldModule
        fName = dataTmplNestCh
        gName = 'SEA4CRS'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                )      
-       CALL StrRepl     ( fName,     '%%%%%',  'A3cld'                )
+       CALL StrRepl     ( fName,     '%%%%%%', 'A3cld '               )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                 )
        CALL NcOutFileDef( I_NestCh,  J_NestCh,  L025x03125, TIMES_A3,  &
                           xMid_025x03125(I0_ch:I1_ch),                 &
                           yMid_025x03125(J0_ch:J1_ch),                 &
@@ -504,8 +499,9 @@ MODULE Geos57A3CldModule
     IF ( do2x25 ) THEN
        fName = dataTmpl2x25
        gName = '2 x 2.5 global'
-       CALL ExpandDate  ( fName,     yyyymmdd,  000000                )      
-       CALL StrRepl     ( fName,     '%%%%%',   'A3cld'               )
+       CALL ExpandDate  ( fName,     yyyymmdd,  000000                ) 
+       CALL StrRepl     ( fName,     '%%%%%%', 'A3cld '               )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                 )
        CALL NcOutFileDef( I2x25,     J2x25,     L2x25,      TIMES_A3,  &
                           xMid_2x25, yMid_2x25, zMid_2x25,  a3Mins,    &
                           gName,     fName,     fOut2x25              )
@@ -516,7 +512,8 @@ MODULE Geos57A3CldModule
        fName = dataTmpl4x5
        gName = '4 x 5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                )      
-       CALL StrRepl     ( fName,     '%%%%%',   'A3cld'               )
+       CALL StrRepl     ( fName,     '%%%%%%', 'A3cld '               )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                 )
        CALL NcOutFileDef( I4x5,      J4x5,      L4x5,       TIMES_A3,  &
                           xMid_4x5,  yMid_4x5,  zMid_4x5,   a3Mins,    &
                           gName,     fName,     fOut4x5               )
@@ -555,8 +552,8 @@ MODULE Geos57A3CldModule
 !
 ! !IROUTINE: Process3dCldNv
 !
-! !DESCRIPTION: Subroutine Process3dCldNv regrids the Geos57 met fields from 
-!  the "tavg3\_3d\_cld\_Nv" file and saves output to netCDF file format.
+! !DESCRIPTION: Subroutine Process3dCldNv regrids the GEOS-5.7.x met fields 
+!  from the "tavg3\_3d\_cld\_Nv" file and saves output to netCDF file format.
 !\\
 !\\
 ! !INTERFACE:
@@ -572,7 +569,10 @@ MODULE Geos57A3CldModule
 !  The cloud fraction field CLOUD and cloud optical depth fields TAUCLI, 
 !  TAUCLW, and OPTDEPTH are processed separately in routine Process3dOptDep.  
 !  This is because these fields must all be regridded together using the
-!  algorithm developed by Hongyu Liu (in routine RegridTau).!
+!  algorithm developed by Hongyu Liu (in routine RegridTau).
+!                                                                             .
+!  The QI field is constructed as the sum of QIAN + QILS. 
+!  The QL field is constructed as the sum of QLAN + QLLS.
 !
 ! !REVISION HISTORY: 
 !  09 Jan 2012 - R. Yantosca - Initial version

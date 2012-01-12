@@ -370,7 +370,7 @@ CONTAINS
 ! !DESCRIPTION: Routine Geos57MakeCn is the the driver routine for 
 ! \begin{enumerate}
 ! \item Extracting constant data fields (surface values) from 
-!       the GEOS-5.7.2 raw data files (netCDF-4 format)
+!       the GEOS-5.7.x raw data files (netCDF-4 format)
 ! \item Regridding the fields to GEOS-Chem data resolution, and 
 ! \item Saving the regridded data to netCDF format.
 ! \end{enumerate}
@@ -440,7 +440,7 @@ CONTAINS
        fName = dataTmplNestCh
        gName = 'SEA4CRS'
        CALL ExpandDate  ( fName,     20110101,  000000      )      
-       CALL StrRepl     ( fName,     '%%%%%',   'CN   '     )
+       CALL StrRepl     ( fName,     '%%%%%%',  'CN    '    )
        CALL StrCompress ( fName, RemoveAll=.TRUE.           )
        CALL NcOutFileDef( I_NestCh,  J_NestCh,  1,           &
                           xMid_025x03125(I0_ch:I1_ch),       &
@@ -454,7 +454,7 @@ CONTAINS
        fName = dataTmpl2x25
        gName = '2 x 2.5 global'
        CALL ExpandDate  ( fName,     20110101,  000000      )      
-       CALL StrRepl     ( fName,     '%%%%%',   'CN   '     )
+       CALL StrRepl     ( fName,     '%%%%%%',  'CN    '    )
        CALL StrCompress ( fName, RemoveAll=.TRUE.           )
        CALL NcOutFileDef( I2x25,     J2x25,     1,           &
                           xMid_2x25, yMid_2x25, time,        &
@@ -466,7 +466,7 @@ CONTAINS
        fName = dataTmpl4x5
        gName = '4 x 5 global'
        CALL ExpandDate  ( fName,     20110101,  000000      )      
-       CALL StrRepl     ( fName,     '%%%%%',   'CN   '     )
+       CALL StrRepl     ( fName,     '%%%%%%',  'CN    '    )
        CALL StrCompress ( fName, RemoveAll=.TRUE.           )
        CALL NcOutFileDef( I4x5,      J4x5,      1,           &
                           xMid_4x5,  yMid_4x5,  time,        &

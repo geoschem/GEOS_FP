@@ -440,7 +440,7 @@ MODULE Geos57I3Module
        fName = dataTmplNestCh
        gName = 'SEA4CRS'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                 )      
-       CALL StrRepl     ( fName,     '%%%%%',   'I3   '                )
+       CALL StrRepl     ( fName,     '%%%%%%',  'I3    '               )
        CALL StrCompress ( fName,     RemoveAll=.TRUE.                  )
        CALL NcOutFileDef( I_NestCh,  J_NestCh,  L025x03125, TIMES_A3,   &
                           xMid_025x03125(I0_ch:I1_ch),                  &
@@ -454,7 +454,7 @@ MODULE Geos57I3Module
        fName = dataTmpl2x25
        gName = '2 x 2.5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                 )      
-       CALL StrRepl     ( fName,     '%%%%%',   'I3   '                )
+       CALL StrRepl     ( fName,     '%%%%%%',  'I3    '               )
        CALL StrCompress ( fName,     RemoveAll=.TRUE.                  )
        CALL NcOutFileDef( I2x25,     J2x25,     L2x25,      TIMES_A3,   &
                           xMid_2x25, yMid_2x25, zMid_2x25,  a3MinsI,    &
@@ -466,7 +466,7 @@ MODULE Geos57I3Module
        fName = dataTmpl4x5
        gName = '4 x 5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                 )      
-       CALL StrRepl     ( fName,     '%%%%%',   'I3   '                )
+       CALL StrRepl     ( fName,     '%%%%%%',  'I3    '               )
        CALL StrCompress ( fName,     RemoveAll=.TRUE.                  )
        CALL NcOutFileDef( I4x5,      J4x5,      L4x5,       TIMES_A3,   &
                           xMid_4x5,  yMid_4x5,  zMid_4x5,   a3MinsI,    &

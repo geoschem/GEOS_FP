@@ -68,7 +68,7 @@ A3mst: PFICU,PFILSAN,PFLCU,PFLLSAN
 
 ==> tavg3_3d_mst_Nv
 DAS.ops.asm.tavg3_3d_mst_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
-A3mst: DQRCU,DQRLSAN,REEVAPCN,REEVAPLSAN
+A3mst: DQRCU,DQRLSAN,FPCU,FPLSAN,REEVAPCN,REEVAPLSAN
 
 ==> tavg3_3d_rad_Nv
 DAS.ops.asm.tavg3_3d_rad_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
@@ -83,27 +83,27 @@ A3Dyn: OMEGA,U,V
 #/as/priv/ftp/gmao/gmao/
 
 ==> Nested China output
-GEOS572.YYYYMMDD.%%%%%.025x03125.SEA4CRS.nc
+GEOS572.YYYYMMDD.%%%%%%.025x03125.SEA4CRS.nc
 T
   769  281   1025   521
 
 ==> Nested NA output
-/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%%%%.2x25
+/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%%%%%.2x25
 F
 
 ==> Nested EUR output
-/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%%%%.2x25
+/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%%%%%.2x25
 F
 
 ==> 2 x 2.5 Output 
-GEOS572.YYYYMMDD.%%%%%.2x25.nc
+GEOS572.YYYYMMDD.%%%%%%.2x25.nc
 T
-#/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/GEOS572.YYYYMMDD.%%%%%.2x25.nc
+#/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.2x25.nc
 
 ==> 4 x 5 Output 
-GEOS572.YYYYMMDD.%%%%%.4x5.nc
+GEOS572.YYYYMMDD.%%%%%%.4x5.nc
 T
-#/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/GEOS572.YYYYMMDD.%%%%%.4x5.nc
+#/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.4x5.nc
 
 ==> Mapping Weight Files
 weights_025x03125_to_2x25.txt

@@ -35,6 +35,7 @@
 # !REVISION HISTORY: 
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS-5
 #  11 Jan 2012 - R. Yantosca - Now compile Geos57A3*Module.F90 files
+#  12 Jan 2012 - R. Yantosca - Split Geos57A3MstModule.F90 into two modules
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -68,8 +69,8 @@ include ./Makefile_header.mk
 #----------------------
 
 # Source code & object files
-SRC  := $(wildcard *.F) $(wildcard *.F90)              # Get these files
-SRC  := $(filter-out CreateTemplateFile.F90,$(SRC))    # but skip these files
+SRC  := $(wildcard *.F) $(wildcard *.F90)            # Get these files
+SRC  := $(filter-out CreateTemplateFile.F90,$(SRC))  # but skip these files
 TMP  := $(SRC:.F=.o)
 OBJ  := $(TMP:.F90=.o)
 
@@ -161,7 +162,21 @@ Geos57A3DynModule.o      : Geos57A3DynModule.F90        \
                            m_netcdf_io_get_dimlen.o     \
                            m_netcdf_io_read.o
 
-Geos57A3MstModule.o      : Geos57A3MstModule.F90        \
+Geos57A3MstCModule.o     : Geos57A3MstCModule.F90       \
+                           CharpakModule.o              \
+                           Geos57InputsModule.o         \
+                           Geos57RegridModule.o         \
+                           Geos57UtilityModule.o        \
+                           m_netcdf_io_create.o         \
+                           m_netcdf_io_define.o         \
+                           m_netcdf_io_write.o          \
+                           m_netcdf_io_close.o          \
+                           m_netcdf_io_open.o           \
+                           m_netcdf_io_close.o          \
+                           m_netcdf_io_get_dimlen.o     \
+                           m_netcdf_io_read.o
+
+Geos57A3MstEModule.o     : Geos57A3MstEModule.F90       \
                            CharpakModule.o              \
                            Geos57InputsModule.o         \
                            Geos57RegridModule.o         \
@@ -209,7 +224,8 @@ Geos57Driver.o           : Geos57Driver.F90             \
                            Geos57A1Module.o             \
                            Geos57A3CldModule.o          \
                            Geos57A3DynModule.o          \
-                           Geos57A3MstModule.o          \
+                           Geos57A3MstCModule.o         \
+                           Geos57A3MstEModule.o         \
                            Geos57CnModule.o             \
                            Geos57I3Module.o
 

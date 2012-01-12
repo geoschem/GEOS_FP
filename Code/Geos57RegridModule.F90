@@ -6,8 +6,7 @@
 ! !MODULE: Geos57RegridModule
 !
 ! !DESCRIPTION: Module Geos57RegridModule contains arrays and variables used 
-!  to regrid the GEOS-5 data from 0.5 x 0.666 to 1 x 1, 1 x 1.25, 2 x 2.5, 
-!  and 4 x 5 resolution. (bmy, 3/3/04)
+!  to regrid the GEOS-5 data from 0.25 x 0.3125 to coarser resolution grids.
 !
 !\subsection*{Overview}
 !  GeosRegridModule uses the regridding software MAP\_A2A from S-J Lin.  
@@ -120,6 +119,7 @@ MODULE Geos57RegridModule
   !--------------------------
   REAL*4, PUBLIC :: xedge_025x03125( I025x03125 + 1 )  ! Lon edges
   REAL*4, PUBLIC :: yedge_025x03125( J025x03125 + 1 )  ! Lat edges
+  REAL*4, PUBLIC :: zedge_025x03125( L025x03125 + 1 )  ! Vertical edges
   REAL*4, PUBLIC :: sine_025x03125 ( J025x03125 + 1 )  ! SIN( lat edges ) 
   REAL*4, PUBLIC :: xmid_025x03125 ( I025x03125     )  ! Lon centers
   REAL*4, PUBLIC :: ymid_025x03125 ( J025x03125     )  ! Lat centers
@@ -130,6 +130,7 @@ MODULE Geos57RegridModule
   !--------------------------
   REAL*4, PUBLIC :: xedge_05x0666( I05x0666 + 1 )      ! Lon edges
   REAL*4, PUBLIC :: yedge_05x0666( J05x0666 + 1 )      ! Lat edges
+  REAL*4, PUBLIC :: zedge_05x0666( L05x0666 + 1 )      ! Vertical edges
   REAL*4, PUBLIC :: sine_05x0666 ( J05x0666 + 1 )      ! SIN( lat edges ) 
   REAL*4, PUBLIC :: xmid_05x0666 ( I05x0666     )      ! Lon centers
   REAL*4, PUBLIC :: ymid_05x0666 ( J05x0666     )      ! Lat centers
@@ -140,6 +141,7 @@ MODULE Geos57RegridModule
   !--------------------------
   REAL*4, PUBLIC :: xedge_1x125( I1x125 + 1 )          ! Lon edges
   REAL*4, PUBLIC :: yedge_1x125( J1x125 + 1 )          ! Lat edges
+  REAL*4, PUBLIC :: zedge_1x125( L1x125 + 1 )          ! Vertical edges
   REAL*4, PUBLIC :: sine_1x125 ( J1x125 + 1 )          ! SIN( lat edges )
   REAL*4, PUBLIC :: xmid_1x125 ( I1x125     )          ! Lon centers
   REAL*4, PUBLIC :: ymid_1x125 ( J1x125     )          ! Lat centers
@@ -151,6 +153,7 @@ MODULE Geos57RegridModule
   !--------------------------
   REAL*4, PUBLIC :: xedge_2x25( I2x25 + 1 )            ! Lon edges
   REAL*4, PUBLIC :: yedge_2x25( J2x25 + 1 )            ! Lat edges
+  REAL*4, PUBLIC :: zedge_2x25( L2x25 + 1 )            ! Vertical levels
   REAL*4, PUBLIC :: sine_2x25 ( J2x25 + 1 )            ! SIN( lat edges )
   REAL*4, PUBLIC :: xmid_2x25 ( I2x25     )            ! Lon centers
   REAL*4, PUBLIC :: ymid_2x25 ( J2x25     )            ! Lat centers
@@ -161,6 +164,7 @@ MODULE Geos57RegridModule
   !--------------------------
   REAL*4, PUBLIC :: xedge_4x5( I4x5 + 1 )              ! Lon edges  
   REAL*4, PUBLIC :: yedge_4x5( J4x5 + 1 )              ! Lat edges
+  REAL*4, PUBLIC :: zedge_4x5( L4x5 + 1 )
   REAL*4, PUBLIC :: sine_4x5 ( J4x5 + 1 )              ! SIN( lat edges )
   REAL*4, PUBLIC :: xmid_4x5 ( I4x5     )              ! Lon centers
   REAL*4, PUBLIC :: ymid_4x5 ( J4x5     )              ! Lat centers
@@ -180,6 +184,7 @@ MODULE Geos57RegridModule
 !  23 Jul 2010 - R. Yantosca - Initial version, based on MerraRegridModule.f90
 !  26 Oct 2011 - R. Yantosca - Now make all lon & lat arrays public
 !  03 Jan 2012 - R. Yantosca - Now define index arrays for vertical levels
+!  12 Jan 2012 - R. Yantosca - Now define index arrays for vertical edges
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1367,6 +1372,7 @@ MODULE Geos57RegridModule
 !  25 Oct 2011 - R. Yantosca - InitialVersion, based on MerraRegridModule
 !  26 Oct 2011 - R. Yantosca - Now initialize lon & lat center arrays
 !  03 Jan 2012 - R. Yantosca - Now define index arrays for vertical levels
+!  12 Jan 2012 - R. Yantosca - Now define index arrays for vertical edges
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1421,6 +1427,11 @@ MODULE Geos57RegridModule
        zmid_025x03125(L) = L
     ENDDO
 
+    ! Vertical edges
+    DO L = 1, L025x03125+1
+       zedge_025x03125(L) = L
+    ENDDO
+
     !======================================================================
     ! 0.5 x 0.666 resolution; centered on (-180,-90)
     !======================================================================
@@ -1463,6 +1474,11 @@ MODULE Geos57RegridModule
     ! Vertical levels
     DO L = 1, L05x0666
        zmid_05x0666(L) = L
+    ENDDO
+
+    ! Vertical edges
+    DO L = 1, L05x0666+1
+       zedge_05x0666(L) = L
     ENDDO
 
     !======================================================================
@@ -1509,6 +1525,11 @@ MODULE Geos57RegridModule
        zmid_1x125(L) = L
     ENDDO
 
+    ! Vertical edges
+    DO L = 1, L1x125+1
+       zedge_1x125(L) = L
+    ENDDO
+
     !======================================================================
     ! 2 x 2.5 resolution; centered on (-180,-90)
     !======================================================================
@@ -1553,6 +1574,11 @@ MODULE Geos57RegridModule
        zmid_2x25(L) = L
     ENDDO
 
+    ! Vertical edges
+    DO L = 1, L2x25+1
+       zedge_2x25(L) = L
+    ENDDO
+
     !======================================================================
     ! 4 x 5 Grid; centered on (-180,-90)
     !======================================================================
@@ -1595,6 +1621,11 @@ MODULE Geos57RegridModule
     ! Vertical levels
     DO L = 1, L4x5
        zmid_4x5(L) = L
+    ENDDO
+
+    ! Vertical edges
+    DO L = 1, L4x5+1
+       zedge_4x5(L) = L
     ENDDO
 
   END SUBROUTINE Geos57RegridInit

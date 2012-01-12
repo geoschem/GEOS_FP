@@ -20,7 +20,8 @@ PROGRAM Geos57Driver
   USE Geos57A1Module
   USE Geos57A3CldModule
   USE Geos57A3DynModule
-  USE Geos57A3MstModule
+  USE Geos57A3MstCModule
+  USE Geos57A3MstEModule
   USE Geos57CnModule
   USE Geos57I3Module
   USE Geos57InputsModule
@@ -31,7 +32,7 @@ PROGRAM Geos57Driver
 ! !REVISION HISTORY: 
 !  26 Oct 2011 - R. Yantosca - Initial Version, based on MerraDriver
 !  03 Jan 2012 - R. Yantosca - Activate calls to Geos57MakeCn, Geos57MakeI3
-!  09 Jan 2012 - R. Yantosca - Activate call to Geos57MakeA3
+!  12 Jan 2012 - R. Yantosca - Activate call to Geos57MakeA3* routines
 !------------------------------------------------------------------------------
 
   ! Read filenames and fields to process from an input file
@@ -52,7 +53,8 @@ PROGRAM Geos57Driver
   ! Create the 3-hour average data files
   CALL Geos57MakeA3Cld
   CALL Geos57MakeA3Dyn
-  CALL Geos57MakeA3Mst
+  CALL Geos57MakeA3MstC
+  CALL Geos57MakeA3MstE
 
   ! Cleanup and quit 
   CALL Geos57Cleanup

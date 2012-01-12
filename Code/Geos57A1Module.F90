@@ -6,7 +6,7 @@
 ! !MODULE: Geos57A1Module
 !
 ! !DESCRIPTION: Module Geos57A1Module contains routines to create the 
-!  GEOS-Chem average 1-hr data files from the GEOS-5.7.2 raw data.
+!  GEOS-Chem average 1-hr data files from the GEOS-5.7.x raw data.
 !\\
 !\\
 ! !INTERFACE: 
@@ -873,9 +873,9 @@ MODULE Geos57A1Module
 ! !DESCRIPTION: Routine Geos57MakeA1
 ! \begin{enumerate}
 ! \item Extracting 3-hr time-averaged data fields (surface values) from 
-!       the GEOS-5.7.2 raw data files (netCDF-4 format),
+!       the GEOS-5.7.x raw data files (netCDF-4 format),
 ! \item Regridding the fields to GEOS-Chem data resolution, and 
-! \item Saving the regridded data to disk in netCDF format
+! \item Saving the regridded data to disk in netCDF format.
 ! \end{enumerate}
 ! This routine is called directly from the main program Geos57Driver.F90
 !\\
@@ -959,7 +959,7 @@ MODULE Geos57A1Module
        fName = dataTmplNestCh
        gName = 'SEA4CRS'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000      )      
-       CALL StrRepl     ( fName,     '%%%%%',   'A1   '     )
+       CALL StrRepl     ( fName,     '%%%%%%',  'A1    '    )
        CALL StrCompress ( fName,     RemoveAll=.TRUE.       )
        CALL NcOutFileDef( I_NestCh,  J_NestCh,  TIMES_A1,    &
                           xMid_025x03125(I0_ch:I1_ch),       &
@@ -973,7 +973,7 @@ MODULE Geos57A1Module
        fName = dataTmpl2x25
        gName = '2 x 2.5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000      )      
-       CALL StrRepl     ( fName,     '%%%%%',   'A1   '     )
+       CALL StrRepl     ( fName,     '%%%%%%',  'A1    '    )
        CALL StrCompress ( fName,     RemoveAll=.TRUE.       )
        CALL NcOutFileDef( I2x25,     J2x25,     TIMES_A1,    &
                           xMid_2x25, yMid_2x25, a1Mins,      &
@@ -985,7 +985,7 @@ MODULE Geos57A1Module
        fName = dataTmpl4x5
        gName = '4 x 5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000      )      
-       CALL StrRepl     ( fName,     '%%%%%',   'A1   '     )
+       CALL StrRepl     ( fName,     '%%%%%%',  'A1    '    )
        CALL StrCompress ( fName,     RemoveAll=.TRUE.       )
        CALL NcOutFileDef( I4x5,      J4x5,      TIMES_A1,    &
                           xMid_4x5,  yMid_4x5,  a1Mins,      &
@@ -1028,7 +1028,7 @@ MODULE Geos57A1Module
 !
 ! !IROUTINE: Process2dFlxNx
 !
-! !DESCRIPTION: Subroutine Process2dFlxNx regrids the GEOS-5.7.2 met fields 
+! !DESCRIPTION: Subroutine Process2dFlxNx regrids the GEOS-5.7.x met fields 
 !  from the "tavg1\_2d\_flx\_Nx" file and saves output to netCDF format.
 !\\
 !\\
@@ -1365,7 +1365,7 @@ MODULE Geos57A1Module
 !
 ! !IROUTINE: Process2dLndNx
 !
-! !DESCRIPTION:  Subroutine Process2dLndNx regrids the GEOS-5.7.2 met fields 
+! !DESCRIPTION:  Subroutine Process2dLndNx regrids the GEOS-5.7.x met fields 
 !  from the "tavg1\_2d\_lnd\_Nx" file and saves output to netCDF format.
 !\\
 !\\
@@ -1595,7 +1595,7 @@ MODULE Geos57A1Module
 !
 ! !IROUTINE: Process2dRadNx
 !
-! !DESCRIPTION:  Subroutine Process2dRadNx regrids the GEOS-5.7.2 met fields 
+! !DESCRIPTION:  Subroutine Process2dRadNx regrids the GEOS-5.7.x met fields 
 !  from the "tavg1\_2d\_rad\_Nx" file and saves output to netCDF format.
 !\\
 !\\
@@ -1826,7 +1826,7 @@ MODULE Geos57A1Module
 !
 ! !IROUTINE: Process2dSlvNx
 !
-! !DESCRIPTION:  Subroutine Process2dSlvNx regrids the GEOS-5.7.2 met fields 
+! !DESCRIPTION:  Subroutine Process2dSlvNx regrids the GEOS-5.7.x met fields 
 !  from the "tavg1\_2d\_slv\_Nx" file and saves output to netCDF format.
 !\\
 !\\
@@ -2116,7 +2116,7 @@ MODULE Geos57A1Module
 ! !REMARKS:
 !   Rationale for doing this: 
 !   ----------------------------------------------------------------------
-!   The GEOS-5.7.2 ALBEDO field is only defined where it is daylight.
+!   The GEOS-5.7.x ALBEDO field is only defined where it is daylight.
 !   Some places in GEOS-Chem require an ALBEDO field even at night (i.e.
 !   as a proxy for determining land surface).  Therefore compute the
 !   daily average albedo and return to the data processing routine above.
@@ -2616,7 +2616,7 @@ MODULE Geos57A1Module
 !
 ! !IROUTINE: Geos57AdjustSnomas
 !
-! !DESCRIPTION: Routine Geos57AdjustSnomas will adjust the GEOS-5.7.2 SNOMAS 
+! !DESCRIPTION: Routine Geos57AdjustSnomas will adjust the GEOS-5.7.x SNOMAS 
 !  field to make it more similar to the GEOS-5 SNOMAS field.  This is necessary
 !  for backward compatibility with existing GEOS-Chem routines.
 !\\
@@ -2631,7 +2631,7 @@ MODULE Geos57A1Module
 !
 ! !REMARKS:
 !  NOTE: This routine was originally developed for the MERRA data processing
-!  code, but the same algorithm also can be used for GEOS-5.7.2 data.
+!  code, but the same algorithm also can be used for GEOS-5.7.x data.
 !                                                                             .
 !  Original comments from MERRA code:
 !  ----------------------------------
@@ -2752,7 +2752,7 @@ MODULE Geos57A1Module
 ! !REMARKS:
 !   Rationale for doing this: 
 !   ----------------------------------------------------------------------
-!   The GEOS-5.7.2 ALBEDO field is only defined where it is daylight.
+!   The GEOS-5.7.x ALBEDO field is only defined where it is daylight.
 !   Some places in GEOS-Chem require an ALBEDO field even at night (i.e.
 !   as a proxy for determining land surface).  Therefore compute the
 !   daily average albedo and return to the data processing routine above.
