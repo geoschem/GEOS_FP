@@ -29,6 +29,10 @@ PROGRAM Geos57Driver
 
   IMPLICIT NONE
 !
+! !REMARKS:
+!  netCDF library modules originally written by Jules Kouatchou, GSFC
+!  and re-packaged into NcdfUtilities by Bob Yantosca, Harvard Univ.
+!
 ! !REVISION HISTORY: 
 !  26 Oct 2011 - R. Yantosca - Initial Version, based on MerraDriver
 !  03 Jan 2012 - R. Yantosca - Activate calls to Geos57MakeCn, Geos57MakeI3

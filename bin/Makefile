@@ -3,9 +3,10 @@
 #------------------------------------------------------------------------------
 #BOP
 #
-# !MODULE: Makefile (main-level)
+# !MODULE: Makefile (run-directory)
 #
-# !DESCRIPTION: Makefile for the NetCDF Utilities.
+# !DESCRIPTION: Makefile for the GEOS-5.7.x data processing code.  This is a
+#  "router" makefile, which calls to the Makefile in the Code directory.
 #\\
 #\\
 # !REMARKS:
@@ -16,7 +17,8 @@
 # To display a complete list of options, type "make help".
 #
 # !REVISION HISTORY: 
-#  03 Aug 2009 - R. Yantosca - Initial version
+# 12 Jan 2012 - R. Yantosca - Add "check" target to build & run the data
+#                             processing code using the GMAO sample data
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -34,21 +36,24 @@ EXE   = Geos57Driver.x
 # Makefile targets (for now, build w/ the sample data)
 #==============================================================================
 
-.PHONY: all driver lib check clean realclean doc docclean help
+.PHONY: all norun driver lib check clean realclean doc docclean help
 
 all: 
-	$(MAKE) -C $(DIR) all USE_SAMPLE_DATA=yes
-	$(EXE) < 20110815
+	$(MAKE) -C $(DIR) all
 
 lib:
-	$(MAKE) -C $(DIR) lib USE_SAMPLE_DATA=yes
+	$(MAKE) -C $(DIR) lib
+
+check: 
+	$(MAKE) -C $(DIR) all USE_SAMPLE_DATA=yes
+	$(EXE) < 20110815
 
 clean:
 	$(MAKE) -C $(DIR) clean
 
 realclean:
 	$(MAKE) -C $(DIR) realclean
-	rm -f GEOS572*.nc         # For testing
+	rm -f GEOS572*.nc         
 
 doc:
 	$(MAKE) -C $(DIR) doc

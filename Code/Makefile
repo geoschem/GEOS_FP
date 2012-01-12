@@ -6,7 +6,7 @@
 #
 # !MODULE: Makefile (in Code subdirectory)
 #
-# !DESCRIPTION: Makefile for the NcdfUtilities package.
+# !DESCRIPTION: Makefile for the GEOS-5.7.x data processing code.
 #\\
 #\\
 # !REMARKS:
@@ -26,7 +26,7 @@
 # F90        Contains the default Fortran compilation commands
 # LD         Contains the command to link to libraries & make executable
 # LIB        Specifies the directory where the libNcUtils.a files will be sent
-# LINK_NC    Contains the comand to link to the HDF library
+# LINK_NC    Contains the comand to link to the netCDF library
 # MOD        Specifies the directory where module files (*.mod) will be sent
 # SHELL      Specifies the shell for "make" to use (usually SHELL=/bin/sh)
 #                                                                             .
@@ -261,8 +261,6 @@ realclean:
 	rm -f $(LIB)/*.a
 	rm -f $(MOD)/*.mod
 
-test: check
-
 driver: all
 
 #==============================================================================
@@ -273,10 +271,11 @@ help:
 	@echo 'Usage: make TARGET [ OPTIONAL-FLAGS ]'
 	@echo ''
 	@echo 'TARGET may be one of the following:'
-	@echo 'lib        Compiles code and builds the libNcUtils.a library file'
-	@echo 'check      Compiles and runs a test program to check the libNcUtils.a library'
-	@echo 'test       Synonym for "check"'
-	@echo 'all        Synonym for "lib check" (default target)'
+	@echo 'lib        Compiles code and creates the *.mod, *.o, and *.a files'
+	@echo 'exe        Builds the executable file'
+	@echo 'all        Synonym for "lib exe" (default target)'
+
+	@echo 'check      Compiles code and runs the executable using GMAO sample data (for debugging)'
 	@echo 'clean      Removes *.o *.mod and executable files in Code subdirectory'
 	@echo 'realclean  Makes clean, then removes contents of bin, lib, doc subdirectories'
 	@echo 'doc        Builds documentation files (*.ps, *.pdf) in doc subdirectory'

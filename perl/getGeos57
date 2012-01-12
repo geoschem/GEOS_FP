@@ -159,6 +159,8 @@ sub getGeos57Data($$$) {
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/getGeos5
 #  25 Oct 2011 - R. Yantosca - Remove variables for previous day; unnecessary
 #  25 Oct 2011 - R. Yantosca - Updated comments
+#  12 Jan 2012 - R. Yantosca - Comment out sections that download the
+#                              tavg3_3d_odt_Nv and tavg3_3d_qdt_Nv files
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -313,45 +315,50 @@ sub getGeos57Data($$$) {
   # Increment status flag upon failure
   if ( $msg =~ "failure" ) { $status++; }
 
-  #--------------------------------------------------------------------------
-  # Download tavg3_3d_odt_Nv files (8/day)
-  #--------------------------------------------------------------------------
-
-  # Create URL (place single quotes around it)
-  $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T3NVODT$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
-
-  # Create curl command string
-  $cmd ="curl --silent -u $login $url";
-
-  # Echo info to both stdout and log file
-  print "\nDownload of tavg3_3d_odt_Nv for $date0 - $date1:\n$msg\n";
-
-  # Issue data transfer request via curl  
-  if ( $printOnly ) { print "   $cmd\n\n"; }
-  else              { $msg = qx( $cmd );   }
-
-  # Increment status flag upon failure
-  if ( $msg =~ "failure" ) { $status++; }
-
-  #--------------------------------------------------------------------------
-  # Download tavg3_3d_qdt_Nv files (8/day)
-  #--------------------------------------------------------------------------
-
-  # Create URL (place single quotes around it)
-  $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T3NVQDT$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
-
-  # Create curl command string
-  $cmd ="curl --silent -u $login $url";
-
-  # Echo info to both stdout and log file
-  print "\nDownload of tavg3_3d_qdt_Nv for $date0 - $date1:\n$msg\n";
-
-  # Issue data transfer request via curl  
-  if ( $printOnly ) { print "   $cmd\n\n"; }
-  else              { $msg = qx( $cmd );   }
-
-  # Increment status flag upon failure
-  if ( $msg =~ "failure" ) { $status++; }
+###############################################################################
+# NOTE: WE DON'T NEED THESE FILES ANYMORE.  COMMENT OUT THIS SECTION,
+# BUT KEEP THE CODE PRESERVED FOR FUTURE REFERENCE. (bmy, 1/12/12)
+#
+#  #--------------------------------------------------------------------------
+#  # Download tavg3_3d_odt_Nv files (8/day)
+#  #--------------------------------------------------------------------------
+#
+#  # Create URL (place single quotes around it)
+#  $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T3NVODT$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
+#
+#  # Create curl command string
+#  $cmd ="curl --silent -u $login $url";
+#
+#  # Echo info to both stdout and log file
+#  print "\nDownload of tavg3_3d_odt_Nv for $date0 - $date1:\n$msg\n";
+#
+#  # Issue data transfer request via curl  
+#  if ( $printOnly ) { print "   $cmd\n\n"; }
+#  else              { $msg = qx( $cmd );   }
+#
+#  # Increment status flag upon failure
+#  if ( $msg =~ "failure" ) { $status++; }
+#
+#  #--------------------------------------------------------------------------
+#  # Download tavg3_3d_qdt_Nv files (8/day)
+#  #--------------------------------------------------------------------------
+#
+#  # Create URL (place single quotes around it)
+#  $url = "'"."http://aurapar2u.ecs.nasa.gov/goldsfs1/ops-bin/s4pa_m2m_cgi.pl?dataset=D57T3NVQDT$vStr&startTime=$d0%20$t0&endTime=$d1%20$t1"."'";
+#
+#  # Create curl command string
+#  $cmd ="curl --silent -u $login $url";
+#
+#  # Echo info to both stdout and log file
+#  print "\nDownload of tavg3_3d_qdt_Nv for $date0 - $date1:\n$msg\n";
+#
+#  # Issue data transfer request via curl  
+#  if ( $printOnly ) { print "   $cmd\n\n"; }
+#  else              { $msg = qx( $cmd );   }
+#
+#  # Increment status flag upon failure
+#  if ( $msg =~ "failure" ) { $status++; }
+###############################################################################
 
   #--------------------------------------------------------------------------
   # Download tavg3_3d_udt_Nv files (8/day)

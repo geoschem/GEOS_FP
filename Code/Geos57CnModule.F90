@@ -51,6 +51,9 @@ MODULE Geos57CnModule
 !
 ! !REMARKS:
 !  NOTE: Hardwire the constant data file to 00:00 GMT on 2011/01/01.
+!                                                                             .
+!  netCDF library modules originally written by Jules Kouatchou, GSFC
+!  and re-packaged into NcdfUtilities by Bob Yantosca, Harvard Univ.
 !
 ! !REVISION HISTORY:
 !  25 Oct 2011 - R. Yantosca - Initial version, based on MERRA

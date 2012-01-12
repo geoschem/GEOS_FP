@@ -50,6 +50,10 @@ MODULE Geos57A3CldModule
   PRIVATE :: Process3dOptDep
   PRIVATE :: RegridTau
 !
+! !REMARKS:
+!  netCDF library modules originally written by Jules Kouatchou, GSFC
+!  and re-packaged into NcdfUtilities by Bob Yantosca, Harvard Univ.
+!
 ! !REVISION HISTORY:
 !  11 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !EOP

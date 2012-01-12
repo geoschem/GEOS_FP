@@ -49,6 +49,10 @@ MODULE Geos57A3MstCModule
   PRIVATE :: Process3dMstNv
   PRIVATE :: ProcessFracPrecip
 !
+! !REMARKS:
+!  netCDF library modules originally written by Jules Kouatchou, GSFC
+!  and re-packaged into NcdfUtilities by Bob Yantosca, Harvard Univ.
+!
 ! !REVISION HISTORY:
 !  09 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  12 Jan 2012 - R. Yantosca - Now just save out fields on level centers

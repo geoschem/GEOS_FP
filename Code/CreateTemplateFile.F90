@@ -3,10 +3,11 @@
 !------------------------------------------------------------------------------
 !BOP
 !
-! !MODULE: TestNcdfUtilities.F90
+! !MODULE: CreateTemplateFile.F90
 !
-! !DESCRIPTION: Program TestNcdfUtilities.F90 is the standalone driver that
-!  tests if the libNcUtils.a file was built correctly.
+! !DESCRIPTION: Program CreateTemplateFile creates the template file that
+!  contains the LWI mask, FRLAND, and FRLANDICE quantities.  These are needed
+!  for special handling of certain GEOS-5.7.x met fields.
 !\\
 !\\
 ! !INTERFACE:
@@ -30,7 +31,7 @@ PROGRAM CreateTemplateFile
   IMPLICIT NONE
 
   ! Include files
-  INCLUDE "netcdf.inc"   ! netCDF include file
+# include "netcdf.inc"   ! netCDF include file
 !
 ! !REVISION HISTORY: 
 !  05 Jan 2012 - R. Yantosca - Initial version

@@ -49,6 +49,10 @@ MODULE Geos57A3DynModule
   PRIVATE :: Process3dMstNe
   PRIVATE :: Process3dUdtNv
 !
+! !REMARKS:
+!  netCDF library modules originally written by Jules Kouatchou, GSFC
+!  and re-packaged into NcdfUtilities by Bob Yantosca, Harvard Univ.
+!
 ! !REVISION HISTORY:
 !  11 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !EOP

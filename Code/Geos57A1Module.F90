@@ -63,6 +63,10 @@ MODULE Geos57A1Module
   INTEGER, PARAMETER :: N_ICE   = 10         ! # of sea ice bins
   REAL*4,  PARAMETER :: BINSIZE = 1e0/N_ICE  ! Sea ice bin size
 !
+! !REMARKS:
+!  netCDF library modules originally written by Jules Kouatchou, GSFC
+!  and re-packaged into NcdfUtilities by Bob Yantosca, Harvard Univ.
+!
 ! !REVISION HISTORY:
 !  05 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  09 Jan 2012 - R. Yantosca - Add driver routine Process2dAlbedo

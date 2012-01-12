@@ -47,6 +47,10 @@ MODULE Geos57I3Module
   PRIVATE :: NcOutFileDef
   PRIVATE :: ProcessI33dAsmNv
 !
+! !REMARKS:
+!  netCDF library modules originally written by Jules Kouatchou, GSFC
+!  and re-packaged into NcdfUtilities by Bob Yantosca, Harvard Univ.
+!
 ! !REVISION HISTORY:
 !  03 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  04 Jan 2012 - R. Yantosca - Add extra global attributes

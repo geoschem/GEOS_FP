@@ -6,7 +6,7 @@
 # !MODULE: Makefile (in doc subdirectory)
 #
 # !DESCRIPTION: Makefile for building the documentation (in PDF and 
-#  PostScript formats) for the GEOS-5 data processing code, Makefiles,
+#  PostScript formats) for the GEOS-5.7.x data processing code, Makefiles,
 #  and Perl scripts.
 #\\
 #\\
@@ -21,7 +21,8 @@
 # on your system in order to build the documentation.
 #
 # !REVISION HISTORY: 
-#  28 Jul 2009 - R. Yantosca - Initial version
+#  12 Jan 2012 - R. Yantosca - Initial version
+#  12 Jan 2012 - R. Yantosca - Split source code doc from netCDF code doc
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -43,7 +44,7 @@ PERLDIR = ../perl
 
 .PHONY: doc clean
 
-doc: srcdoc makedoc perldoc
+doc: srcdoc ncdoc makedoc perldoc
 
 clean:
 	rm -f *.tex *.ps *.pdf
@@ -53,26 +54,28 @@ clean:
 #==============================================================================
 
 # Source files
-SRC1 =                              \
-./intro.txt                         \
-$(CODEDIR)/MerraDriver.F90          \
-$(CODEDIR)/MerraInputsModule.F90    \
-$(CODEDIR)/MerraBinaryModule.F90    \
-$(CODEDIR)/MerraRegridModule.F90    \
-$(CODEDIR)/MerraA3Module.F90        \
-$(CODEDIR)/MerraA6Module.F90        \
-$(CODEDIR)/MerraCnModule.F90        \
-$(CODEDIR)/MerraI6Module.F90        \
-$(CODEDIR)/He4ErrorModule.F90       \
-$(CODEDIR)/He4GridModule.F90        \
-$(CODEDIR)/He4IncludeModule.F90     \
-$(CODEDIR)/CharpakModule.F
+SRC1 =                                 \
+./src.intro                            \
+$(CODEDIR)/CreateTemplateFile.F90      \
+$(CODEDIR)/CharpakModule.F	       \
+$(CODEDIR)/Geos57A1Module.F90	       \
+$(CODEDIR)/Geos57A3CldModule.F90       \
+$(CODEDIR)/Geos57A3DynModule.F90       \
+$(CODEDIR)/Geos57A3MstCModule.F90      \
+$(CODEDIR)/Geos57A3MstEModule.F90      \
+$(CODEDIR)/Geos57CnModule.F90	       \
+$(CODEDIR)/Geos57Driver.F90	       \
+$(CODEDIR)/Geos57I3Module.F90	       \
+$(CODEDIR)/Geos57InputsModule.F90      \
+$(CODEDIR)/Geos57RegridModule.F90      \
+$(CODEDIR)/Geos57UtilityModule.F90     \
+$(CODEDIR)/Geos57Driver.F90
 
 # LaTeX etc. files
-TEX1 = MerraDriver.tex
-DVI1 = MerraDriver.dvi
-PDF1 = MerraDriver.pdf
-PS1  = MerraDriver.ps
+TEX1 = Geos57Driver.tex
+DVI1 = Geos57Driver.dvi
+PDF1 = Geos57Driver.pdf
+PS1  = Geos57Driver.ps
 
 srcdoc:
 	rm -f $(TEX1)
@@ -82,6 +85,40 @@ srcdoc:
 	latex $(TEX1)
 	dvipdf $(DVI1) $(PDF1)
 	dvips $(DVI1) -o $(PS1)
+	rm -f *.aux *.dvi *.log *.toc
+
+#==============================================================================
+# Build documentation for netCDF library code
+#==============================================================================
+
+# Source files
+SRC4 =                                 \
+./ncdf.intro                           \
+$(CODEDIR)/m_do_err_out.F90	       \
+$(CODEDIR)/m_netcdf_io_checks.F90      \
+$(CODEDIR)/m_netcdf_io_close.F90       \
+$(CODEDIR)/m_netcdf_io_create.F90      \
+$(CODEDIR)/m_netcdf_io_define.F90      \
+$(CODEDIR)/m_netcdf_io_get_dimlen.F90  \
+$(CODEDIR)/m_netcdf_io_handle_err.F90  \
+$(CODEDIR)/m_netcdf_io_open.F90	       \
+$(CODEDIR)/m_netcdf_io_read.F90	       \
+$(CODEDIR)/m_netcdf_io_write.F90
+
+# LaTeX etc. files
+TEX4 = NcdfUtilities.tex
+DVI4 = NcdfUtilities.dvi
+PDF4 = NcdfUtilities.pdf
+PS4  = NcdfUtilities.ps
+
+ncdoc:
+	rm -f $(TEX4)
+	protex -sf $(SRC4) > $(TEX4)
+	latex $(TEX4)
+	latex $(TEX4)
+	latex $(TEX4)
+	dvipdf $(DVI4) $(PDF4)
+	dvips $(DVI4) -o $(PS4)
 	rm -f *.aux *.dvi *.log *.toc
 
 #==============================================================================
@@ -145,6 +182,7 @@ perldoc:
 	dvipdf $(DVI3) $(PDF3)
 	dvips $(DVI3) -o $(PS3)
 	rm -f *.aux *.dvi *.log *.toc
+
 
 #==============================================================================
 #  Help Screen
