@@ -26,10 +26,11 @@
 #  05 Jan 2012 - R. Yantosca - Added fields for A1 output file
 #  05 Jan 2012 - R. Yantosca - Now use a single netCDF template file
 #  10 Jan 2012 - R. Yantosca - Added fields for A3 output file
+#  13 Jan 2012 - R. Yantosca - Now point file paths on /as/data/geos-rw/
 #
 
 ==> Turn on debug print output?
-T
+F
 
 ==> const_2d_asm_Nx
 DAS.ops.asm.const_2d_asm_Nx.GEOS572.00000000_0000.V01.nc4
@@ -79,31 +80,28 @@ DAS.ops.asm.tavg3_3d_udt_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
 A3Dyn: OMEGA,U,V
 
 ==> Local Raw Data Path
-/as/cache-old/2011-08/bmy/
-#/as/priv/ftp/gmao/gmao/
+/as/priv/ftp/gmao/gmao/
 
 ==> Nested China output
-GEOS572.YYYYMMDD.%%%%%%.025x03125.SEA4CRS.nc
+/as/data/geos-rw/GEOS_0.25x0.3125_SEA4CRS/GEOS_5.7/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.025x03125.SEA4CRS.nc
 T
   769  281   1025   521
 
 ==> Nested NA output
-/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%%%%%.2x25
+/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.2x25.nc
 F
 
 ==> Nested EUR output
-/as/data/geos/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/YYYYMMDD.%%%%%%.2x25
+/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.2x25.nc
 F
 
 ==> 2 x 2.5 Output 
-GEOS572.YYYYMMDD.%%%%%%.2x25.nc
+/as/data/geos-rw/GEOS_2x2.5.d/GEOS_5.7/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.2x25.nc
 T
-#/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.2x25.nc
 
 ==> 4 x 5 Output 
-GEOS572.YYYYMMDD.%%%%%%.4x5.nc
+/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.4x5.nc
 T
-#/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7.2/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.4x5.nc
 
 ==> Mapping Weight Files
 weights_025x03125_to_2x25.txt

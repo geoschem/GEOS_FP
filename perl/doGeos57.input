@@ -21,13 +21,13 @@
 #
 # !REVISION HISTORY: 
 #  24 Oct 2011 - R. Yantosca - Initial version (based on doGeos5.input)
+#  13 Jan 2012 - R. Yantosca - Executable is now named "Geos57Driver.x"
 
 ==> Login String
 byantosca:NpHh5Qdc
 
 ==> Raw Met Data Directory
 /as/priv/ftp/gmao/gmao/
-#/as/scratch-old/2011-08/bmy
 
 ==> Code Directory
 ../bin
@@ -42,7 +42,7 @@ byantosca:NpHh5Qdc
 ../jobs
 
 ==> Program Executable
-Geos57Driver
+Geos57Driver.x
 
 ==> Submit Statement
 {JOB} &

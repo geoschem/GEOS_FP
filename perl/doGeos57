@@ -5,7 +5,7 @@
 #------------------------------------------------------------------------------
 #BOP
 #
-# !MODULE: doGeos5
+# !MODULE: doGeos57
 #
 # !DESCRIPTION: This Perl script is the driver script for Geos5Driver, the
 #  Fortran code for processing GEOS-5.7.x met field data.
@@ -376,7 +376,7 @@ EOF
   chmod( 0755, $JOB_FILE );
 
   # Submit job to queue system (or run interactively)
-#  qx( $SUBMIT );
+  qx( $SUBMIT );
 
   # Return normally
   return( 0 );

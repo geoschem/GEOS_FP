@@ -28,6 +28,7 @@
 #
 # !REVISION HISTORY: 
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/checkGeos5
+
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -220,6 +221,7 @@ sub checkFiles($$) {
 # !REVISION HISTORY:
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/checkGeos5
 #  25 Oct 2011 - R. Yantosca - Now test for 160 files/day (skip D57T1NXOCN)
+#  13 Jan 2012 - R. Yantosca - Test for 144 files (skip D57T3NVODT, D57T3NVQDT)
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -243,8 +245,11 @@ sub checkFiles($$) {
   my $slv_x = "$d/DAS.ops.asm.tavg1_2d_slv_Nx.$vStr.YYYYMMDD_hhmm.V01.nc4.xml";
   my $ins_v = "$d/DAS.ops.asm.inst3_3d_asm_Nv.$vStr.YYYYMMDD_hhmm.V01.nc4.xml";
   my $cld_v = "$d/DAS.ops.asm.tavg3_3d_cld_Nv.$vStr.YYYYMMDD_hhmm.V01.nc4.xml";
-  my $odt_v = "$d/DAS.ops.asm.tavg3_3d_odt_Nv.$vStr.YYYYMMDD_hhmm.V01.nc4.xml";
-  my $qdt_v = "$d/DAS.ops.asm.tavg3_3d_qdt_Nv.$vStr.YYYYMMDD_hhmm.V01.nc4.xml";
+###############################################################################
+# NOTE: SKIP tavg3_3d_odt_Nv and tavg3_3d_qdt_Nv (bmy, 1/13/11)
+# my $odt_v = "$d/DAS.ops.asm.tavg3_3d_odt_Nv.$vStr.YYYYMMDD_hhmm.V01.nc4.xml";
+# my $qdt_v = "$d/DAS.ops.asm.tavg3_3d_qdt_Nv.$vStr.YYYYMMDD_hhmm.V01.nc4.xml";
+###############################################################################
   my $udt_v = "$d/DAS.ops.asm.tavg3_3d_udt_Nv.$vStr.YYYYMMDD_hhmm.V01.nc4.xml";
   my $rad_v = "$d/DAS.ops.asm.tavg3_3d_rad_Nv.$vStr.YYYYMMDD_hhmm.V01.nc4.xml";
   my $mst_v = "$d/DAS.ops.asm.tavg3_3d_mst_Nv.$vStr.YYYYMMDD_hhmm.V01.nc4.xml";
@@ -267,15 +272,22 @@ sub checkFiles($$) {
   # Count collections w/ 3-hourly files (there should be 8 files/day)
   foreach $GMT ( @GMT3i ) { $found += &verifyFile( $ins_v, $date, $GMT ); }
   foreach $GMT ( @GMT3  ) { $found += &verifyFile( $cld_v, $date, $GMT ); }
-  foreach $GMT ( @GMT3  ) { $found += &verifyFile( $odt_v, $date, $GMT ); }
-  foreach $GMT ( @GMT3  ) { $found += &verifyFile( $qdt_v, $date, $GMT ); }
+###############################################################################
+# NOTE: SKIP tavg3_3d_odt_Nv and tavg3_3d_qdt_Nv (bmy, 1/13/11)
+#  foreach $GMT ( @GMT3  ) { $found += &verifyFile( $odt_v, $date, $GMT ); }
+#  foreach $GMT ( @GMT3  ) { $found += &verifyFile( $qdt_v, $date, $GMT ); }
+###############################################################################
   foreach $GMT ( @GMT3  ) { $found += &verifyFile( $udt_v, $date, $GMT ); }
   foreach $GMT ( @GMT3  ) { $found += &verifyFile( $rad_v, $date, $GMT ); }
   foreach $GMT ( @GMT3  ) { $found += &verifyFile( $mst_v, $date, $GMT ); }
   foreach $GMT ( @GMT3  ) { $found += &verifyFile( $mst_e, $date, $GMT ); }
 
   # Compute the # of missing files and print it to stdout.
-  $missing = 160 - $found;
+###############################################################################
+# NOTE: SKIP tavg3_3d_odt_Nv and tavg3_3d_qdt_Nv (bmy, 1/13/11)
+#  $missing = 160 - $found;
+###############################################################################
+  $missing = 144 - $found;
 
   # If QUIET is set, just print the missing # of files
   # Otherwise, print a descriptive error message
