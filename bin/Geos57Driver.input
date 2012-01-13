@@ -83,16 +83,16 @@ A3Dyn: OMEGA,U,V
 /as/priv/ftp/gmao/gmao/
 
 ==> Nested China output
-/as/data/geos-rw/GEOS_0.25x0.3125_SEA4CRS/GEOS_5.7/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.025x03125.SEA4CRS.nc
+/as/data/geos-rw/GEOS_0.25x0.3125_SEA4CRS.d/GEOS_5.7/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.025x03125.SEA4CRS.nc
 T
   769  281   1025   521
 
 ==> Nested NA output
-/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.2x25.nc
+none
 F
 
 ==> Nested EUR output
-/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7/YYYY/MM/GEOS572.YYYYMMDD.%%%%%%.2x25.nc
+none
 F
 
 ==> 2 x 2.5 Output 

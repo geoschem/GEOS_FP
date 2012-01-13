@@ -826,7 +826,7 @@ MODULE Geos57A3MstCModule
 
        ! Native grid
        IF ( doNative ) THEN 
-          CALL ProcessFracPrecip( FC,         Q,          mapNative, &
+          CALL ProcessFracPrecip( FL,         Q,          mapNative, &
                                   I025x03125, J025x03125, L025x03125 )
        ENDIF
 
