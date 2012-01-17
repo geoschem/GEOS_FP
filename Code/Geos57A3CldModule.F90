@@ -56,6 +56,7 @@ MODULE Geos57A3CldModule
 !
 ! !REVISION HISTORY:
 !  11 Jan 2012 - R. Yantosca - Initial version, based on MERRA
+!  17 Jan 2012 - R. Yantosca - Flip native resolution data after reading
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -581,6 +582,9 @@ MODULE Geos57A3CldModule
 ! !REVISION HISTORY: 
 !  09 Jan 2012 - R. Yantosca - Initial version
 !  10 Jan 2012 - R. Yantosca - Activate parallel loop over vertical levels
+!  17 Jan 2012 - R. Yantosca - Bug fix: flip data in vertical immediately
+!                              after reading.  Use pointers for efficiency
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -610,7 +614,8 @@ MODULE Geos57A3CldModule
     REAL*4                  :: QL_4x5 ( I4x5,       J4x5,       L4x5       )
 
     ! Pointer arrays
-    REAL*4, POINTER         :: Ptr(:,:,:)
+    REAL*4, POINTER         :: QFlip(:,:,:)
+    REAL*4, POINTER         :: Ptr  (:,:,:)
 
     ! Character strings and arrays
     CHARACTER(LEN=8       ) :: name
@@ -737,6 +742,9 @@ MODULE Geos57A3CldModule
           ! Strip fill values
           WHERE( Q == FILL_VALUE ) Q = 0e0    
 
+          ! Flip data in vertical
+          QFlip => Q( :, :, Z:1:-1 )
+
           !-----------------------------------------------------------------
           ! Process data (or save for later special handling)
           !-----------------------------------------------------------------
@@ -759,20 +767,20 @@ MODULE Geos57A3CldModule
                 ! Loop over the A-3 times and vertical levels
 !$OMP PARALLEL DO       &
 !$OMP DEFAULT( SHARED ) & 
-!$OMP PRIVATE( L, LR )
+!$OMP PRIVATE( L      )
                 DO L = 1, Z
 
-                   ! Reverse level index for output arrays
-                   LR = Z - L + 1
+                   !! Reverse level index for output arrays
+                   !LR = Z - L + 1
 
                    ! Regrid to 2 x 2.5
                    IF ( do2x25 ) THEN
-                      CALL RegridGeos57To2x25( 0, Q(:,:,LR), Q2x25(:,:,L) )
+                      CALL RegridGeos57To2x25( 0, QFlip(:,:,L), Q2x25(:,:,L) )
                    ENDIF
 
                     ! Regrid to 4x5 
                    IF ( do4x5 ) THEN
-                      CALL RegridGeos57To4x5 ( 0, Q(:,:,LR), Q4x5(:,:,L)  )
+                      CALL RegridGeos57To4x5 ( 0, QFlip(:,:,L), Q4x5(:,:,L)  )
                    ENDIF
 
                 ENDDO
@@ -786,7 +794,7 @@ MODULE Geos57A3CldModule
              
                 ! Nested China (point to proper slice of global data)
                 IF ( doNestCh ) THEN
-                   Ptr  => Q( I0_ch:I1_ch, J0_ch:J1_ch, : )
+                   Ptr  => QFlip( I0_ch:I1_ch, J0_ch:J1_ch, : )
                    st4d = (/ 1,       1,       1,       H /)
                    ct4d = (/ XNestCh, YNestCh, ZNestCh, 1 /)
                    CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st4d, ct4d )
@@ -808,6 +816,8 @@ MODULE Geos57A3CldModule
                 
           END SELECT
 
+          ! Free pointer memory
+          NULLIFY( QFlip )
        ENDDO
 
        !====================================================================
@@ -819,22 +829,22 @@ MODULE Geos57A3CldModule
        ! Loop over the A-3 times and vertical levels
 !$OMP PARALLEL DO       &
 !$OMP DEFAULT( SHARED ) & 
-!$OMP PRIVATE( L, LR )
+!$OMP PRIVATE( L      )
        DO L = 1, Z
           
-          ! Reverse level index for output arrays
-          LR = Z - L + 1
+          !! Reverse level index for output arrays
+          !LR = Z - L + 1
 
           ! Regrid to 2 x 2.5
           IF ( do2x25 ) THEN
-             CALL RegridGeos57To2x25( 0, QI(:,:,LR), QI_2x25(:,:,L) )
-             CALL RegridGeos57To2x25( 0, QL(:,:,LR), QL_2x25(:,:,L) )
+             CALL RegridGeos57To2x25( 0, QI(:,:,L), QI_2x25(:,:,L) )
+             CALL RegridGeos57To2x25( 0, QL(:,:,L), QL_2x25(:,:,L) )
           ENDIF
           
           ! Regrid to 4x5 
           IF ( do4x5 ) THEN
-             CALL RegridGeos57To4x5 ( 0, QI(:,:,LR), QI_4x5(:,:,L)  )
-             CALL RegridGeos57To4x5 ( 0, QL(:,:,LR), QL_4x5(:,:,L)  )
+             CALL RegridGeos57To4x5 ( 0, QI(:,:,L), QI_4x5(:,:,L)  )
+             CALL RegridGeos57To4x5 ( 0, QL(:,:,L), QL_4x5(:,:,L)  )
           ENDIF
 
        ENDDO
@@ -935,6 +945,9 @@ MODULE Geos57A3CldModule
 !
 ! !REVISION HISTORY: 
 !  09 Jan 2012 - R. Yantosca - Initial version
+!  17 Jan 2012 - R. Yantosca - Bug fix: flip data in vertical immediately
+!                              after reading.  Use pointers for efficiency
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1077,6 +1090,7 @@ MODULE Geos57A3CldModule
        WRITE( IU_LOG, '(a)' ) TRIM( msg )
        CALL NcRd( Cld, fIn, 'CLOUD', st4d, ct4d )
        WHERE( Cld == FILL_VALUE ) Cld = 0e0    
+       
 
        ! Close input netCDF file
        msg = '%%% Closing ' // TRIM( fNameInput )
@@ -1131,6 +1145,7 @@ MODULE Geos57A3CldModule
 
        !====================================================================
        ! Regrid cloud & optical depth fields w/ Hongyu Liu's algorithm
+       ! NOTE: Algorithm also flips data in the vertical
        !====================================================================
 
        msg = '%%% Regridding CLOUD, TAUCLI, TAUCLW, OPTDEPTH'
@@ -1160,26 +1175,28 @@ MODULE Geos57A3CldModule
        !%%%%% SEA4CRS NESTED CHINA GRID %%%%%
        IF ( doNestCh ) THEN
 
-          ! netCDF index arrasy
+          ! netCDF indices
           st4d = (/ 1,       1,       1,       H /)
           ct4d = (/ XNestCh, YNestCh, ZNestCh, 1 /)
 
-          ! CLOUD
-          Ptr  => Cld( I0_ch:I1_ch, J0_ch:J1_ch, : )
+          ! CLOUD (flip in vertical)
+          Ptr  => Cld( I0_ch:I1_ch, J0_ch:J1_ch, ZNestCh:1:-1 )
           CALL NcWr( Ptr, fOutNestCh, 'CLOUD',    st4d, ct4d )
 
-          ! TAUCLI
-          Ptr  => TauI( I0_ch:I1_ch, J0_ch:J1_ch, : )
+          ! TAUCLI (flip in vertical)
+          Ptr  => TauI( I0_ch:I1_ch, J0_ch:J1_ch, ZNestCh:1:-1 )
           CALL NcWr( Ptr, fOutNestCh, 'TAUCLI',   st4d, ct4d )
 
-          ! TAUCLW
-          Ptr  => TauW( I0_ch:I1_ch, J0_ch:J1_ch, : )
+          ! TAUCLW (flip in vertical)
+          Ptr  => TauW( I0_ch:I1_ch, J0_ch:J1_ch, ZNestCh:1:-1 )
           CALL NcWr( Ptr, fOutNestCh, 'TAUCLW',   st4d, ct4d )
 
-          ! OPTDEPTH
-          Ptr  => OptD( I0_ch:I1_ch, J0_ch:J1_ch, : )
+          ! OPTDEPTH (flip in vertical)
+          Ptr  => OptD( I0_ch:I1_ch, J0_ch:J1_ch, ZNestCh:1:-1 )
           CALL NcWr( Ptr, fOutNestCh, 'OPTDEPTH', st4d, ct4d )
 
+          ! Free pointer memory
+          NULLIFY( Ptr )
        ENDIF
 
        !%%%%% 2 x 2.5 GLOBAL GRID %%%%%

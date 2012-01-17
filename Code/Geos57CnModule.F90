@@ -526,6 +526,7 @@ CONTAINS
 !  04 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
 !                              the module Geos57InputsModule.F90
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -675,7 +676,8 @@ CONTAINS
 
           st3d  = (/ 1,       1,       1       /)
           ct3d  = (/ XNestCh, YNestCh, TNestCh /)
-          CALL NcWr( QNest, fOutNestCh, TRIM( name ), st3d, ct3d )          
+          CALL NcWr( QNest, fOutNestCh, TRIM( name ), st3d, ct3d )   
+          NULLIFY( QNest )
        ENDIF
 
        ! Write 2 x 2.5 data

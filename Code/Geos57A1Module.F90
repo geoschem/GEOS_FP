@@ -1053,6 +1053,7 @@ MODULE Geos57A1Module
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
 !                              the module Geos57InputsModule.F90
 !  11 Jan 2012 - R. Yantosca - Now put debugging kludge in an #if block
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1217,6 +1218,7 @@ MODULE Geos57A1Module
                 st3d = (/ 1,       1,       H /)
                 ct3d = (/ XNestCh, YNestCh, 1 /)
                 CALL NcWr( Ptr, fOutNestCh, 'LWI', st3d, ct3d )
+                NULLIFY( Ptr )
 
                 !----------------------------------------------------------
                 ! SEA4CRS NESTED CHINA GRID: sea ice bins
@@ -1329,6 +1331,7 @@ MODULE Geos57A1Module
              st3d = (/ 1,       1,       H /)
              ct3d = (/ XNestCh, YNestCh, 1 /)
              CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st3d, ct3d )
+             NULLIFY( Ptr )
           ENDIF
           
           ! Write 2 x 2.5 data
@@ -1387,6 +1390,7 @@ MODULE Geos57A1Module
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
 !                              the module Geos57InputsModule.F90
 !  11 Jan 2012 - R. Yantosca - Now put debugging kludge in an #if block
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1557,6 +1561,7 @@ MODULE Geos57A1Module
              st3d = (/ 1,       1,       H /)
              ct3d = (/ XNestCh, YNestCh, 1 /)
              CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st3d, ct3d )
+             NULLIFY( Ptr )
           ENDIF
           
           ! Write 2 x 2.5 data
@@ -1617,6 +1622,7 @@ MODULE Geos57A1Module
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
 !                              the module Geos57InputsModule.F90
 !  11 Jan 2012 - R. Yantosca - Now put debugging kludge in an #if block
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1790,6 +1796,7 @@ MODULE Geos57A1Module
              st3d = (/ 1,       1,       H /)
              ct3d = (/ XNestCh, YNestCh, 1 /)
              CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st3d, ct3d )
+             NULLIFY( Ptr )
           ENDIF
           
           ! Write 2 x 2.5 data
@@ -1848,6 +1855,9 @@ MODULE Geos57A1Module
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
 !                              the module Geos57InputsModule.F90
 !  11 Jan 2012 - R. Yantosca - Now put debugging kludge in an #if block
+!  17 Jan 2012 - R. Yantosca - Divide native-grid winds by pressures
+!                              after regridding
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -2047,8 +2057,9 @@ MODULE Geos57A1Module
              
              ! Divide winds by pressures
              CASE( 'U10M', 'V10M' )
-                IF ( do2x25  ) Q2x25 = Q2x25 / P2x25
-                IF ( do4x5   ) Q4x5  = Q4x5  / P4x5
+                IF ( doNative ) Q     = Q     / P
+                IF ( do2x25   ) Q2x25 = Q2x25 / P2x25
+                IF ( do4x5    ) Q4x5  = Q4x5  / P4x5
 
              CASE DEFAULT
                 ! Nothing
@@ -2067,6 +2078,7 @@ MODULE Geos57A1Module
              st3d = (/ 1,       1,       H /)
              ct3d = (/ XNestCh, YNestCh, 1 /)
              CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st3d, ct3d )
+             NULLIFY( Ptr )
           ENDIF
           
           ! Write 2 x 2.5 data
@@ -2127,6 +2139,7 @@ MODULE Geos57A1Module
 !
 ! !REVISION HISTORY: 
 !  11 Aug 2010 - R. Yantosca - Initial version
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -2287,6 +2300,7 @@ MODULE Geos57A1Module
           st3d = (/ 1,       1,       H /)
           ct3d = (/ XNestCh, YNestCh, 1 /)
           CALL NcWr( Ptr, fOutNestCh, 'ALBEDO', st3d, ct3d )
+          NULLIFY( Ptr )
        ENDIF
        
        ! Write 2 x 2.5 data

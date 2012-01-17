@@ -526,6 +526,9 @@ MODULE Geos57I3Module
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
 !                              the module Geos57InputsModule.F90
 !  10 Jan 2012 - R. Yantosca - Activate parallel loop over vertical levels
+!  17 Jan 2012 - R. Yantosca - Bug fix: flip data in vertical immediately
+!                              after reading.  Use pointers for efficiency
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them    
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -555,6 +558,7 @@ MODULE Geos57I3Module
     ! Pointers
     REAL*4,  POINTER        :: Ptr_2d(:,:)
     REAL*4,  POINTER        :: Ptr_3d(:,:,:)
+    REAL*4,  POINTER        :: QFlip (:,:,:)
 
     ! Character strings and arrays
     CHARACTER(LEN=8       ) :: name8
@@ -702,6 +706,7 @@ MODULE Geos57I3Module
                 st3d   = (/ 1,       1,       H /)
                 ct3d   = (/ XNestCh, YNestCh, 1 /)
                 CALL NcWr( Ptr_2d, fOutNestCh, TRIM( name ), st3d, ct3d )
+                NULLIFY( Ptr_2d )
              ENDIF
              
              ! Write 2 x 2.5 data
@@ -744,6 +749,9 @@ MODULE Geos57I3Module
              ! Replace missing values with zeroes
              WHERE( Q3d == FILL_VALUE ) Q3d = 0e0
 
+             ! Flip data in the vertical
+             QFlip => Q3d( :, :, Z:1:-1 )
+
              !--------------------------------------------------------------
              ! Regrid data
              !--------------------------------------------------------------
@@ -753,20 +761,17 @@ MODULE Geos57I3Module
              ! Loop over vertical levels
 !$OMP PARALLEL DO       &
 !$OMP DEFAULT( SHARED ) &
-!$OMP PRIVATE( L, LR )
+!$OMP PRIVATE( L      )
              DO L = 1, Z 
-
-                ! Reverse level indices
-                LR = Z - L + 1
 
                 ! Regrid to 2 x 2.5
                 IF ( do2x25 ) THEN
-                   CALL RegridGeos57to2x25( 0, Q3d(:,:,LR), Q3d_2x25(:,:,L) )
+                   CALL RegridGeos57to2x25( 0, QFlip(:,:,L), Q3d_2x25(:,:,L) )
                 ENDIF
              
                 ! Regrid to 4x5 
                 IF ( do4x5 ) THEN
-                   CALL RegridGeos57To4x5 ( 0, Q3d(:,:,LR), Q3d_4x5(:,:,L)  )
+                   CALL RegridGeos57To4x5 ( 0, QFlip(:,:,L), Q3d_4x5(:,:,L)  )
                 ENDIF
                 
              ENDDO
@@ -780,10 +785,11 @@ MODULE Geos57I3Module
              
              ! Nested China (point to proper slice of global data)
              IF ( doNestCh ) THEN
-                Ptr_3d => Q3d( I0_ch:I1_ch, J0_ch:J1_ch, : )
+                Ptr_3d => QFlip( I0_ch:I1_ch, J0_ch:J1_ch, : )
                 st4d   = (/ 1,       1,       1,       H /)
                 ct4d   = (/ XNestCh, YNestCh, ZNestCh, 1 /)
                 CALL NcWr( Ptr_3d, fOutNestCh, TRIM( name ), st4d, ct4d )
+                NULLIFY( Ptr_3d )
              ENDIF
              
              ! Write 2 x 2.5 data
@@ -801,6 +807,9 @@ MODULE Geos57I3Module
              ENDIF
 
           ENDIF
+
+          ! Free pointer memory
+          NULLIFY( QFlip )
        ENDDO
 
        !-----------------------------------------------------------------

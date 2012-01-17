@@ -549,6 +549,9 @@ MODULE Geos57A3MstCModule
 ! !REVISION HISTORY: 
 !  09 Jan 2012 - R. Yantosca - Initial version
 !  10 Jan 2012 - R. Yantosca - Activate parallel loop over vertical levels
+!  17 Jan 2012 - R. Yantosca - Bug fix: flip data in vertical immediately
+!                              after reading.  Use pointers for efficiency
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them    
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -572,6 +575,7 @@ MODULE Geos57A3MstCModule
     REAL*4                  :: Q4x5 ( I4x5,       J4x5,       L4x5       )
 
     ! Pointer arrays
+    REAL*4, POINTER         :: QFlip(:,:,:)
     REAL*4, POINTER         :: Ptr(:,:,:)
 
     ! Character strings and arrays
@@ -691,14 +695,17 @@ MODULE Geos57A3MstCModule
           ! Strip fill values
           WHERE( Q == FILL_VALUE ) Q = 0e0    
 
+          ! Flip "raw" data in the vertical
+          QFlip => Q( :, :, Z:1:-1 )
+
           !-----------------------------------------------------------------
           ! Pre-regrid handling
           !-----------------------------------------------------------------
           SELECT CASE( name )
              CASE( 'DQRCU'   )
-                FC = Q
+                FC = QFlip
              CASE( 'DQRLSAN' )
-                FL = Q
+                FL = QFlip
              CASE DEFAULT
                 ! Nothing
           END SELECT
@@ -712,20 +719,20 @@ MODULE Geos57A3MstCModule
           ! Loop over the A-3 times and vertical levels
 !$OMP PARALLEL DO       &
 !$OMP DEFAULT( SHARED ) &
-!$OMP PRIVATE ( L, LR )
+!$OMP PRIVATE( L      )
           DO L = 1, Z
              
              ! Reverse level index for output arrays
-             LR = Z - L + 1
+             !LR = Z - L + 1
 
              ! Regrid to 2 x 2.5
              IF ( do2x25 ) THEN
-                CALL RegridGeos57To2x25( 0, Q(:,:,LR), Q2x25(:,:,L) )
+                CALL RegridGeos57To2x25( 0, QFlip(:,:,L), Q2x25(:,:,L) )
              ENDIF
 
              ! Regrid to 4 x 5
              IF ( do4x5 ) THEN
-                CALL RegridGeos57To4x5 ( 0, Q(:,:,LR), Q4x5(:,:,L)  )
+                CALL RegridGeos57To4x5 ( 0, QFlip(:,:,L), Q4x5(:,:,L)  )
              ENDIF             
           ENDDO
 !$OMP END PARALLEL DO
@@ -738,10 +745,11 @@ MODULE Geos57A3MstCModule
           
           ! Nested China (point to proper slice of global data)
           IF ( doNestCh ) THEN
-             Ptr  => Q( I0_ch:I1_ch, J0_ch:J1_ch, : )
+             Ptr  => QFlip( I0_ch:I1_ch, J0_ch:J1_ch, : )
              st4d = (/ 1,       1,       1,       H /)
              ct4d = (/ XNestCh, YNestCh, ZNestCh, 1 /)
              CALL NcWr( Ptr, fOutNestCh, TRIM( name8 ), st4d, ct4d )
+             NULLIFY( Ptr )
           ENDIF
                 
           ! Write 2 x 2.5 data
@@ -758,6 +766,8 @@ MODULE Geos57A3MstCModule
              CALL NcWr( Q4x5, fOut4x5, TRIM( name8 ), st4d, ct4d )
           ENDIF
 
+          ! Free pointer memory
+          NULLIFY( QFlip )
        ENDDO
 
        !====================================================================
@@ -919,6 +929,8 @@ MODULE Geos57A3MstCModule
 !
 ! !REVISION HISTORY: 
 !  12 Jan 2012 - R. Yantosca - Initial version, based on RegridTau
+!  17 Jan 2012 - R. Yantosca - Now flip levels in the vertical in the 
+!                              calling routine.  Omit level flipping here.
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -935,23 +947,19 @@ MODULE Geos57A3MstCModule
        ! nonzero precipitation, then assume that 100% of the box is 
        ! precipitationg.  Therefore, fpOut will either be 0 or 1.
        !====================================================================
-!$OMP PARALLEL DO           &
-!$OMP DEFAULT( SHARED )     &
-!$OMP PRIVATE( I, J, L, LR )
+!$OMP PARALLEL DO        &
+!$OMP DEFAULT( SHARED )  &
+!$OMP PRIVATE( I, J, L )
        DO L = 1, LMX
-
-          ! Reverse level index for output arrays
-          LR = LMX - L + 1
-
-          DO J = 1, JMX
-          DO I = 1, IMX
-             IF ( fpIn(I,J,L) > 0e0 ) THEN
-                fpOut(I,J,LR) = 1e0          ! Box is precipitating
-             ELSE
-                fpOut(I,J,LR) = 0e0          ! Box is not precipitating
-             ENDIF
-          ENDDO
-          ENDDO
+       DO J = 1, JMX
+       DO I = 1, IMX
+          IF ( fpIn(I,J,L) > 0e0 ) THEN
+             fpOut(I,J,L) = 1e0          ! Box is precipitating
+          ELSE
+             fpOut(I,J,L) = 0e0          ! Box is not precipitating
+          ENDIF
+       ENDDO
+       ENDDO
        ENDDO
 !$OMP END PARALLEL DO
 
@@ -967,14 +975,13 @@ MODULE Geos57A3MstCModule
        ! Loop over coarse grid boxes
 !$OMP PARALLEL DO                                                       &
 !$OMP DEFAULT( SHARED )                                                 &
-!$OMP PRIVATE( I,  J,  L, LR, nPoints, sum_Fn_Wn, sum_Wn, Nx, Ny, X, Y )
+!$OMP PRIVATE( I,  J,  L, nPoints, sum_Fn_Wn, sum_Wn, Nx, Ny, X, Y )
        DO L = 1, LMX
-
-          ! Reverse level index for output arrays
-          LR = LMX - L + 1
-
        DO J = 1, JMX
        DO I = 1, IMX
+
+          ! Zero output array
+          fpOut(I,J,LR) = 0e0
 
           ! Number of "fine" grid boxes in each dimension
           ! that comprise a "coarse" grid box
@@ -1018,7 +1025,7 @@ MODULE Geos57A3MstCModule
           ! box that is precipitating.  NOTE, we don't have to worry about 
           ! div by zero since SUM( Wn ) will always be greater than zero 
           ! (there is always at least 1 "fine" small box in the "coarse" box).
-          fpOut(I,J,LR) = sum_Fn_Wn / sum_Wn
+          fpOut(I,J,L) = sum_Fn_Wn / sum_Wn
 
        ENDDO
        ENDDO
