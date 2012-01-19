@@ -101,8 +101,14 @@ MODULE Geos57InputsModule
   CHARACTER(LEN=8)        :: yyyymmdd_string          ! String for YYYYMMDD
   CHARACTER(LEN=MAX_CHAR) :: inputDataDir             ! netCDF data dir
   CHARACTER(LEN=MAX_CHAR) :: dataTmplNestCh           ! NstCh file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestCh        ! NstCh temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestCh        ! NstCh data dir
   CHARACTER(LEN=MAX_CHAR) :: dataTmpl2x25             ! 2x25  file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmpl2x25          ! 2x25  temp dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmpl2x25          ! 2x25  data dir
   CHARACTER(LEN=MAX_CHAR) :: dataTmpl4x5              ! 4x5   file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmpl4x5           ! 4x5   temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmpl4x5           ! 4x5   data dir
   CHARACTER(LEN=MAX_CHAR) :: const_2d_asm_Nx_file     ! const_2d_chm_Nx file
   CHARACTER(LEN=MAX_CHAR) :: const_2d_asm_Nx_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: inst3_3d_asm_Nv_file     ! inst3_3d_asm_Nv file
@@ -243,19 +249,25 @@ MODULE Geos57InputsModule
              READ( IU_TXT, '(a)',    ERR=999 ) inputDataDir
 
           CASE( '==> Nested China output' )
-             READ( IU_TXT, '(a)', ERR=999 ) dataTmplNestCh
-             READ( IU_TXT,   *,   ERR=999 ) doNestCh
-             READ( IU_TXT,   *,   ERR=999 ) I0_ch, J0_ch, I1_ch, J1_ch
+             READ( IU_TXT,   *,      ERR=999 ) doNestCh
+             READ( IU_TXT, '(a)',    ERR=999 ) dataTmplNestCh
+             READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmplNestCh
+             READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmplNestCh
+             READ( IU_TXT,   *,      ERR=999 ) I0_ch, J0_ch, I1_ch, J1_ch
              I_NestCh = I1_ch - I0_ch + 1
              J_NestCh = J1_ch - J0_ch + 1
 
           CASE( '==> 2 x 2.5 Output' )
-             READ( IU_TXT, '(a)',    ERR=999 ) dataTmpl2x25
              READ( IU_TXT,   *,      ERR=999 ) do2x25
-
+             READ( IU_TXT, '(a)',    ERR=999 ) dataTmpl2x25
+             READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmpl2x25
+             READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmpl2x25
+             
           CASE( '==> 4 x 5 Output' )
-             READ( IU_TXT, '(a)',    ERR=999 ) dataTmpl4x5
              READ( IU_TXT,   *,      ERR=999 ) do4x5
+             READ( IU_TXT, '(a)',    ERR=999 ) dataTmpl4x5
+             READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmpl4x5
+             READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmpl4x5
 
           CASE( '==> const_2d_asm_Nx' )
              READ( IU_TXT, '(a)',    ERR=999 ) const_2d_asm_Nx_file
@@ -427,9 +439,15 @@ MODULE Geos57InputsModule
        PRINT*, 'do4x5           : ', do4x5
        PRINT*, 'doMakeCn        : ', doMakeCn
        PRINT*, 'dataDirHDF      : ', TRIM( inputDataDir            )
-       PRINT*, 'dataFileNestCh  : ', TRIM( dataTmplNestCh          )
+       PRINT*, 'dataTmplNestCh  : ', TRIM( dataTmplNestCh          )
+       PRINT*, 'tempDirNestCh   : ', TRIM( tempDirTmplNestCh       )
+       PRINT*, 'dataDirNestCh   : ', TRIM( dataDirTmplNestCh       )
        PRINT*, 'dataFile2x25    : ', TRIM( dataTmpl2x25            )
+       PRINT*, 'tempDirTmpl2x25 : ', TRIM( tempDirTmpl2x25         )
+       PRINT*, 'dataDirTmpl2x25 : ', TRIM( dataDirTmpl2x25         )
        PRINT*, 'dataFile4x5     : ', TRIM( dataTmpl4x5             )
+       PRINT*, 'tempDirTmpl4x5  : ', TRIM( tempDirTmpl4x5          )
+       PRINT*, 'dataDirFile4x5  : ', TRIM( dataDirTmpl4x5          )
        PRINT*, 'const_2d_asm_Nx : ', TRIM( const_2d_asm_Nx_file    )
        PRINT*, '                  ', TRIM( const_2d_asm_Nx_data    )
        PRINT*, 'inst3_3d_asm_Nv : ', TRIM( inst3_3d_asm_Nv_file    )

@@ -434,6 +434,7 @@ MODULE Geos57A3CldModule
 !  11 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  12 Jan 2012 - R. Yantosca - Now call StrCompress to remove white space
 !                              in the file name after the token replacement
+!  19 Jan 2012 - R. Yantosca - Now write output to the temporary directories
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -488,7 +489,7 @@ MODULE Geos57A3CldModule
 
     ! Open nested China output file
     IF ( doNestCh ) THEN
-       fName = dataTmplNestCh
+       fName = TRIM( tempDirTmplNestCh ) // TRIM( dataTmplNestCh )
        gName = 'SEA4CRS'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                )      
        CALL StrRepl     ( fName,     '%%%%%%', 'A3cld '               )
@@ -502,7 +503,7 @@ MODULE Geos57A3CldModule
 
     ! Open 2 x 2.5 output file
     IF ( do2x25 ) THEN
-       fName = dataTmpl2x25
+       fName = TRIM( tempDirTmpl2x25 ) // TRIM( dataTmpl2x25 )
        gName = '2 x 2.5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                ) 
        CALL StrRepl     ( fName,     '%%%%%%', 'A3cld '               )
@@ -514,7 +515,7 @@ MODULE Geos57A3CldModule
 
     ! Open 4 x 5 output file 
     IF ( do4x5 ) THEN
-       fName = dataTmpl4x5
+       fName = TRIM( tempDirTmpl4x5 ) // TRIM( dataTmpl4x5 )
        gName = '4 x 5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                )      
        CALL StrRepl     ( fName,     '%%%%%%', 'A3cld '               )
@@ -583,7 +584,7 @@ MODULE Geos57A3CldModule
 !  09 Jan 2012 - R. Yantosca - Initial version
 !  10 Jan 2012 - R. Yantosca - Activate parallel loop over vertical levels
 !  17 Jan 2012 - R. Yantosca - Bug fix: flip data in vertical immediately
-!                              after reading.  Use pointers for efficiency
+!                              after reading.
 !  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
 !EOP
 !------------------------------------------------------------------------------
@@ -614,8 +615,8 @@ MODULE Geos57A3CldModule
     REAL*4                  :: QL_4x5 ( I4x5,       J4x5,       L4x5       )
 
     ! Pointer arrays
-    REAL*4, POINTER         :: QFlip(:,:,:)
-    REAL*4, POINTER         :: Ptr  (:,:,:)
+    REAL*4,  POINTER        :: Qflip(:,:,:)
+    REAL*4,  POINTER        :: Ptr  (:,:,:)
 
     ! Character strings and arrays
     CHARACTER(LEN=8       ) :: name
@@ -743,7 +744,7 @@ MODULE Geos57A3CldModule
           WHERE( Q == FILL_VALUE ) Q = 0e0    
 
           ! Flip data in vertical
-          QFlip => Q( :, :, Z:1:-1 )
+          Qflip => Q( :, :, Z:1:-1 )
 
           !-----------------------------------------------------------------
           ! Process data (or save for later special handling)
@@ -751,10 +752,10 @@ MODULE Geos57A3CldModule
           SELECT CASE( name )
 
              CASE ( 'QIAN', 'QILS' )
-                QI   = QI  + Q        ! QI = QIAN + QILS; regrid below
+                QI   = QI  + Qflip    ! QI = QIAN + QILS; regrid below
 
              CASE ( 'QLAN', 'QLLS' )
-                QL   = QL  + Q        ! QL = QLAN + QLLS; regrid below
+                QL   = QL  + Qflip    ! QL = QLAN + QLLS; regrid below
 
              CASE DEFAULT 
 
@@ -765,26 +766,19 @@ MODULE Geos57A3CldModule
                 WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
                 ! Loop over the A-3 times and vertical levels
-!$OMP PARALLEL DO       &
-!$OMP DEFAULT( SHARED ) & 
-!$OMP PRIVATE( L      )
                 DO L = 1, Z
-
-                   !! Reverse level index for output arrays
-                   !LR = Z - L + 1
 
                    ! Regrid to 2 x 2.5
                    IF ( do2x25 ) THEN
-                      CALL RegridGeos57To2x25( 0, QFlip(:,:,L), Q2x25(:,:,L) )
+                      CALL RegridGeos57To2x25( 0, Qflip(:,:,L), Q2x25(:,:,L) )
                    ENDIF
 
                     ! Regrid to 4x5 
                    IF ( do4x5 ) THEN
-                      CALL RegridGeos57To4x5 ( 0, QFlip(:,:,L), Q4x5(:,:,L)  )
+                      CALL RegridGeos57To4x5 ( 0, Qflip(:,:,L), Q4x5(:,:,L)  )
                    ENDIF
 
                 ENDDO
-!$OMP END PARALLEL DO
                 
                 !-----------------------------------------------------------
                 ! Write netCDF output (all except QI, QL)
@@ -794,7 +788,7 @@ MODULE Geos57A3CldModule
              
                 ! Nested China (point to proper slice of global data)
                 IF ( doNestCh ) THEN
-                   Ptr  => QFlip( I0_ch:I1_ch, J0_ch:J1_ch, : )
+                   Ptr  => Qflip( I0_ch:I1_ch, J0_ch:J1_ch, : )
                    st4d = (/ 1,       1,       1,       H /)
                    ct4d = (/ XNestCh, YNestCh, ZNestCh, 1 /)
                    CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st4d, ct4d )
@@ -817,7 +811,7 @@ MODULE Geos57A3CldModule
           END SELECT
 
           ! Free pointer memory
-          NULLIFY( QFlip )
+          NULLIFY( Qflip )
        ENDDO
 
        !====================================================================
@@ -827,14 +821,8 @@ MODULE Geos57A3CldModule
        WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
        ! Loop over the A-3 times and vertical levels
-!$OMP PARALLEL DO       &
-!$OMP DEFAULT( SHARED ) & 
-!$OMP PRIVATE( L      )
        DO L = 1, Z
           
-          !! Reverse level index for output arrays
-          !LR = Z - L + 1
-
           ! Regrid to 2 x 2.5
           IF ( do2x25 ) THEN
              CALL RegridGeos57To2x25( 0, QI(:,:,L), QI_2x25(:,:,L) )
@@ -848,12 +836,10 @@ MODULE Geos57A3CldModule
           ENDIF
 
        ENDDO
-!$OMP END PARALLEL DO
 
        !====================================================================
        ! Write QI and QL to netCDF
-       !==================================================================== 
-
+       !====================================================================
        msg = '%%% Archiving  QI and QL'
        WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
@@ -967,10 +953,10 @@ MODULE Geos57A3CldModule
     INTEGER                 :: ct3d(3),  ct4d(4)
 
     ! Data arrays
-    REAL*4, TARGET          :: Cld      ( I025x03125, J025x03125, L025x03125 )
-    REAL*4, TARGET          :: OptD     ( I025x03125, J025x03125, L025x03125 )
-    REAL*4, TARGET          :: TauI     ( I025x03125, J025x03125, L025x03125 )
-    REAL*4, TARGET          :: TauW     ( I025x03125, J025x03125, L025x03125 )
+    REAL*4,  TARGET         :: Cld      ( I025x03125, J025x03125, L025x03125 )
+    REAL*4,  TARGET         :: OptD     ( I025x03125, J025x03125, L025x03125 )
+    REAL*4,  TARGET         :: TauI     ( I025x03125, J025x03125, L025x03125 )
+    REAL*4,  TARGET         :: TauW     ( I025x03125, J025x03125, L025x03125 )
     REAL*4                  :: Cld_2x25 ( I2x25,      J2x25,      L2x25      )
     REAL*4                  :: OptD_2x25( I2x25,      J2x25,      L2x25      )
     REAL*4                  :: TauI_2x25( I2x25,      J2x25,      L2x25      )
@@ -981,7 +967,7 @@ MODULE Geos57A3CldModule
     REAL*4                  :: TauW_4x5 ( I4x5,       J4x5,       L4x5       )
 
     ! Pointer arrays
-    REAL*4, POINTER         :: ptr(:,:,:)
+    REAL*4,  POINTER        :: ptr(:,:,:)
 
     ! Character strings and arrays
     CHARACTER(LEN=8       ) :: name
@@ -1091,7 +1077,6 @@ MODULE Geos57A3CldModule
        CALL NcRd( Cld, fIn, 'CLOUD', st4d, ct4d )
        WHERE( Cld == FILL_VALUE ) Cld = 0e0    
        
-
        ! Close input netCDF file
        msg = '%%% Closing ' // TRIM( fNameInput )
        WRITE( IU_LOG, '(a)' ) TRIM( msg )

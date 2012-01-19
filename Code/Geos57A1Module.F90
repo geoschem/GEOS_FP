@@ -892,6 +892,7 @@ MODULE Geos57A1Module
 !  05 Jan 2012 - R. Yantosca - Initial version, based on Geos57A3Module.F90
 !  11 Jan 2012 - R. Yantosca - Now call StrCompress to remove white space
 !                              in the input file name.
+!  19 Jan 2012 - R. Yantosca - Now write output to temporary data directories
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -960,7 +961,7 @@ MODULE Geos57A1Module
 
     ! Open nested China output file
     IF ( doNestCh ) THEN
-       fName = dataTmplNestCh
+       fName = TRIM( tempDirTmplNestCh ) // TRIM( dataTmplNestCh )
        gName = 'SEA4CRS'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000      )      
        CALL StrRepl     ( fName,     '%%%%%%',  'A1    '    )
@@ -974,7 +975,7 @@ MODULE Geos57A1Module
 
     ! Open 2 x 2.5 output file
     IF ( do2x25 ) THEN
-       fName = dataTmpl2x25
+       fName = TRIM( tempDirTmpl2x25 ) // TRIM( dataTmpl2x25 )
        gName = '2 x 2.5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000      )      
        CALL StrRepl     ( fName,     '%%%%%%',  'A1    '    )
@@ -986,7 +987,7 @@ MODULE Geos57A1Module
 
     ! Open 4 x 5 output file 
     IF ( do4x5 ) THEN
-       fName = dataTmpl4x5
+       fName = TRIM( tempDirTmpl4x5 ) // TRIM( dataTmpl4x5 )
        gName = '4 x 5 global'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000      )      
        CALL StrRepl     ( fName,     '%%%%%%',  'A1    '    )

@@ -3,40 +3,35 @@
 !------------------------------------------------------------------------------
 !BOP
 !
-! !ROUTINE: Geos57Driver
+! !ROUTINE: Geos57Driver0
 !
-! !DESCRIPTION: Program Geos57Driver is the top-level driver for the 
-!  GEOS-5.7.x regridding programs.  Geos57Driver will call routines to 
-!  extract, regrid, and save the GEOS-5.7.x met data to files for 
-!  input to GEOS-Chem.
+! !DESCRIPTION: Program Geos57Driver0 is a top-level driver for the 
+!  GEOS-5.7.x regridding programs.
 !\\
 !\\
 ! !INTERFACE:
 !
-PROGRAM Geos57Driver
+PROGRAM Geos57Driver0
 !
 ! !USES:
 !
   USE Geos57A1Module
-  USE Geos57A3CldModule
-  USE Geos57A3DynModule
-  USE Geos57A3MstCModule
-  USE Geos57A3MstEModule
   USE Geos57CnModule
-  USE Geos57I3Module
   USE Geos57InputsModule
   USE Geos57RegridModule
 
   IMPLICIT NONE
 !
 ! !REMARKS:
+!  Geos57Driver1 creates the CN (constant) and A1 (1hr time average)
+!  data files for input into GEOS-Chem.
+!                                                                             .
 !  netCDF library modules originally written by Jules Kouatchou, GSFC
 !  and re-packaged into NcdfUtilities by Bob Yantosca, Harvard Univ.
 !
 ! !REVISION HISTORY: 
-!  26 Oct 2011 - R. Yantosca - Initial Version, based on MerraDriver
-!  03 Jan 2012 - R. Yantosca - Activate calls to Geos57MakeCn, Geos57MakeI3
-!  12 Jan 2012 - R. Yantosca - Activate call to Geos57MakeA3* routines
+!  19 Jan 2012 - R. Yantosca - Initial version, created from Geos57Driver
+!EOP
 !------------------------------------------------------------------------------
 
   ! Read filenames and fields to process from an input file
@@ -51,17 +46,8 @@ PROGRAM Geos57Driver
   ! Create the 1-hour average data file
   CALL Geos57MakeA1
 
-  ! Create the 3-hour average data files
-  CALL Geos57MakeA3Cld
-  CALL Geos57MakeA3Dyn
-  CALL Geos57MakeA3MstC
-  CALL Geos57MakeA3MstE
-
-  ! Create the 6-hour instantaneous data file
-  CALL Geos57MakeI3
-
   ! Cleanup and quit 
   CALL Geos57Cleanup
 
-END PROGRAM Geos57Driver
+END PROGRAM Geos57Driver0
 !EOP

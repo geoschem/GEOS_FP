@@ -30,13 +30,18 @@
 # Define variables
 SHELL = /bin/sh
 DIR   = ../Code
-EXE   = Geos57Driver.x
+EXE0   = Geos57Driver0.x
+EXE1   = Geos57Driver1.x
+EXE2   = Geos57Driver2.x
+EXE3   = Geos57Driver3.x
+EXE4   = Geos57Driver4.x
+EXE5   = Geos57Driver5.x
 
 #==============================================================================
 # Makefile targets (for now, build w/ the sample data)
 #==============================================================================
 
-.PHONY: all norun driver lib check clean realclean doc docclean help
+.PHONY: all norun debug driver lib check clean realclean doc docclean help
 
 all: 
 	$(MAKE) -C $(DIR) all
@@ -47,6 +52,15 @@ lib:
 check: 
 	$(MAKE) -C $(DIR) all USE_SAMPLE_DATA=yes
 	$(EXE) < 20110815
+
+debug:
+	$(MAKE) -C $(DIR) all
+	$(EXE0) < 20110901 &
+	$(EXE1) < 20110901 &
+	$(EXE2) < 20110901 &
+	$(EXE3) < 20110901 &
+	$(EXE4) < 20110901 &
+	$(EXE5) < 20110901 &
 
 clean:
 	$(MAKE) -C $(DIR) clean
