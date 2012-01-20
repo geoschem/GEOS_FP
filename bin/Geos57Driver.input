@@ -27,6 +27,7 @@
 #  05 Jan 2012 - R. Yantosca - Now use a single netCDF template file
 #  10 Jan 2012 - R. Yantosca - Added fields for A3 output file
 #  13 Jan 2012 - R. Yantosca - Now point file paths on /as/data/geos-rw/
+#  20 Jan 2012 - R. Yantosca - Now specify temporary & data directories
 #
 
 ==> Turn on debug print output?
@@ -82,7 +83,6 @@ A3Dyn: OMEGA,U,V
 ==> Local Raw Data Path
 /as/priv/ftp/gmao/gmao/
 
-
 ==> Nested China output
 T
 GEOS572.YYYYMMDD.%%%%%%.025x03125.SEA4CRS.nc
@@ -98,13 +98,13 @@ none
 F
 none
 
-==> 2 x 2.5 Output
+==> 2 x 2.5 output
 T
 GEOS572.YYYYMMDD.%%%%%%.2x25.nc
 /as/scratch/bmy/
 /as/data/geos-rw/GEOS_2x2.5.d/GEOS_5.7/YYYY/MM/
 
-==> 4 x 5 Output 
+==> 4 x 5 output 
 T
 GEOS572.YYYYMMDD.%%%%%%.4x5.nc
 /as/scratch/bmy/

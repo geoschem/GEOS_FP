@@ -171,6 +171,7 @@ MODULE Geos57InputsModule
 !                              variable to denote when to read native data
 !  11 Jan 2012 - R. Yantosca - Now split fields from tavg3_3d_cld_Nv and
 !                              tavg3_3d_mst_Ne into output files
+!  20 Jan 2012 - R. Yantosca - Now use lowercase "output" string for all grids
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -257,13 +258,13 @@ MODULE Geos57InputsModule
              I_NestCh = I1_ch - I0_ch + 1
              J_NestCh = J1_ch - J0_ch + 1
 
-          CASE( '==> 2 x 2.5 Output' )
+          CASE( '==> 2 x 2.5 output' )
              READ( IU_TXT,   *,      ERR=999 ) do2x25
              READ( IU_TXT, '(a)',    ERR=999 ) dataTmpl2x25
              READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmpl2x25
              READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmpl2x25
              
-          CASE( '==> 4 x 5 Output' )
+          CASE( '==> 4 x 5 output' )
              READ( IU_TXT,   *,      ERR=999 ) do4x5
              READ( IU_TXT, '(a)',    ERR=999 ) dataTmpl4x5
              READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmpl4x5

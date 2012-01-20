@@ -6,7 +6,7 @@
 # !INCLUDE: doGeos57.input  
 #
 # !DESCRIPTION: Input file specifies the various default settings for
-# directories etc. for the doGeos57 script.
+# directories etc. for the doGeos5 script.
 #\\
 #\\
 # !REMARKS:
@@ -21,15 +21,12 @@
 #
 # !REVISION HISTORY: 
 #  24 Oct 2011 - R. Yantosca - Initial version (based on doGeos5.input)
-#  13 Jan 2012 - R. Yantosca - Executable is now named "Geos57Driver.x"
-#  20 Jan 2012 - R. Yantosca - Now add variable for the file containing
-#                              the default settings for the executable
 
 ==> Login String
-byantosca:NpHh5Qdc
+ADD YOUR LOGIN INFO HERE
 
 ==> Raw Met Data Directory
-/as/priv/ftp/gmao/gmao/
+ADD YOUR DIRECTORY HERE
 
 ==> Code Directory
 ../bin
@@ -44,14 +41,10 @@ byantosca:NpHh5Qdc
 ../jobs
 
 ==> Program Executable
-Geos57Driver{THREAD}.x
-
-==> Defaults for Executable
-../bin/Geos57Driver.input
+Geos57Driver
 
 ==> Submit Statement
 {JOB} &
-#submit sp {JOB}
 
 END OF FILE
 #EOP
