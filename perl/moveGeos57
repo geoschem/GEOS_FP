@@ -256,18 +256,19 @@ sub getSysVars() {
 #\\
 # !INTERFACE:
 #
-sub replaceTokens($) {
+sub replaceTokens($$) {
 #
 # !INPUT PARAMETERS:
 #
   # $var: Name of the string in which to replace tokens
-  my ( $var ) = @_; 
+  my ( $var, $fileType ) = @_; 
 #
 # !CALLING SEQUENCE:
 #  $var = &replaceTokens( $var );
 #
 # !REVISION HISTORY:
 #  23 Jan 2012 - R. Yantosca - Initial version
+#  23 Jan 2012 - R. Yantosca - Added $fileType argument
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -278,7 +279,7 @@ sub replaceTokens($) {
   $var =~ s/YYYY/$YEAR_STRING/g;
   $var =~ s/MM/$MONTH_STRING/g;
   $var =~ s/DD/$DAY_STRING/g;
-  $var =~ s/%%%%%%/*/g;
+  $var =~ s/%%%%%%/$fileType/g;
  
   # Return to calling program
   return( $var );
@@ -335,7 +336,7 @@ sub checkDir($) {
 #\\
 # !INTERFACE:
 #
-sub moveFiles() {
+sub moveFiles(@) {
 #
 # !REVISION HISTORY:
 #  23 Jan 2012 - R. Yantosca - Initial version
@@ -345,68 +346,79 @@ sub moveFiles() {
 #
 # !LOCAL VARIABLES:
 #
-  my $cmd    = "";
-  my $dir    = ""; 
-  my $mask   = "";
-  my $result = "";
+  my $cmd      = "";
+  my $dir      = ""; 
+  my $mask     = "";
+  my $result   = "";
+  my $fileType = "";
 
-  #-------------------------------
-  # SEA4CRS nested China grid 
-  #-------------------------------
+  # Skip the first argument, which is the date
+  for ( my $i=1; $i<=$#ARGV; $i++ ) {
+    
+    # Get the file type (e.g. CN, A1, etc.)
+    $fileType = $_[$i];
 
-  # Temporary file mask
-  $mask   = "$TEMP_DIR_NEST_CH$DATA_FILE_NEST_CH";
-  $mask   = &replaceTokens( $mask );
+    #-------------------------------
+    # SEA4CRS nested China grid 
+    #-------------------------------
+
+    # Temporary file mask
+    $mask   = "$TEMP_DIR_NEST_CH$DATA_FILE_NEST_CH";
+    $mask   = &replaceTokens( $mask, $fileType );
   
-  # Data directory path
-  $dir    = "$DATA_DIR_NEST_CH";
-  $dir    = &replaceTokens( $dir );
-  &checkDir( $dir );
+    # Data directory path
+    $dir    = "$DATA_DIR_NEST_CH";
+    $dir    = &replaceTokens( $dir, $fileType );
+    &checkDir( $dir );
 
-  # Move command
-  $cmd    = "mv -f $mask $dir";
+    # Move command
+    $cmd    = "mv -f $mask $dir";
+    
+    # Move the files
+    print "$cmd\n";
+    $result = qx( $cmd );
 
-  # Move the files
-  print "$cmd\n";
-  $result = qx( $cmd );
+    #-------------------------------
+    # 2 x 2.5 global grid
+    #-------------------------------
 
-  #-------------------------------
-  # 2 x 2.5 global grid
-  #-------------------------------
+    # File path to temporary directory
+    $mask   = "$TEMP_DIR_2x25$DATA_FILE_2x25";
+    $mask   = &replaceTokens( $mask, $fileType );
+    
+    # File path to data directory
+    $dir    = "$DATA_DIR_2x25";
+    $dir    = &replaceTokens( $dir, $fileType );
+    &checkDir( $dir );    
 
-  # File path to temporary directory
-  $mask   = "$TEMP_DIR_2x25$DATA_FILE_2x25";
-  $mask   = &replaceTokens( $mask );
-  
-  # File path to data directory
-  $dir    = "$DATA_DIR_2x25";
-  $dir    = &replaceTokens( $dir );
- 
-  # Move command
-  $cmd    = "mv -f $mask $dir";
+    # Move command
+    $cmd    = "mv -f $mask $dir";
+    
+    # Move the files
+    print "$cmd\n";
+    $result = qx( $cmd );
+    
+    #-------------------------------
+    # 4 x 5 global grid
+    #-------------------------------
+    
+    # File path to temporary directory
+    $mask   = "$TEMP_DIR_4x5$DATA_FILE_4x5";
+    $mask   = &replaceTokens( $mask, $fileType );
+    
+    # File path to data directory
+    $dir    = "$DATA_DIR_4x5";
+    $dir    = &replaceTokens( $dir, $fileType );
+    &checkDir( $dir );    
 
-  # Move the files
-  print "$cmd\n";
-  $result = qx( $cmd );
+    # Move command
+    $cmd    = "mv -f $mask $dir";
 
-  #-------------------------------
-  # 4 x 5 global grid
-  #-------------------------------
+    # Move the files
+    print "$cmd\n";
+    $result = qx( $cmd );
 
-  # File path to temporary directory
-  $mask   = "$TEMP_DIR_4x5$DATA_FILE_4x5";
-  $mask   = &replaceTokens( $mask );
-  
-  # File path to data directory
-  $dir    = "$DATA_DIR_4x5";
-  $dir    = &replaceTokens( $dir );
- 
-  # Move command
-  $cmd    = "mv -f $mask $dir";
-
-  # Move the files
-  print "$cmd\n";
-  $result = qx( $cmd );
+  }
 
   # Return normally
   return( 0 );
@@ -450,7 +462,7 @@ sub main() {
   &getSysVars();
 
   # Run jobs
-  &moveFiles();
+  &moveFiles( @ARGV );
 
   # Return normally
   return(0);

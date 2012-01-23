@@ -69,6 +69,8 @@
 #
 # !REVISION HISTORY: 
 #  20 Jan 2012 - R. Yantosca - Initial version
+#  23 Jan 2012 - R. Yantosca - Modified to submit processes on 3 threads
+#                              simultaneously
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -171,10 +173,10 @@ sub getDefaults($$) {
 #------------------------------------------------------------------------------
 #BOP
 #
-# !IROUTINE: getDefaults
+# !IROUTINE: getDirectories
 #
-# !DESCRIPTION:  Routine getDefaults reads the default values for 
-#  input quantities.
+# !DESCRIPTION:  Routine getDirectories reads the temporary and data
+#  directory paths from the input file for the GEOS-5.7.2 Fortran executable.
 #\\
 #\\
 # !INTERFACE:
@@ -430,9 +432,11 @@ sub checkDir($) {
 #------------------------------------------------------------------------------
 #BOP
 #
-# !IROUTINE: runJob
+# !IROUTINE: makeJobFile
 #
-# !DESCRIPTION: Subroutine runJob creates the job script and executes it.
+# !DESCRIPTION: Subroutine makeJobFile creates a job script for each 
+#  process.  The thread number (0,1,2) is appended to the script names and
+#  log files.
 #\\
 #\\
 # !INTERFACE:
@@ -457,9 +461,10 @@ sub makeJobFile($) {
 # !LOCAL VARIABLES:
 #
   # Create shadow variables
-  my $exeFile = $EXECUTABLE;
-  my $jobFile = $JOB_FILE;
-  my $logFile = $LOG_FILE;
+  my $exeFile   = $EXECUTABLE;
+  my $jobFile   = $JOB_FILE;
+  my $logFile   = $LOG_FILE;
+  my $fileTypes = "";
 
   #-----------------------------------------
   # Create a file with the date of the data
@@ -479,6 +484,12 @@ sub makeJobFile($) {
   $jobFile =~ s/{THREAD}/$thread/g;
   $logFile =~ s/{THREAD}/$thread/g;
 
+  # Pick the proper file types
+  if    ( $thread == 0 ) { $fileTypes = "A1 I3";                      }
+  elsif ( $thread == 1 ) { $fileTypes = "A3cld A3dyn";                }
+  elsif ( $thread == 2 ) { $fileTypes = "A3mstC A3mstE";              }
+  else                   { print "Invalid thread number!\n"; exit(1); }
+
   # Create HERE document
   my $txt =<<EOF;
 #!/usr/bin/perl -w
@@ -497,6 +508,9 @@ qx( echo                                           >> \$sLog );
 
 # Run the GEOS-5 data extraction code
 qx( umask 022; cd $CODE_DIRECTORY; $exeFile < $DATE_FILE >> \$sLog );
+
+# Move files
+qx( ./moveGeos57 $DATE_STRING $fileTypes >> \$sLog );
 
 # Remove the date file
 qx( rm -f $DATE_FILE >> /dev/null ); 
@@ -526,9 +540,10 @@ EOF
 #------------------------------------------------------------------------------
 #BOP
 #
-# !IROUTINE: runJob
+# !IROUTINE: runJobs
 #
-# !DESCRIPTION: Subroutine runJob creates the job script and executes it.
+# !DESCRIPTION: Subroutine runJob executes 3 job scripts simultaneiously,
+#  each in a different Unix process.
 #\\
 #\\
 # !INTERFACE:
@@ -536,8 +551,7 @@ EOF
 sub runJobs() {
 #
 # !CALLING SEQUENCE:
-#  &runJob( 0 );   # Runs executable Geos57Driver0.x
-#  &runJob( 1 );   # Runs executable Geos57Driver1.x, etc.
+#  &runJobs();     # Submits all job scripts simultaneously
 #
 # !REVISION HISTORY:
 #  20 Jan 2012 - R. Yantosca - Initial version
@@ -560,7 +574,7 @@ sub runJobs() {
   my $cmd = "./runMet $job[0] $job[1] $job[2]";
 
   # Submit all jobs in multiple threads
-  qx( $cmd );
+#  qx( $cmd );
 
   # Return normally
   return( 0 );
@@ -607,9 +621,9 @@ sub main() {
   &checkInputs();
 
   # Write the job file and submit it to the queue
-  &makeJobFile( 0 );   # A1,     I3,    (CN)
-  &makeJobFile( 1 );   # A3cld,  A3dyn
-  &makeJobFile( 2 );   # A3mstC, A3mstE
+  &makeJobFile( 0 );   # Creates A1, I3, (and CN if necessary) files
+  &makeJobFile( 1 );   # Creates A3cld and A3dyn files
+  &makeJobFile( 2 );   # Creates A3mstC and A3mstE files
 
   # Run jobs
   &runJobs();
