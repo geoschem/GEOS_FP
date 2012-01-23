@@ -89,7 +89,8 @@ sub main() {
   #-------------------------------------------------------------------------
 
   # Start the GEOS-5 met field processing job
-  $cmd = "./doGeos57 @ARGV";
+#  $cmd = "./doGeos57 @ARGV";
+  $cmd = "./doGeos57Multi @ARGV";
   qx( $cmd );
 
   # Return the error status code

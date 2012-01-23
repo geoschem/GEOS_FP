@@ -36,6 +36,10 @@
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS-5
 #  11 Jan 2012 - R. Yantosca - Now compile Geos57A3*Module.F90 files
 #  12 Jan 2012 - R. Yantosca - Split Geos57A3MstModule.F90 into two modules
+#  23 Jan 2012 - R. Yantosca - Now compile an executable that creates all 
+#                              the output files, as well as separate 
+#                              executables that create a few files each 
+#                              (i.e. coarse-grain parallelization)
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -52,9 +56,6 @@ EXE     = Geos57Driver.x
 EXE0    = Geos57Driver0.x
 EXE1    = Geos57Driver1.x
 EXE2    = Geos57Driver2.x
-EXE3    = Geos57Driver3.x
-EXE4    = Geos57Driver4.x
-EXE5    = Geos57Driver5.x
 LIB     = ../lib
 MOD     = ../mod
 
@@ -80,9 +81,6 @@ SRC  := $(filter-out Geos57Driver.F90  \
                      Geos57Driver0.F90 \
                      Geos57Driver1.F90 \
                      Geos57Driver2.F90 \
-                     Geos57Driver3.F90 \
-                     Geos57Driver4.F90 \
-                     Geos57Driver5.F90 \
                      CreateTemplateFile.F90,$(SRC))  # but skip these files
 TMP  := $(SRC:.F=.o)
 OBJ  := $(TMP:.F90=.o)
@@ -92,9 +90,6 @@ OBJx  := $(EXE:.x=.o)
 OBJx0 := $(EXE0:.x=.o)
 OBJx1 := $(EXE1:.x=.o)
 OBJx2 := $(EXE2:.x=.o)
-OBJx3 := $(EXE3:.x=.o)
-OBJx4 := $(EXE4:.x=.o)
-OBJx5 := $(EXE5:.x=.o)
 
 #-----------------------
 # Dependency listing
@@ -252,32 +247,20 @@ Geos57Driver0.o          : Geos57Driver0.F90            \
                            Geos57InputsModule.o         \
                            Geos57RegridModule.o         \
                            Geos57A1Module.o             \
-                           Geos57CnModule.o
+                           Geos57CnModule.o             \
+                           Geos57I3Module.o
 
 Geos57Driver1.o          : Geos57Driver1.F90            \
                            Geos57InputsModule.o         \
                            Geos57RegridModule.o         \
-                           Geos57A3CldModule.o
+                           Geos57A3CldModule.o          \
+                           Geos57A3DynModule.o   
 
 Geos57Driver2.o          : Geos57Driver2.F90            \
                            Geos57InputsModule.o         \
                            Geos57RegridModule.o         \
-                           Geos57A3DynModule.o
-
-Geos57Driver3.o          : Geos57Driver3.F90            \
-                           Geos57InputsModule.o         \
-                           Geos57RegridModule.o         \
-                           Geos57A3MstCModule.o
-
-Geos57Driver4.o          : Geos57Driver4.F90            \
-                           Geos57InputsModule.o         \
-                           Geos57RegridModule.o         \
+                           Geos57A3MstCModule.o         \
                            Geos57A3MstEModule.o
-
-Geos57Driver5.o          : Geos57Driver5.F90            \
-                           Geos57InputsModule.o         \
-                           Geos57RegridModule.o         \
-                           Geos57I3Module.o
 
 #==============================================================================
 # Makefile targets
@@ -291,21 +274,15 @@ lib: $(OBJ)
 	$(AR) crs libGeos57.a $(OBJ)
 	mv libGeos57.a $(LIB)
 
-exe: $(OBJx) $(OBJx0) $(OBJx1) $(OBJx2) $(OBJx3) $(OBJx4) $(OBJx5)
+exe: $(OBJx) $(OBJx0) $(OBJx1) $(OBJx2)
 	$(LD) $(OBJx)  -L$(LIB) -lGeos57 $(LINK_NC) -o $(EXE)
 	$(LD) $(OBJx0) -L$(LIB) -lGeos57 $(LINK_NC) -o $(EXE0)
 	$(LD) $(OBJx1) -L$(LIB) -lGeos57 $(LINK_NC) -o $(EXE1)
 	$(LD) $(OBJx2) -L$(LIB) -lGeos57 $(LINK_NC) -o $(EXE2)
-	$(LD) $(OBJx3) -L$(LIB) -lGeos57 $(LINK_NC) -o $(EXE3)
-	$(LD) $(OBJx4) -L$(LIB) -lGeos57 $(LINK_NC) -o $(EXE4)
-	$(LD) $(OBJx5) -L$(LIB) -lGeos57 $(LINK_NC) -o $(EXE5)
 	cp -f $(EXE)  $(BIN)
 	cp -f $(EXE0) $(BIN)
 	cp -f $(EXE1) $(BIN)
 	cp -f $(EXE2) $(BIN)
-	cp -f $(EXE3) $(BIN)
-	cp -f $(EXE4) $(BIN)
-	cp -f $(EXE5) $(BIN)
 
 doc:
 	$(MAKE) -C $(DOC) doc

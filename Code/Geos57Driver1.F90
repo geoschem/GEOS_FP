@@ -16,20 +16,24 @@ PROGRAM Geos57Driver1
 ! !USES:
 !
   USE Geos57A3CldModule
+  USE Geos57A3DynModule
   USE Geos57InputsModule
   USE Geos57RegridModule
 
   IMPLICIT NONE
 !
 ! !REMARKS:
-!  Geos57Driver1 creates the A3cld (3hr time-averaged cloud parameters)
-!  data files for input into GEOS-Chem.
+!  Geos57Driver1 creates the A3cld (3hr time-averaged cloud parameters) and
+!  A3dyn  (3hr time-averaged dynamics parameters) data files for input into 
+!  GEOS-Chem.
 !                                                                             .
 !  netCDF library modules originally written by Jules Kouatchou, GSFC
 !  and re-packaged into NcdfUtilities by Bob Yantosca, Harvard Univ.
 !
 ! !REVISION HISTORY: 
 !  19 Jan 2012 - R. Yantosca - Initial version, based on Geos57Driver
+!  23 Jan 2012 - R. Yantosca - Now create the A3dyn file
+
 !------------------------------------------------------------------------------
 
   ! Read filenames and fields to process from an input file
@@ -40,6 +44,7 @@ PROGRAM Geos57Driver1
 
   ! Create the 3-hour average data files
   CALL Geos57MakeA3Cld
+  CALL Geos57MakeA3Dyn
 
   ! Cleanup and quit 
   CALL Geos57Cleanup

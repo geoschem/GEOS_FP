@@ -18,16 +18,14 @@
 #
 # !REVISION HISTORY:
 #  20 Jan 2012 - R. Yantosca - Initial version
+#  23 Jan 2012 - R. Yantosca - Now only submit 3 processes at a time
 #EOP
 #------------------------------------------------------------------------------
 #BOC
 
-$1 &   # CN and A1 
-$2 &   # A3cld
-$3 &   # A3dyn
-$4 &   # A3mstC
-$5 &   # A3mstE
-$6 &   # I3
+$1 &   # CN, A1, I3 
+$2 &   # A3cld, A3dyn
+$3 &   # A3mstC, A3mstE
 
 exit(0);
 #EOC

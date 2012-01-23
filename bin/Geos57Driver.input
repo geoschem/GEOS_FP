@@ -31,12 +31,12 @@
 #
 
 ==> Turn on debug print output?
-T
+F
 
 ==> const_2d_asm_Nx
 DAS.ops.asm.const_2d_asm_Nx.GEOS572.00000000_0000.V01.nc4
 FRLAKE,FRLAND,FRLANDICE,FROCEAN,PHIS
-T
+F
 
 ==> inst3_3d_asm_Nv
 DAS.ops.asm.inst3_3d_asm_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
@@ -108,7 +108,7 @@ GEOS572.YYYYMMDD.%%%%%%.2x25.nc
 T
 GEOS572.YYYYMMDD.%%%%%%.4x5.nc
 /as/scratch/bmy/
-/as/data/geos-rw/GEOS_2x2.5.d/GEOS_5.7/YYYY/MM/
+/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7/YYYY/MM/
 
 ==> Mapping Weight Files
 weights_025x03125_to_2x25.txt

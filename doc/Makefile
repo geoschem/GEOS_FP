@@ -64,12 +64,15 @@ $(CODEDIR)/Geos57A3DynModule.F90       \
 $(CODEDIR)/Geos57A3MstCModule.F90      \
 $(CODEDIR)/Geos57A3MstEModule.F90      \
 $(CODEDIR)/Geos57CnModule.F90	       \
-$(CODEDIR)/Geos57Driver.F90	       \
 $(CODEDIR)/Geos57I3Module.F90	       \
 $(CODEDIR)/Geos57InputsModule.F90      \
 $(CODEDIR)/Geos57RegridModule.F90      \
 $(CODEDIR)/Geos57UtilityModule.F90     \
-$(CODEDIR)/Geos57Driver.F90
+$(CODEDIR)/Geos57Driver.F90            \
+$(CODEDIR)/Geos57Driver0.F90	       \
+$(CODEDIR)/Geos57Driver1.F90	       \
+$(CODEDIR)/Geos57Driver2.F90
+
 
 # LaTeX etc. files
 TEX1 = Geos57Driver.tex
