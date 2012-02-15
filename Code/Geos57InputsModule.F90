@@ -85,14 +85,19 @@ MODULE Geos57InputsModule
   LOGICAL                 :: doNestCh                 ! Save nested CH grid?
   INTEGER                 :: I0_ch,    J0_ch          ! LL corner of CH grid
   INTEGER                 :: I1_ch,    J1_ch          ! UR corner of CH grid
-  INTEGER                 :: I_NestCh, J_NestCh       ! NstCh dimensions   
+  INTEGER                 :: I_NestCh, J_NestCh       ! NestCh dimensions   
+  LOGICAL                 :: doNestNa                 ! Save nested NA grid?
+  INTEGER                 :: I0_na,    J0_na          ! LL corner of NA grid
+  INTEGER                 :: I1_na,    J1_na          ! UR corner of NA grid
+  INTEGER                 :: I_NestNa, J_NestNa       ! NestNa dimensions   
   LOGICAL                 :: do2x25                   ! Save out 2 x 2.25
   LOGICAL                 :: do4x5                    ! Save out 4 x 5?
   LOGICAL                 :: doMakeCn
   LOGICAL                 :: VERBOSE                  ! Do debug printout?
   INTEGER                 :: yyyymmdd                 ! Today's date
   INTEGER                 :: fIn                      ! NC fId; input
-  INTEGER                 :: fOutNestCh               ! NC fId; output nst grid
+  INTEGER                 :: fOutNestCh               ! NC fId; output CH grid
+  INTEGER                 :: fOutNestNa               ! NC fId; output NA grid
   INTEGER                 :: fOut2x25                 ! NC fId; output 2x25
   INTEGER                 :: fOut4x5                  ! NC fId; output 4x5
   REAL*4                  :: FILL_VALUE = 1e15        ! Fill value in HDF file
@@ -103,6 +108,9 @@ MODULE Geos57InputsModule
   CHARACTER(LEN=MAX_CHAR) :: dataTmplNestCh           ! NstCh file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestCh        ! NstCh temporary dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestCh        ! NstCh data dir
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestNa           ! NstNa file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestNa        ! NstNa temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestNa        ! NstNa data dir
   CHARACTER(LEN=MAX_CHAR) :: dataTmpl2x25             ! 2x25  file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmpl2x25          ! 2x25  temp dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmpl2x25          ! 2x25  data dir
@@ -172,6 +180,7 @@ MODULE Geos57InputsModule
 !  11 Jan 2012 - R. Yantosca - Now split fields from tavg3_3d_cld_Nv and
 !                              tavg3_3d_mst_Ne into output files
 !  20 Jan 2012 - R. Yantosca - Now use lowercase "output" string for all grids
+!  15 Feb 2012 - R. Yantosca - Add variables for nested NA grid
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -199,6 +208,7 @@ MODULE Geos57InputsModule
 !  11 Jan 2012 - R. Yantosca - Split fields from the tavg3_3d_cld_Nv and 
 !                              tavg3_3d_Mst_Ne collections into multiple
 !                              netCDF output files.
+!  15 Feb 2012 - R. Yantosca - Read information about nested NA grid
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -257,6 +267,15 @@ MODULE Geos57InputsModule
              READ( IU_TXT,   *,      ERR=999 ) I0_ch, J0_ch, I1_ch, J1_ch
              I_NestCh = I1_ch - I0_ch + 1
              J_NestCh = J1_ch - J0_ch + 1
+
+          CASE( '==> Nested NA output' )
+             READ( IU_TXT,   *,      ERR=999 ) doNestNa
+             READ( IU_TXT, '(a)',    ERR=999 ) dataTmplNestNa
+             READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmplNestNa
+             READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmplNestNa
+             READ( IU_TXT,   *,      ERR=999 ) I0_na, J0_na, I1_na, J1_na
+             I_NestNa = I1_na - I0_na + 1
+             J_NestNa = J1_na - J0_na + 1
 
           CASE( '==> 2 x 2.5 output' )
              READ( IU_TXT,   *,      ERR=999 ) do2x25
@@ -433,16 +452,22 @@ MODULE Geos57InputsModule
        PRINT*, 'a3MinsI         : ', a3MinsI
        PRINT*, 'a3Mins          : ', a3Mins
        PRINT*, 'doNative        : ', doNative
-       PRINT*, 'doNstCh         : ', doNestCh
+       PRINT*, 'doNestCh        : ', doNestCh
        PRINT*, ' I0, J0, I1, J1 : ', I0_ch, J0_ch, I1_ch, J1_ch
        PRINT*, ' ICH, JCH       : ', I_NestCh, J_NestCh
+       PRINT*, 'doNestNa        : ', doNestNa
+       PRINT*, ' I0, J0, I1, J1 : ', I0_na, J0_na, I1_na, J1_na
+       PRINT*, ' INA, JNA       : ', I_NestNa, J_NestNa
        PRINT*, 'do2x25          : ', do2x25
        PRINT*, 'do4x5           : ', do4x5
        PRINT*, 'doMakeCn        : ', doMakeCn
-       PRINT*, 'dataDirHDF      : ', TRIM( inputDataDir            )
+       PRINT*, 'inputDataDir     : ', TRIM( inputDataDir           )
        PRINT*, 'dataTmplNestCh  : ', TRIM( dataTmplNestCh          )
        PRINT*, 'tempDirNestCh   : ', TRIM( tempDirTmplNestCh       )
        PRINT*, 'dataDirNestCh   : ', TRIM( dataDirTmplNestCh       )
+       PRINT*, 'dataTmplNestNa  : ', TRIM( dataTmplNestNa          )
+       PRINT*, 'tempDirNestNa   : ', TRIM( tempDirTmplNestNa       )
+       PRINT*, 'dataDirNestNa   : ', TRIM( dataDirTmplNestNa       )
        PRINT*, 'dataFile2x25    : ', TRIM( dataTmpl2x25            )
        PRINT*, 'tempDirTmpl2x25 : ', TRIM( tempDirTmpl2x25         )
        PRINT*, 'dataDirTmpl2x25 : ', TRIM( dataDirTmpl2x25         )
@@ -469,10 +494,10 @@ MODULE Geos57InputsModule
        PRINT*, '                  ', TRIM( tavg3_3d_mst_Ne_data_m  )
        PRINT*, 'tavg3_3d_mst_Ne : ', TRIM( tavg3_3d_mst_Nv_file    )
        PRINT*, '                  ', TRIM( tavg3_3d_mst_Nv_data    )
-       PRINT*, 'tavg3_3d_odt_Nv : ', TRIM( tavg3_3d_odt_Nv_file    )
-       PRINT*, '                  ', TRIM( tavg3_3d_odt_Nv_data    )
-       PRINT*, 'tavg3_3d_qdt_Nv : ', TRIM( tavg3_3d_qdt_Nv_file    )
-       PRINT*, '                  ', TRIM( tavg3_3d_qdt_Nv_data    )
+      !PRINT*, 'tavg3_3d_odt_Nv : ', TRIM( tavg3_3d_odt_Nv_file    )
+      !PRINT*, '                  ', TRIM( tavg3_3d_odt_Nv_data    )
+      !PRINT*, 'tavg3_3d_qdt_Nv : ', TRIM( tavg3_3d_qdt_Nv_file    )
+      !PRINT*, '                  ', TRIM( tavg3_3d_qdt_Nv_data    )
        PRINT*, 'tavg3_3d_rad_Nv : ', TRIM( tavg3_3d_rad_Nv_file    )
        PRINT*, '                  ', TRIM( tavg3_3d_rad_Nv_data    )
        PRINT*, 'tavg3_3d_udt_Nv : ', TRIM( tavg3_3d_udt_Nv_file    )

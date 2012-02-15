@@ -61,6 +61,7 @@ MODULE Geos57CnModule
 !  04 Jan 2012 - R. Yantosca - Updated comments, cosmetic changes
 !  04 Jan 2012 - R. Yantosca - Add extra global attributes
 !  04 Jan 2012 - R. Yantosca - Now reference Geos57UtilityModule
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -212,7 +213,7 @@ CONTAINS
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
-       CASE( 'native', 'SEA4CRS', 'nested China' )
+       CASE( 'native', 'SEA4CRS', 'nested China', 'nested NA' )
           DI = '0.3125'
           DJ = '0.25'
        CASE ( 'nested 0.5 x 0.625' )
@@ -391,6 +392,7 @@ CONTAINS
 !  11 Jan 2012 - R. Yantosca - Now call StrCompress to remove white space
 !                              in the input file name.
 !  19 Jan 2012 - R. Yantosca - Now write output to temporary data directories
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -454,6 +456,20 @@ CONTAINS
                           fOutNestCh                        )
     ENDIF
 
+    ! Open nested NA output file
+    IF ( doNestNa ) THEN
+       fName = TRIM( tempDirTmplNestNa ) // TRIM( dataTmplNestNa )
+       gName = 'nested NA'
+       CALL ExpandDate  ( fName,     20110101,  000000      )      
+       CALL StrRepl     ( fName,     '%%%%%%',  'CN    '    )
+       CALL StrCompress ( fName, RemoveAll=.TRUE.           )
+       CALL NcOutFileDef( I_NestNa,  J_NestNa,  1,           &
+                          xMid_025x03125(I0_na:I1_na),       &
+                          yMid_025x03125(J0_na:J1_na),       &
+                          time,      gName,    fName,        &
+                          fOutNestNa                        )
+    ENDIF
+
     ! Open 2 x 2.5 output file
     IF ( do2x25 ) THEN
        fName = TRIM( tempDirTmpl2x25 ) // TRIM( dataTmpl2x25 )
@@ -495,6 +511,7 @@ CONTAINS
 
     ! Close output files
     IF ( doNestCh ) CALL NcCl( fOutNestCh )
+    IF ( doNestNa ) CALL NcCl( fOutNestNa )
     IF ( do2x25   ) CALL NcCl( fOut2x25   )
     IF ( do4x5    ) CALL NcCl( fOut4x5    )
 
@@ -529,6 +546,7 @@ CONTAINS
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
 !                              the module Geos57InputsModule.F90
 !  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -541,6 +559,7 @@ CONTAINS
     ! Variables for netCDF I/O
     INTEGER                 :: X,        Y,        T
     INTEGER                 :: XNestCh,  YNestCh,  TNestCh
+    INTEGER                 :: XNestNa,  YNestNa,  TNestNa
     INTEGER                 :: X2x25,    Y2x25,    T2x25
     INTEGER                 :: X4x5,     Y4x5,     T4x5
     INTEGER                 :: st2d(2),  st3d(3)
@@ -569,6 +588,13 @@ CONTAINS
        CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
        CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! Nested China grid
+    IF ( doNestCh ) THEN
+       CALL NcGet_DimLen( fOutNestNa, 'lon',  XNestNa )
+       CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'time', TNestNa )
     ENDIF
 
     ! 2 x 2.5 global grid       
@@ -679,6 +705,16 @@ CONTAINS
           st3d  = (/ 1,       1,       1       /)
           ct3d  = (/ XNestCh, YNestCh, TNestCh /)
           CALL NcWr( QNest, fOutNestCh, TRIM( name ), st3d, ct3d )   
+          NULLIFY( QNest )
+       ENDIF
+
+       ! Nested NA
+       IF ( doNestNa ) THEN
+          QNest => Q( I0_na:I1_na, J0_na:J1_na, 1 )  ! Point to proper slice
+
+          st3d  = (/ 1,       1,       1       /)
+          ct3d  = (/ XNestNa, YNestNa, TNestNa /)
+          CALL NcWr( QNest, fOutNestNa, TRIM( name ), st3d, ct3d )   
           NULLIFY( QNest )
        ENDIF
 

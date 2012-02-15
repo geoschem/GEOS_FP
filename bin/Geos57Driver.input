@@ -31,12 +31,12 @@
 #
 
 ==> Turn on debug print output?
-F
+T
 
 ==> const_2d_asm_Nx
 DAS.ops.asm.const_2d_asm_Nx.GEOS572.00000000_0000.V01.nc4
 FRLAKE,FRLAND,FRLANDICE,FROCEAN,PHIS
-F
+T
 
 ==> inst3_3d_asm_Nv
 DAS.ops.asm.inst3_3d_asm_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
@@ -88,11 +88,16 @@ T
 GEOS572.YYYYMMDD.%%%%%%.025x03125.SEA4CRS.nc
 /as/scratch/bmy/
 /as/data/geos-rw/GEOS_0.25x0.3125_SEA4CRS.d/GEOS_5.7/YYYY/MM/
-  769  281   1025   521
+  769  281 1025  521
 
 ==> Nested NA output
-F
+T
+GEOS572.YYYYMMDD.%%%%%%.025x03125.NA.nc
+/as/scratch/bmy/
+./
+  129  400  449  641
 none
+#/as/data/geos-rw/GEOS_0.25x0.3125_SEA4CRS.d/GEOS_5.7/YYYY/MM/
 
 ==> Nested EUR output
 F

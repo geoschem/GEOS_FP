@@ -32,6 +32,7 @@
 #
 # !REVISION HISTORY: 
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS-5
+#  15 Feb 2012 - R. Yantosca - Now compile IFORT w/ -mcmodel=medium -i-dynamic
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -95,9 +96,9 @@ ifeq ($(COMPILER),ifort)
 
 # Pick correct options for debug run or regular run 
 ifdef DEBUG
-FFLAGS   := -cpp -w -O0 -auto -noalign -convert big_endian -g -traceback
+FFLAGS   := -cpp -w -O0 -auto -noalign -convert big_endian -g -traceback -mcmodel=medium -idynamic
 else
-FFLAGS   := -cpp -w -O2 -auto -noalign -convert big_endian -openmp
+FFLAGS   := -cpp -w -O2 -auto -noalign -convert big_endian -openmp -mcmodel=medium -idynamic
 endif
 
 # Add flag to denote if we are using the sample data (wh
