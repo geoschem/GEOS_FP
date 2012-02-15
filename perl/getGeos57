@@ -31,7 +31,7 @@
 #  getGeos57 20110101              # Gets data for 20110101
 #  getGeos57 20110101 20110103     # Gets data for 20110101 - 20110103
 #  getGeos57 20110101 20110103 1   # Displays URL's used in data request 
-#                                 #  but does not download any data
+#                                  #  but does not download any data
 #
 # !REMARKS:
 #  Validated 10/25/11 by Bob Yantosca
@@ -70,6 +70,9 @@ sub getDefaults($$) {
 #
 # !REVISION HISTORY:
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/getGeos5
+#  14 Feb 2012 - R. Yantosca - Bug fix: adjust ending time to 01:00:00 for
+#                              3-hr files so that we also download the files 
+#                              at 2230 GMT (and 2330 GMT for hourly files)
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -184,7 +187,7 @@ sub getGeos57Data($$$) {
 
   # End time & date for downloading data
   my $d1       = "$year_n-$month_n-$day_n";
-  my $t1       = "00:00:00";
+  my $t1       = "01:00:00";
 
   # Other variables
   my $url      = "";
