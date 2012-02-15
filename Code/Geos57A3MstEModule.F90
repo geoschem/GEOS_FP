@@ -95,6 +95,9 @@ MODULE Geos57A3MstEModule
 !
 ! !REVISION HISTORY: 
 !  09 Jan 2012 - R. Yantosca - Initial version
+!  01 Feb 2012 - R. Yantosca - Make all global attribute names lowercase
+!  01 Feb 2012 - R. Yantosca - Bug fix: do not use Z+1 for vertical dimension,
+!                              as the proper value is passed in the arg list
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -136,62 +139,62 @@ MODULE Geos57A3MstEModule
  
     ! Title string
     lName = 'GEOS-5.7.2 time-averaged 3-hour moist parameters on level edges (A3mstE) fields for GEOS-Chem'
-    CALL NcDef_Glob_Attributes( fOut, 'Title',       TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'title',       TRIM( lName )   )
 
     ! Contact
     lName = "GEOS-Chem Support Team (geos-chem-support@as.harvard.edu)"
-    CALL NcDef_Glob_Attributes( fOut, 'Contact',     TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'contact',     TRIM( lName )   )
 
     ! References
     lName = "www.geos-chem.org; wiki.geos-chem.org"
-    CALL NcDef_Glob_Attributes( fOut, 'References',  TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'references',  TRIM( lName )   )
 
     ! Filename
     lName = outFileName
-    CALL NcDef_Glob_Attributes( fOut, 'Filename',    TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'filename',    TRIM( lName )   )
     
     ! History
     sysTime = SystemTimeStamp()
     lName = 'File generated on: ' // TRIM( sysTime )
-    CALL NcDef_Glob_Attributes( fOut, 'History' ,    TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'history' ,    TRIM( lName )   )
 
     ! Format
     lName = "NetCDF-3" ;
-    CALL NcDef_Glob_Attributes( fOut, 'Format' ,     TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'format' ,     TRIM( lName )   )
 
     ! Conventions
     lName = 'COARDS'
-    CALL NcDef_Glob_Attributes( fOut, 'Conventions', TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'conventions', TRIM( lName )   )
 
     ! Version
     lName = 'GEOS-5,7.2'
-    CALL NcDef_Glob_Attributes( fOut, 'Version',     TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'version',     TRIM( lName )   )
 
     ! Model
     lName = 'GEOS5'
-    CALL NcDef_Glob_Attributes( fOut, 'Model',       TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'model',       TRIM( lName )   )
 
     ! NLayers
     lName = '72'
-    CALL NcDef_Glob_Attributes( fOut, 'Nlayers',     TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'nlayers',     TRIM( lName )   )
 
     ! Start Date
-    CALL NcDef_Glob_Attributes( fOut, 'Start_Date',  yyyymmdd_string )
+    CALL NcDef_Glob_Attributes( fOut, 'start_date',  yyyymmdd_string )
 
     ! Start Time
     lName = '00:00:00.000000'
-    CALL NcDef_Glob_Attributes( fOut, 'Start_Time',  TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'start_time',  TRIM( lName )   )
 
     ! End Date
-    CALL NcDef_Glob_Attributes( fOut, 'End_Date',    yyyymmdd_string )
+    CALL NcDef_Glob_Attributes( fOut, 'end_date',    yyyymmdd_string )
 
     ! End Time
     lName = '23:59:59.99999'
-    CALL NcDef_Glob_Attributes( fOut, 'End_Time',    TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'end_time',    TRIM( lName )   )
 
     ! Delta-time
     lName = '30000'
-    CALL NcDef_Glob_Attributes( fOut, 'Delta_time',  TRIM( lName )   )
+    CALL NcDef_Glob_Attributes( fOut, 'delta_time',  TRIM( lName )   )
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
@@ -210,10 +213,10 @@ MODULE Geos57A3MstEModule
     END SELECT
 
     ! Delta-lon
-    CALL NcDef_Glob_Attributes( fOut, 'Delta_lon',   TRIM( DI    )   )
+    CALL NcDef_Glob_Attributes( fOut, 'delta_lon',   TRIM( DI    )   )
 
     ! Delta-lat
-    CALL NcDef_Glob_Attributes( fOut, 'Delta_lat',   TRIM( DJ    )   )
+    CALL NcDef_Glob_Attributes( fOut, 'delta_lat',   TRIM( DJ    )   )
 
     !-------------------------------------------------------------------------
     ! Define dimensions and index arrays.  NOTE: COARDS specifies that index 
@@ -223,10 +226,10 @@ MODULE Geos57A3MstEModule
     ! netCDF dimension variables
     CALL NcDef_Dimension( fOut, 'lon',  X,   idLon  )
     CALL NcDef_Dimension( fOut, 'lat',  Y,   idLat  )
-    CALL NcDef_Dimension( fOut, 'lev',  Z+1, idLev  )
+    CALL NcDef_Dimension( fOut, 'lev',  Z,   idLev  )
     CALL NcDef_Dimension( fOut, 'time', T,   idTime )
-    CALL NcDef_Dimension( fOut, 'ap',   Z+1, idAp   )
-    CALL NcDef_Dimension( fOut, 'bp',   Z+1, idBp   )
+    CALL NcDef_Dimension( fOut, 'ap',   Z,   idAp   )
+    CALL NcDef_Dimension( fOut, 'bp',   Z,   idBp   )
 
     ! Longitude index array
     vId     = 0
