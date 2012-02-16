@@ -22,7 +22,6 @@
 # !PUBLIC MEMBER FUNCTIONS:
 #
 # getDefaults($$)
-# getDirectories($)
 # getSysVars()
 # checkInputs()
 # replaceTokens($)
@@ -40,7 +39,6 @@
   $DATE_STRING       = "UNDEFINED";
   $DAY_STRING        = "UNDEFINED";
   $EXECUTABLE        = "UNDEFINED";
-  $DEFAULTS_FOR_EXE  = "UNDEFINED";
   $HOME_DIRECTORY    = "UNDEFINED";
   $JOB_DIRECTORY     = "UNDEFINED";
   $JOB_FILE          = "UNDEFINED";
@@ -52,17 +50,6 @@
   $TEMP_DIRECTORY    = "UNDEFINED";
   $USER_ID           = "UNDEFINED";
   $YEAR_STRING       = "UNDEFINED";
-
-  # Data file names and directories
-  $DATA_FILE_NEST_CH = "UNDEFINED";
-  $TEMP_DIR_NEST_CH  = "UNDEFINED";
-  $DATA_DIR_NEST_CH  = "UNDEFINED";
-  $DATA_FILE_2x25    = "UNDEFINED";
-  $TEMP_DIR_2x25     = "UNDEFINED";
-  $DATA_DIR_2x25     = "UNDEFINED";
-  $DATA_FILE_4x5     = "UNDEFINED";
-  $TEMP_DIR_4x5      = "UNDEFINED";
-  $DATA_DIR_4x5      = "UNDEFINED";
 #
 # !CALLING SEQUENCE:
 # doGeos57 YYYYMMDD
@@ -71,6 +58,8 @@
 #  20 Jan 2012 - R. Yantosca - Initial version
 #  23 Jan 2012 - R. Yantosca - Modified to submit processes on 3 threads
 #                              simultaneously
+#  16 Feb 2012 - R. Yantosca - Removed routine getDirectories and related
+#                              variables; these are now in moveGeos57
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -137,9 +126,6 @@ sub getDefaults($$) {
     } elsif ( $file[$i] =~ "==> Program Executable" ) {
       $EXECUTABLE = $file[++$i];
 
-    } elsif ( $file[$i] =~ "==> Defaults for Executable" ) {
-      $DEFAULTS_FOR_EXE = $file[++$i];
-
     }
   }
 
@@ -168,77 +154,7 @@ sub getDefaults($$) {
   # Return normally
   return(0);
 }
-#------------------------------------------------------------------------------
-#          Harvard University Atmospheric Chemistry Modeling Group            !
-#------------------------------------------------------------------------------
-#BOP
-#
-# !IROUTINE: getDirectories
-#
-# !DESCRIPTION:  Routine getDirectories reads the temporary and data
-#  directory paths from the input file for the GEOS-5.7.2 Fortran executable.
-#\\
-#\\
-# !INTERFACE:
-#
-sub getDirectories($) {
-#
-# !INPUT PARAMETERS:
-#
-  # $fileName : File containing default settings to be read
-  my ( $fileName ) = @_;
-#
-# !CALLING SEQUENCE:
-# &getDirectories( FILENAME )
-#
-# !REVISION HISTORY:
-#  20 Jan 2012 - R. Yantosca - Initial version
-#EOP
-#------------------------------------------------------------------------------
-#BOC
-#
-# !LOCAL VARIABLES:
-#
-  my $line     = "";   
-  my @file     = "";
-  my $skipLine = "";
-
-  #--------------------------------------
-  # Read variable settings from the file
-  #--------------------------------------
-
-  # Read defaults file into an array (remove newlines)
-  open( I, "<$fileName" ) or die "Cannot open $fileName!\n";
-  chomp( @file = <I> );
-  close( I );
-
-  # Loop thru each line in the file
-  for ( my $i = 0; $i < scalar( @file ); $i++ ) {
-
-    if ( $file[$i] =~ "==> Nested China output" ) {
-      $skipLine          = $file[++$i];
-      $DATA_FILE_NEST_CH = $file[++$i];
-      $TEMP_DIR_NEST_CH  = $file[++$i];
-      $DATA_DIR_NEST_CH  = $file[++$i];
-       
-    } elsif ( $file[$i] =~ "==> 2 x 2.5 output" ) {
-      $skipLine          = $file[++$i];
-      $DATA_FILE_2x25    = $file[++$i];
-      $TEMP_DIR_2x25     = $file[++$i];
-      $DATA_DIR_2x25     = $file[++$i];
-
-    } elsif ( $file[$i] =~ "==> 4 x 5 output" ) {
-      $skipLine          = $file[++$i];
-      $DATA_FILE_4x5     = $file[++$i];
-      $TEMP_DIR_4x5      = $file[++$i];
-      $DATA_DIR_4x5      = $file[++$i];
-
-    }
-  }
-
-  # Return normally
-  return(0);
-}#EOC
+#EOC
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
 #------------------------------------------------------------------------------
@@ -319,29 +235,6 @@ sub checkInputs() {
   &checkDir( $JOB_DIRECTORY  );
   &checkDir( $LOG_DIRECTORY  );
   &checkDir( $TEMP_DIRECTORY );
-
-  #---------------------------------
-  # Data file & directory names
-  #---------------------------------
-
-  # Replace tokens
-  $DATA_FILE_NEST_CH = &replaceTokens( $DATA_FILE_NEST_CH );
-  $TEMP_DIR_NEST_CH  = &replaceTokens( $TEMP_DIR_NEST_CH  );
-  $DATA_DIR_NEST_CH  = &replaceTokens( $DATA_DIR_NEST_CH  );
-  $DATA_FILE_2x25    = &replaceTokens( $DATA_FILE_2x25    );
-  $TEMP_DIR_2x25     = &replaceTokens( $TEMP_DIR_2x25     );
-  $DATA_DIR_2x25     = &replaceTokens( $DATA_DIR_2x25     );
-  $DATA_FILE_4x5     = &replaceTokens( $DATA_FILE_4x5     );
-  $TEMP_DIR_4x5      = &replaceTokens( $TEMP_DIR_4x5      );
-  $DATA_DIR_4x5      = &replaceTokens( $DATA_DIR_4x5      );
-
-  # Check if directories exist
-  &checkDir( $TEMP_DIR_NEST_CH  );
-  &checkDir( $DATA_DIR_NEST_CH  );
-  &checkDir( $TEMP_DIR_2x25     );
-  &checkDir( $DATA_DIR_2x25     );
-  &checkDir( $TEMP_DIR_4x5      );
-  &checkDir( $DATA_DIR_4x5      );
 
   # Return normally
   return(0);
@@ -509,7 +402,7 @@ qx( echo                                           >> \$sLog );
 # Run the GEOS-5 data extraction code
 qx( umask 022; cd $CODE_DIRECTORY; $exeFile < $DATE_FILE >> \$sLog );
 
-# Move files
+# Move files from the temp directory to the data directory
 qx( ./moveGeos57 $DATE_STRING $fileTypes >> \$sLog );
 
 # Remove the date file
@@ -574,7 +467,7 @@ sub runJobs() {
   my $cmd = "./runMet $job[0] $job[1] $job[2]";
 
   # Submit all jobs in multiple threads
-#  qx( $cmd );
+  qx( $cmd );
 
   # Return normally
   return( 0 );
@@ -610,9 +503,6 @@ sub main() {
 
   # Get default values
   &getDefaults( "doGeos57.input", $ARGV[0] );
-
-  # Get data & temporary directories
-  &getDirectories( $DEFAULTS_FOR_EXE );
 
   # Get system variables
   &getSysVars();

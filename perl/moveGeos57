@@ -45,6 +45,9 @@
   $DATA_FILE_NEST_CH = "UNDEFINED";
   $TEMP_DIR_NEST_CH  = "UNDEFINED";
   $DATA_DIR_NEST_CH  = "UNDEFINED";
+  $DATA_FILE_NEST_NA = "UNDEFINED";
+  $TEMP_DIR_NEST_NA  = "UNDEFINED";
+  $DATA_DIR_NEST_NA  = "UNDEFINED";
   $DATA_FILE_2x25    = "UNDEFINED";
   $TEMP_DIR_2x25     = "UNDEFINED";
   $DATA_DIR_2x25     = "UNDEFINED";
@@ -57,6 +60,7 @@
 #
 # !REVISION HISTORY: 
 #  23 Jan 2012 - R. Yantosca - Initial version
+#  16 Feb 2012 - R. Yantosca - Updated for NA nested grid
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -147,6 +151,7 @@ sub getDirectories($) {
 #
 # !REVISION HISTORY:
 #  23 Jan 2012 - R. Yantosca - Initial version
+#  16 Feb 2012 - R. Yantosca - Updated for NA nested grid
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -175,14 +180,14 @@ sub getDirectories($) {
       $TEMP_DIR_NEST_CH  = $file[++$i];
       $DATA_DIR_NEST_CH  = $file[++$i];
 
+    } elsif ( $file[$i] =~ "==> Nested NA output" ) {
+      $skipLine          = $file[++$i];
+      $DATA_FILE_NEST_NA = $file[++$i];
+      $TEMP_DIR_NEST_NA  = $file[++$i];
+      $DATA_DIR_NEST_NA  = $file[++$i];
+
 ###############################################################################
-# Leave room for future expansion (bmy, 1/23/12)
-#    } elsif ( $file[$i] =~ "==> Nested NA output" ) {
-#      $skipLine          = $file[++$i];
-#      $DATA_FILE_NEST_CH = $file[++$i];
-#      $TEMP_DIR_NEST_CH  = $file[++$i];
-#      $DATA_DIR_NEST_CH  = $file[++$i];
-#       
+# Leave room for future expansion (bmy, 1/23/12)      
 #    } elsif ( $file[$i] =~ "==> Nested Europe output" ) {
 #      $skipLine          = $file[++$i];
 #      $DATA_FILE_NEST_CH = $file[++$i];
@@ -340,6 +345,7 @@ sub moveFiles(@) {
 #
 # !REVISION HISTORY:
 #  23 Jan 2012 - R. Yantosca - Initial version
+#  16 Feb 2012 - R. Yantosca - Updated for Nested NA grid
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -368,6 +374,27 @@ sub moveFiles(@) {
   
     # Data directory path
     $dir    = "$DATA_DIR_NEST_CH";
+    $dir    = &replaceTokens( $dir, $fileType );
+    &checkDir( $dir );
+
+    # Move command
+    $cmd    = "mv -f $mask $dir";
+    
+    # Move the files
+    print "$cmd\n";
+    $result = qx( $cmd );
+
+
+    #-------------------------------
+    # Nested N. America grid
+    #-------------------------------
+
+    # Temporary file mask
+    $mask   = "$TEMP_DIR_NEST_NA$DATA_FILE_NEST_NA";
+    $mask   = &replaceTokens( $mask, $fileType );
+  
+    # Data directory path
+    $dir    = "$DATA_DIR_NEST_NA";
     $dir    = &replaceTokens( $dir, $fileType );
     &checkDir( $dir );
 

@@ -51,7 +51,6 @@ Geos57Driver{THREAD}.x
 
 ==> Submit Statement
 {JOB} &
-#submit sp {JOB}
 
 END OF FILE
 #EOP
