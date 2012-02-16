@@ -60,6 +60,7 @@ MODULE Geos57A3MstCModule
 ! !REVISION HISTORY:
 !  09 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  12 Jan 2012 - R. Yantosca - Now just save out fields on level centers
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -202,7 +203,7 @@ MODULE Geos57A3MstCModule
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
-       CASE( 'native', 'SEA4CRS', 'nested China' )
+       CASE( 'native', 'SEAC4RS', 'nested China', 'nested NA' )
           DI = '0.3125'
           DJ = '0.25'
        CASE ( 'nested 0.5 x 0.625' )
@@ -425,6 +426,7 @@ MODULE Geos57A3MstCModule
 !  11 Aug 2010 - R. Yantosca - Initial version, based on Geos57A6Module.F90
 !  12 Jan 2012 - R. Yantosca - Now just process fields on level centers
 !  19 Jan 2012 - R. Yantosca - Now write output to temporary data directories
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -475,7 +477,7 @@ MODULE Geos57A3MstCModule
     ! Open nested China output file
     IF ( doNestCh ) THEN
        fName = TRIM( tempDirTmplNestCh ) // TRIM( dataTmplNestCh )
-       gName = 'SEA4CRS'
+       gName = 'SEAC4RS'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                )      
        CALL StrRepl     ( fName,     '%%%%%%',  'A3mstC'              )
        CALL NcOutFileDef( I_NestCh,  J_NestCh,  L025x03125, TIMES_A3,  &
@@ -483,6 +485,19 @@ MODULE Geos57A3MstCModule
                           yMid_025x03125(J0_ch:J1_ch),                 &
                           zMid_025x03125,                   a3Mins,    &
                           gName,     fName,     fOutNestCh            )
+    ENDIF
+
+    ! Open nested China output file
+    IF ( doNestNa ) THEN
+       fName = TRIM( tempDirTmplNestNa ) // TRIM( dataTmplNestNa )
+       gName = 'nested NA'
+       CALL ExpandDate  ( fName,     yyyymmdd,  000000                )      
+       CALL StrRepl     ( fName,     '%%%%%%',  'A3mstC'              )
+       CALL NcOutFileDef( I_NestNa,  J_NestNa,  L025x03125, TIMES_A3,  &
+                          xMid_025x03125(I0_na:I1_na),                 &
+                          yMid_025x03125(J0_na:J1_na),                 &
+                          zMid_025x03125,                   a3Mins,    &
+                          gName,     fName,     fOutNestNa            )
     ENDIF
 
     ! Open 2 x 2.5 output file
@@ -522,6 +537,7 @@ MODULE Geos57A3MstCModule
 
     ! Close output files
     IF ( doNestCh ) CALL NcCl( fOutNestCh )
+    IF ( doNestNa ) CALL NcCl( fOutNestNa )
     IF ( do2x25   ) CALL NcCl( fOut2x25   )
     IF ( do4x5    ) CALL NcCl( fOut4x5    )
 
@@ -558,6 +574,7 @@ MODULE Geos57A3MstCModule
 !  17 Jan 2012 - R. Yantosca - Bug fix: flip data in vertical immediately
 !                              after reading.
 !  17 Jan 2012 - R. Yantosca - Nullify pointers after using them  
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -571,6 +588,7 @@ MODULE Geos57A3MstCModule
     ! Variables for netCDF I/O
     INTEGER                 :: X,       Y,       Z,       T
     INTEGER                 :: XNestCh, YNestCh, ZNestCh, TNestCh
+    INTEGER                 :: XNestNa, YNestNa, ZNestNa, TNestNa
     INTEGER                 :: X2x25,   Y2x25,   Z2x25,   T2x25
     INTEGER                 :: X4x5,    Y4x5,    Z4x5,    T4x5
     INTEGER                 :: st4d(4), ct4d(4)
@@ -605,6 +623,14 @@ MODULE Geos57A3MstCModule
        CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'lev',  ZNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! Nested China grid
+    IF ( doNestNa ) THEN
+       CALL NcGet_DimLen( fOutNestNa, 'lon',  XNestNa )
+       CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'lev',  ZNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'time', TNestNa )
     ENDIF
 
     ! 2 x 2.5 global grid       
@@ -704,22 +730,6 @@ MODULE Geos57A3MstCModule
           ! Flip levels in the vertical
           QFlip => Q( :, :, Z:1:-1 )
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!% Prior to 1/19/12:
-!% Abandon this line of development, until further notice (bmy, 1/19/12)
-!%          !-----------------------------------------------------------------
-!%          ! Pre-regrid handling (flip levels in the vertical)
-!%          !-----------------------------------------------------------------
-!%          SELECT CASE( name )
-!%             CASE( 'DQRCU'   )
-!%                FC = QFlip
-!%             CASE( 'DQRLSAN' )
-!%                FL = QFlip
-!%             CASE DEFAULT
-!%                ! Nothing
-!%          END SELECT
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   
           !-----------------------------------------------------------------
           ! Regrid data fields 
           !-----------------------------------------------------------------
@@ -756,6 +766,16 @@ MODULE Geos57A3MstCModule
              CALL NcWr( Ptr, fOutNestCh, TRIM( name8 ), st4d, ct4d )
              NULLIFY( Ptr )
           ENDIF
+
+          ! Nested China (point to proper slice of global data)
+          ! Flip levels in the vertical
+          IF ( doNestNa ) THEN
+             Ptr  => Qflip( I0_na:I1_na, J0_na:J1_na, : )
+             st4d = (/ 1,       1,       1,       H /)
+             ct4d = (/ XNestNa, YNestNa, ZNestNa, 1 /)
+             CALL NcWr( Ptr, fOutNestNa, TRIM( name8 ), st4d, ct4d )
+             NULLIFY( Ptr )
+          ENDIF
                 
           ! Write 2 x 2.5 data
           IF ( do2x25 ) THEN
@@ -775,120 +795,6 @@ MODULE Geos57A3MstCModule
           NULLIFY( Qflip )
        ENDDO
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!% Prior to 1/19/12:
-!% Abandon this line of development, until further notice (bmy, 1/19/12)
-!%       !====================================================================
-!%       ! Process FPCU (fraction of box undergoing conv precip)
-!%       !====================================================================
-!%
-!%       !---------------------------------
-!%       ! Create FPCU from DQRCU
-!%       !---------------------------------
-!%       msg = '%%% Creating   FPCU'
-!%       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!%
-!%       ! Native grid
-!%       IF ( doNative ) THEN 
-!%          CALL ProcessFracPrecip( FC,         Q,          mapNative, &
-!%                                  I025x03125, J025x03125, L025x03125 )
-!%       ENDIF
-!%
-!%       ! 2 x 2.5 grid
-!%       IF ( do2x25 ) THEN
-!%          CALL ProcessFracPrecip( FC, Q2x25, mapTo2x25, I2x25, J2x25, L2x25 )
-!%       ENDIF
-!%
-!%       ! 4 x 5 grid
-!%       IF ( do4x5 ) THEN 
-!%          CALL ProcessFracPrecip( FC, Q4x5,  mapTo4x5,  I4x5,  J4x5,  L4x5  )
-!%       ENDIF
-!%
-!%       !---------------------------------
-!%       ! Write FPCU to netCDF
-!%       !---------------------------------
-!%       msg = '%%% Archiving  FPCU'
-!%       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!%
-!%       ! Nested China (point to proper slice of global data)
-!%       IF ( doNestCh ) THEN
-!%          Ptr  => Q( I0_ch:I1_ch, J0_ch:J1_ch, : )
-!%          st4d = (/ 1,       1,       1,       H /)
-!%          ct4d = (/ XNestCh, YNestCh, ZNestCh, 1 /)
-!%          CALL NcWr( Ptr, fOutNestCh, 'FPCU', st4d, ct4d )
-!%          NULLIFY( Ptr )
-!%       ENDIF
-!%       
-!%       ! Write 2 x 2.5 data
-!%       IF ( do2x25 ) THEN 
-!%          st4d = (/ 1,     1,     1,     H  /)
-!%          ct4d = (/ X2x25, Y2x25, Z2x25, 1  /)
-!%          CALL NcWr( Q2x25, fOut2x25, 'FPCU', st4d, ct4d )
-!%       ENDIF
-!%       
-!%       ! Write 4x5 data
-!%       IF ( do4x5 ) THEN
-!%          st4d  = (/ 1,    1,    1,    H /)
-!%          ct4d  = (/ X4x5, Y4x5, Z4x5, 1 /)
-!%          CALL NcWr( Q4x5, fOut4x5, 'FPCU', st4d, ct4d )
-!%       ENDIF
-!%                
-!%       !====================================================================
-!%       ! Process FPLSAN (fraction of box undergoiong LS+anvil precip)
-!%       !====================================================================
-!%
-!%       !---------------------------------
-!%       ! Create FPLSAN from DQRLSAN
-!%       !---------------------------------
-!%       msg = '%%% Creating   FPLSAN'
-!%       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!%
-!%       ! Native grid
-!%       IF ( doNative ) THEN 
-!%          CALL ProcessFracPrecip( FL,         Q,          mapNative, &
-!%                                  I025x03125, J025x03125, L025x03125 )
-!%       ENDIF
-!%
-!%       ! 2 x 2.5 grid
-!%       IF ( do2x25 ) THEN
-!%          CALL ProcessFracPrecip( FL, Q2x25, mapTo2x25, I2x25, J2x25, L2x25 )
-!%       ENDIF
-!%
-!%       ! 4 x 5 grid
-!%       IF ( do4x5 ) THEN 
-!%          CALL ProcessFracPrecip( FL, Q4x5,  mapTo4x5,  I4x5,  J4x5,  L4x5  )
-!%       ENDIF
-!%
-!%       !---------------------------------
-!%       ! Write FPLSAN to netCDF
-!%       !---------------------------------
-!%       msg = '%%% Archiving  FPCU'
-!%       WRITE( IU_LOG, '(a)' ) TRIM( msg )
-!%
-!%       ! Nested China (point to proper slice of global data)
-!%       IF ( doNestCh ) THEN
-!%          Ptr  => Q( I0_ch:I1_ch, J0_ch:J1_ch, : )
-!%          st4d = (/ 1,       1,       1,       H /)
-!%          ct4d = (/ XNestCh, YNestCh, ZNestCh, 1 /)
-!%          CALL NcWr( Ptr, fOutNestCh, 'FPLSAN', st4d, ct4d )
-!%          NULLIFY( Ptr )
-!%       ENDIF
-!%       
-!%       ! Write 2 x 2.5 data
-!%       IF ( do2x25 ) THEN
-!%          st4d = (/ 1,     1,     1,     H  /)
-!%          ct4d = (/ X2x25, Y2x25, Z2x25, 1  /)
-!%          CALL NcWr( Q2x25, fOut2x25, 'FPLSAN', st4d, ct4d )
-!%       ENDIF
-!%       
-!%       ! Write 4x5 data
-!%       IF ( do4x5 ) THEN
-!%          st4d  = (/ 1,    1,    1,    H /)
-!%          ct4d  = (/ X4x5, Y4x5, Z4x5, 1 /)
-!%          CALL NcWr( Q4x5, fOut4x5, 'FPLSAN', st4d, ct4d )
-!%       ENDIF
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
        !====================================================================
        ! Close input file
        !====================================================================
@@ -907,205 +813,5 @@ MODULE Geos57A3MstCModule
 
   END SUBROUTINE Process3dMstNv
 !EOC
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!% Prior to 1/19/12:
-!% Abandon this line of development, until further notice (bmy, 1/19/12)
-!%!------------------------------------------------------------------------------
-!%!          Harvard University Atmospheric Chemistry Modeling Group            !
-!%!------------------------------------------------------------------------------
-!%!BOP
-!%!
-!%! !IROUTINE: RegridTau
-!%!
-!%! !DESCRIPTION: This routine regrids the GEOS-5 optical depth and cloud 
-!%!  fraction fields from the 0.5 x 0.666 native resolution grid to a GEOS-Chem 
-!%!  "coarse" grid (e.g. 1 x 1.25, 2 x 2.5, 4 x 5).
-!%!
-!%! !INTERFACE:
-!%!
-!%  SUBROUTINE ProcessFracPrecip( fpIn, fpOut, map, IMX, JMX, LMX )
-!%!
-!%! !INPUT PARAMETERS: 
-!%!
-!%    ! Dimensions of coarse grid
-!%    INTEGER,      INTENT(IN)  :: IMX, JMX, LMX    
-!%
-!%    ! Mapping weight object
-!%    TYPE(MapObj), POINTER     :: map(:,:)
-!%
-!%    ! Input total in-cloud optical depth (= water OD + ice OD)
-!%    REAL*4,       INTENT(IN)  :: fpIn  ( I025x03125, J025x03125, L025x03125 ) 
-!%!
-!%! !OUTPUT PARAMETERS:
-!%!
-!%    ! Output total in-cloud optical depth
-!%    REAL*4,       INTENT(OUT) :: fpOut ( IMX, JMX, LMX )
-!%!
-!%! !REVISION HISTORY: 
-!%!  12 Jan 2012 - R. Yantosca - Initial version, based on RegridTau
-!%!  17 Jan 2012 - R. Yantosca - Now flip levels in the vertical in the 
-!%!                              calling routine.  Omit level flipping here.
-!%!EOP
-!%!------------------------------------------------------------------------------
-!%!BOC
-!%!
-!%! !LOCAL VARIABLES:
-!%!
-!%    INTEGER           :: I,         J,     L,  LR, nPoints
-!%    INTEGER           :: Nx,        Ny,    X,  Y
-!%    REAL*4            :: sum_Fn_Wn, sum_Wn   
-!%!
-!%! !DEFINED PARAMETERS:
-!%!
-!%    REAL*4, PARAMETER :: maxPrecipFrac = 0.3e0
-!%
-!%    IF ( IMX == I025x03125 .and. JMX == J025x03125 ) THEN
-!%
-!%       !====================================================================
-!%       ! For the native grid: Assume that if the 0.25 x 0.3125 box has
-!%       ! nonzero precipitation, then assume that 100% of the box is 
-!%       ! precipitationg.  Therefore, fpOut will either be 0 or 1.
-!%       !====================================================================
-!%!$OMP PARALLEL DO        &
-!%!$OMP DEFAULT( SHARED )  &
-!%!$OMP PRIVATE( I, J, L )
-!%       DO L = 1, LMX
-!%       DO J = 1, JMX
-!%       DO I = 1, IMX
-!%          IF ( fpIn(I,J,L) > 0e0 ) THEN
-!%             fpOut(I,J,L) = maxPrecipFrac   ! Box is precipitating
-!%          ELSE
-!%             fpOut(I,J,L) = 0e0             ! Box is not precipitating
-!%          ENDIF
-!%       ENDDO
-!%       ENDDO
-!%       ENDDO
-!%!$OMP END PARALLEL DO
-!%
-!%    ELSE
-!%
-!%       !====================================================================
-!%       ! For coarser grids: Use the mapping weights (fraction of each fine
-!%       ! box that fits into the coarse box) to determine the overall
-!%       ! precipitating fraction of the box.  In this case, fpOut will
-!%       ! be fractional (varying from 0.000 to 1.000)
-!%       !====================================================================
-!%
-!%       ! Loop over coarse grid boxes
-!%!$OMP PARALLEL DO                                                       &
-!%!$OMP DEFAULT( SHARED )                                                 &
-!%!$OMP PRIVATE( I,  J,  L, nPoints, sum_Fn_Wn, sum_Wn, Nx, Ny, X, Y )
-!%       DO L = 1, LMX
-!%       DO J = 1, JMX
-!%       DO I = 1, IMX
-!%
-!%          ! Zero output array
-!%          fpOut(I,J,L) = 0e0
-!%
-!%          ! Number of "fine" grid boxes in each dimension
-!%          ! that comprise a "coarse" grid box
-!%          nPoints = map(I,J)%nPoints
-!%             
-!%          !---------------------------------
-!%          ! Regrid cloud fraction & OD
-!%          !---------------------------------
-!%          
-!%          ! Zero summing variables
-!%          sum_Fn_Wn = 0e0
-!%          sum_Wn    = 0e0
-!%          
-!%          ! Loop over "fine" grid boxes
-!%          DO Ny = 1, nPoints
-!%          DO Nx = 1, nPoints
-!%          
-!%             ! Avoid useless clock cycles if the mapping weight is zero
-!%             IF ( map(I,J)%weight(Nx,Ny) > 0d0 ) THEN
-!%
-!%                ! Indices of each "fine" grid box that makes up  
-!%                ! the "coarse" box
-!%                X          = map(I,J)%xInd(Nx)
-!%                Y          = map(I,J)%yInd(Ny)
-!%
-!%                ! Sum of the mapping weights over all of the "fine" grid
-!%                ! boxes (X,Y) that make up the "coarse" grid box (I,J)
-!%                sum_Wn     = sum_Wn    + map(I,J)%weight(Nx,Ny)
-!%
-!%                ! If the grid box has nonzero precpitation, then consider
-!%                ! that the fraction MAXPRECIPFRAC of the grid box is 
-!%                ! precipitating.  Sum the mapping weight of this grid box 
-!%                ! into SUM_FN_WN.
-!%                IF ( fpIn(X,Y,L) > 0e0 ) THEN
-!%                   sum_Fn_Wn = sum_Fn_Wn + ( map(I,J)%weight(Nx,Ny)  &
-!%                                         *   maxPrecipFrac          )
-!%                ENDIF
-!%             ENDIF
-!%          ENDDO
-!%          ENDDO
-!%
-!%          ! Divide SUM_FN_WN by SUM_WN to get the overall fraction of the 
-!%          ! box that is precipitating.  NOTE, we don't have to worry about 
-!%          ! div by zero since SUM( Wn ) will always be greater than zero 
-!%          ! (there is always at least 1 "fine" small box in the "coarse" box).
-!%          fpOut(I,J,L) = sum_Fn_Wn / sum_Wn
-!%
-!%       ENDDO
-!%       ENDDO
-!%       ENDDO
-!%!$OMP END PARALLEL DO
-!%
-!%    ENDIF
-!%
-!%  END SUBROUTINE ProcessFracPrecip
-!%EOC
-!%!------------------------------------------------------------------------------
-!%!          Harvard University Atmospheric Chemistry Modeling Group            !
-!%!------------------------------------------------------------------------------
-!%!BOP
-!%!
-!%! !IROUTINE: IsSafeDiv
-!%!
-!%! !DESCRIPTION: Function IsSafeDiv returns TRUE if the numerator N and 
-!%!  denominator D may be divided safely (i.e. without resulting in a 
-!%!  division-by-zero, Not-a-Number (NaN), or Infinity), or FALSE otherwise.
-!%!\\
-!%!\\
-!%! !INTERFACE:
-!%!
-!%  FUNCTION IsSafeDiv( N, D ) RESULT( isSafe )
-!%!
-!%! !INPUT PARAMETERS: 
-!%!
-!%    REAL*4, INTENT(IN) :: N        ! Numerator
-!%    REAL*4, INTENT(IN) :: D        ! Denominator
-!%!
-!%! !RETURN VALUE:
-!%!    
-!%    LOGICAL            :: isSafe   ! Returns TRUE if it's safe to divide N/D 
-!%!
-!%! !REVISION HISTORY: 
-!%!   29 Sep 2008 - R. Yantosca - Initial Version
-!%!EOP
-!%!------------------------------------------------------------------------------
-!%!BOC
-!%
-!%    ! Local variables
-!%    INTEGER :: MaxExp, MinExp
-!%
-!%    ! Maxinum 
-!%    MaxExp = MAXEXPONENT( N )
-!%    MinExp = MINEXPONENT( N )
-!%    
-!%    ! Test if it's safe to divide 
-!%    IF ( ( D                         == 0      )  .or. &
-!%         ( EXPONENT(N) - EXPONENT(D) >= MaxExp )  .or. &
-!%         ( EXPONENT(N) - EXPONENT(D) <= MinExp ) ) THEN
-!%       isSafe = .FALSE.
-!%    ELSE
-!%       isSafe = .TRUE.
-!%    ENDIF
-!%
-!%  END FUNCTION IsSafeDiv
-!EOC
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 END MODULE Geos57A3MstCModule
 

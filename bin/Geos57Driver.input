@@ -28,15 +28,16 @@
 #  10 Jan 2012 - R. Yantosca - Added fields for A3 output file
 #  13 Jan 2012 - R. Yantosca - Now point file paths on /as/data/geos-rw/
 #  20 Jan 2012 - R. Yantosca - Now specify temporary & data directories
+#  16 Feb 2012 - R. Yantosca - Fix SEAC4RS grid offset for 20-50N (not 40N)
 #
 
 ==> Turn on debug print output?
-T
+F
 
 ==> const_2d_asm_Nx
 DAS.ops.asm.const_2d_asm_Nx.GEOS572.00000000_0000.V01.nc4
 FRLAKE,FRLAND,FRLANDICE,FROCEAN,PHIS
-T
+F
 
 ==> inst3_3d_asm_Nv
 DAS.ops.asm.inst3_3d_asm_Nv.GEOS572.YYYYMMDD_hhmm.V01.nc4
@@ -88,10 +89,10 @@ T
 GEOS572.YYYYMMDD.%%%%%%.025x03125.SEA4CRS.nc
 /as/scratch/bmy/
 /as/data/geos-rw/GEOS_0.25x0.3125_SEA4CRS.d/GEOS_5.7/YYYY/MM/
-  769  281 1025  521
+  769  281 1025  561
 
 ==> Nested NA output
-T
+F
 GEOS572.YYYYMMDD.%%%%%%.025x03125.NA.nc
 /as/scratch/bmy/
 ./

@@ -56,6 +56,7 @@ MODULE Geos57A3DynModule
 ! !REVISION HISTORY:
 !  11 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  17 Jan 2012 - R. Yantosca - Flip native resolution data after reading
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -97,6 +98,7 @@ MODULE Geos57A3DynModule
 !
 ! !REVISION HISTORY: 
 !  11 Jan 2012 - R. Yantosca - Initial version
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -197,7 +199,7 @@ MODULE Geos57A3DynModule
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
-       CASE( 'native', 'SEA4CRS', 'nested China' )
+       CASE( 'native', 'SEAC4RS', 'nested China', 'nested NA' )
           DI = '0.3125'
           DJ = '0.25'
        CASE ( 'nested 0.5 x 0.625' )
@@ -419,6 +421,7 @@ MODULE Geos57A3DynModule
 ! !REVISION HISTORY: 
 !  11 Aug 2010 - R. Yantosca - Initial version, based on MERRA
 !  19 Jan 2012 - R. Yantosca - Now write output to temporary data directories
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -490,6 +493,20 @@ MODULE Geos57A3DynModule
                           gName,    fName,      fOutNestCh            )
     ENDIF
 
+    ! Open nested NA output file
+    IF ( doNestNa ) THEN
+       fName = TRIM( tempDirTmplNestNa ) // TRIM( dataTmplNestNa )
+       gName = 'nested NA'
+       CALL ExpandDate  ( fName,     yyyymmdd,  000000                )
+       CALL StrRepl     ( fName,     '%%%%%%', 'A3dyn '               )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                 )      
+       CALL NcOutFileDef( I_NestNa,  J_NestNa,  L025x03125, TIMES_A3,  &
+                          xMid_025x03125(I0_na:I1_na),                 &
+                          yMid_025x03125(J0_na:J1_na),                 &
+                          zMid_025x03125,                   a3Mins,    &
+                          gName,    fName,      fOutNestNa            )
+    ENDIF
+
     ! Open 2 x 2.5 output file
     IF ( do2x25 ) THEN
        fName = TRIM( tempDirTmpl2x25 ) // TRIM( dataTmpl2x25 )
@@ -531,6 +548,7 @@ MODULE Geos57A3DynModule
 
     ! Close output files
     IF ( doNestCh ) CALL NcCl( fOutNestCh )
+    IF ( doNestNa ) CALL NcCl( fOutNestNa )
     IF ( do2x25   ) CALL NcCl( fOut2x25   )
     IF ( do4x5    ) CALL NcCl( fOut4x5    )
 
@@ -571,7 +589,8 @@ MODULE Geos57A3DynModule
 !  11 Jan 2012 - R. Yantosca - Initial version
 !  17 Jan 2012 - R. Yantosca - Bug fix: flip data in vertical immediately
 !                              after reading.
-!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them    
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them 
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file   
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -585,6 +604,7 @@ MODULE Geos57A3DynModule
     ! Variables for netCDF I/O
     INTEGER                 :: X,        Y,        Z,       T
     INTEGER                 :: XNestCh,  YNestCh,  ZNestCh, TNestCh
+    INTEGER                 :: XNestNa,  YNestNa,  ZNestNa, TNestNa
     INTEGER                 :: X2x25,    Y2x25,    Z2x25,   T2x25
     INTEGER                 :: X4x5,     Y4x5,     Z4x5,    T4x5
     INTEGER                 :: st4d(4),  ct4d(4)
@@ -618,6 +638,14 @@ MODULE Geos57A3DynModule
        CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'lev',  ZNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! Nested NA grid
+    IF ( doNestNa ) THEN
+       CALL NcGet_DimLen( fOutNestNa, 'lon',  XNestNa )
+       CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'lev',  ZNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'time', TNestNa )
     ENDIF
 
     ! 2 x 2.5 global grid       
@@ -731,7 +759,7 @@ MODULE Geos57A3DynModule
           ENDDO
                 
           !-----------------------------------------------------------------
-          ! Write netCDF output (all except QI, QL)
+          ! Write netCDF output
           !-----------------------------------------------------------------
           msg = '%%% Archiving  ' // name
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
@@ -742,6 +770,15 @@ MODULE Geos57A3DynModule
              st4d = (/ 1,       1,       1,       H /)
              ct4d = (/ XNestCh, YNestCh, ZNestCh, 1 /)
              CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st4d, ct4d )
+             NULLIFY( Ptr )
+          ENDIF
+
+          ! Nested NA (point to proper slice of global data)
+          IF ( doNestNa ) THEN
+             Ptr  => Qflip( I0_na:I1_na, J0_na:J1_na, : )
+             st4d = (/ 1,       1,       1,       H /)
+             ct4d = (/ XNestNa, YNestNa, ZNestNa, 1 /)
+             CALL NcWr( Ptr, fOutNestNa, TRIM( name ), st4d, ct4d )
              NULLIFY( Ptr )
           ENDIF
                 
@@ -805,7 +842,8 @@ MODULE Geos57A3DynModule
 !  10 Jan 2012 - R. Yantosca - Initial version
 !  17 Jan 2012 - R. Yantosca - Bug fix: flip data in vertical immediately
 !                              after reading.
-!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them    
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -819,6 +857,7 @@ MODULE Geos57A3DynModule
     ! Variables for netCDF I/O
     INTEGER                 :: X,        Y,        Z,       T
     INTEGER                 :: XNestCh,  YNestCh,  ZNestCh, TNestCh
+    INTEGER                 :: XNestNa,  YNestNa,  ZNestNa, TNestNa
     INTEGER                 :: X2x25,    Y2x25,    Z2x25,   T2x25
     INTEGER                 :: X4x5,     Y4x5,     Z4x5,    T4x5
     INTEGER                 :: st4d(4),  ct4d(4)
@@ -852,6 +891,14 @@ MODULE Geos57A3DynModule
        CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'ap',   ZNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! Nested NA grid
+    IF ( doNestNa ) THEN
+       CALL NcGet_DimLen( fOutNestNa, 'lon',  XNestNa )
+       CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'ap',   ZNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'time', TNestNa )
     ENDIF
 
     ! 2 x 2.5 global grid       
@@ -975,6 +1022,15 @@ MODULE Geos57A3DynModule
              CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st4d, ct4d )
              NULLIFY( Ptr )
           ENDIF
+
+          ! Nested NA (point to proper slice of global data)
+          IF ( doNestNa ) THEN
+             Ptr  => Qflip( I0_na:I1_na, J0_na:J1_na, : )
+             st4d = (/ 1,       1,       1,       H /)
+             ct4d = (/ XNestNa, YNestNa, ZNestNa, 1 /)
+             CALL NcWr( Ptr, fOutNestNa, TRIM( name ), st4d, ct4d )
+             NULLIFY( Ptr )
+          ENDIF
           
           ! Write 2 x 2.5 data
           IF ( do2x25 ) THEN
@@ -1037,7 +1093,8 @@ MODULE Geos57A3DynModule
 !  10 Jan 2012 - R. Yantosca - Activate parallel loop over vertical levels
 !  17 Jan 2012 - R. Yantosca - Bug fix: flip data in vertical immediately
 !                              after reading.  Use pointers for efficiency
-!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them    
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file    
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1051,6 +1108,7 @@ MODULE Geos57A3DynModule
     ! Variables for netCDF I/O
     INTEGER                 :: X,        Y,       Z,       T
     INTEGER                 :: XNestCh,  YNestCh, ZNestCh, TNestCh
+    INTEGER                 :: XNestNa,  YNestNa, ZNestNa, TNestNa
     INTEGER                 :: X2x25,    Y2x25,   Z2x25,   T2x25
     INTEGER                 :: X4x5,     Y4x5,    Z4x5,    T4x5
     INTEGER                 :: st3d(3),  ct3d(3), st4d(4), ct4d(4)
@@ -1087,6 +1145,14 @@ MODULE Geos57A3DynModule
        CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'lev',  ZNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! Nested NA grid
+    IF ( doNestNa ) THEN
+       CALL NcGet_DimLen( fOutNestNa, 'lon',  XNestNa )
+       CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'lev',  ZNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'time', TNestNa )
     ENDIF
 
     ! 2 x 2.5 global grid       
@@ -1237,6 +1303,15 @@ MODULE Geos57A3DynModule
              st4d = (/ 1,       1,       1,       H /)
              ct4d = (/ XNestCh, YNestCh, ZNestCh, 1 /)
              CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st4d, ct4d )
+             NULLIFY( Ptr )
+          ENDIF
+
+          ! Nested NA (point to proper slice of global data)
+          IF ( doNestNa ) THEN
+             Ptr  => Qflip( I0_na:I1_na, J0_na:J1_na, : )
+             st4d = (/ 1,       1,       1,       H /)
+             ct4d = (/ XNestNa, YNestNa, ZNestNa, 1 /)
+             CALL NcWr( Ptr, fOutNestNa, TRIM( name ), st4d, ct4d )
              NULLIFY( Ptr )
           ENDIF
                 

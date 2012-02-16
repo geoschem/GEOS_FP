@@ -37,7 +37,7 @@ MODULE Geos57A1Module
   PRIVATE
   
   ! Include files
-  INCLUDE "netcdf.inc"
+# include "netcdf.inc"
 !
 ! !PUBLIC MEMBER FUNCTIONS:
 !
@@ -212,7 +212,7 @@ MODULE Geos57A1Module
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
-       CASE( 'native', 'SEA4CRS', 'nested China', 'nested NA' )
+       CASE( 'native', 'SEAC4RS', 'nested China', 'nested NA' )
           DI = '0.3125'
           DJ = '0.25'
        CASE ( 'nested 0.5 x 0.625' )
@@ -965,7 +965,7 @@ MODULE Geos57A1Module
     ! Open nested China output file
     IF ( doNestCh ) THEN
        fName = TRIM( tempDirTmplNestCh ) // TRIM( dataTmplNestCh )
-       gName = 'SEA4CRS'
+       gName = 'SEAC4RS'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000      )      
        CALL StrRepl     ( fName,     '%%%%%%',  'A1    '    )
        CALL StrCompress ( fName,     RemoveAll=.TRUE.       )
@@ -1242,7 +1242,7 @@ MODULE Geos57A1Module
              IF ( doNestCh ) THEN
 
                 !----------------------------------------------------------
-                ! SEA4CRS NESTED CHINA GRID: land/water/ice flags
+                ! SEAC4RS NESTED CHINA GRID: land/water/ice flags
                 !----------------------------------------------------------
                 Ptr  => lwi( I0_ch:I1_ch, J0_ch:J1_ch )
                 st3d = (/ 1,       1,       H /)
@@ -1251,7 +1251,7 @@ MODULE Geos57A1Module
                 NULLIFY( Ptr )
 
                 !----------------------------------------------------------
-                ! SEA4CRS NESTED CHINA GRID: sea ice bins
+                ! SEAC4RS NESTED CHINA GRID: sea ice bins
                 !----------------------------------------------------------
                 DO S = 1, N_ICE
                    WRITE( name2, 200 ) S-1

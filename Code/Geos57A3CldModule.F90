@@ -57,6 +57,7 @@ MODULE Geos57A3CldModule
 ! !REVISION HISTORY:
 !  11 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  17 Jan 2012 - R. Yantosca - Flip native resolution data after reading
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -99,6 +100,7 @@ MODULE Geos57A3CldModule
 ! !REVISION HISTORY: 
 !  11 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  01 Feb 2012 - R. Yantosca - Make all global attribute names lowercase
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -199,7 +201,7 @@ MODULE Geos57A3CldModule
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
-       CASE( 'native', 'SEA4CRS', 'nested China' )
+       CASE( 'native', 'SEAC4RS', 'nested China', 'nested NA' )
           DI = '0.3125'
           DJ = '0.25'
        CASE ( 'nested 0.5 x 0.625' )
@@ -436,6 +438,7 @@ MODULE Geos57A3CldModule
 !  12 Jan 2012 - R. Yantosca - Now call StrCompress to remove white space
 !                              in the file name after the token replacement
 !  19 Jan 2012 - R. Yantosca - Now write output to the temporary directories
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -491,7 +494,7 @@ MODULE Geos57A3CldModule
     ! Open nested China output file
     IF ( doNestCh ) THEN
        fName = TRIM( tempDirTmplNestCh ) // TRIM( dataTmplNestCh )
-       gName = 'SEA4CRS'
+       gName = 'SEAC4RS'
        CALL ExpandDate  ( fName,     yyyymmdd,  000000                )      
        CALL StrRepl     ( fName,     '%%%%%%', 'A3cld '               )
        CALL StrCompress ( fName,     RemoveAll=.TRUE.                 )
@@ -500,6 +503,20 @@ MODULE Geos57A3CldModule
                           yMid_025x03125(J0_ch:J1_ch),                 &
                           zMid_025x03125,                   a3Mins,    &
                           gName,    fName,      fOutNestCh            )
+    ENDIF
+
+    ! Open nested China output file
+    IF ( doNestNa ) THEN
+       fName = TRIM( tempDirTmplNestNa ) // TRIM( dataTmplNestNa )
+       gName = 'nested NA'
+       CALL ExpandDate  ( fName,     yyyymmdd,  000000                )      
+       CALL StrRepl     ( fName,     '%%%%%%', 'A3cld '               )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                 )
+       CALL NcOutFileDef( I_NestNa,  J_NestNa,  L025x03125, TIMES_A3,  &
+                          xMid_025x03125(I0_na:I1_na),                 &
+                          yMid_025x03125(J0_na:J1_na),                 &
+                          zMid_025x03125,                   a3Mins,    &
+                          gName,    fName,      fOutNestNa            )
     ENDIF
 
     ! Open 2 x 2.5 output file
@@ -542,6 +559,7 @@ MODULE Geos57A3CldModule
 
     ! Close output files
     IF ( doNestCh ) CALL NcCl( fOutNestCh )
+    IF ( doNestNa ) CALL NcCl( fOutNestNa )
     IF ( do2x25   ) CALL NcCl( fOut2x25   )
     IF ( do4x5    ) CALL NcCl( fOut4x5    )
 
@@ -587,6 +605,7 @@ MODULE Geos57A3CldModule
 !  17 Jan 2012 - R. Yantosca - Bug fix: flip data in vertical immediately
 !                              after reading.
 !  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -600,6 +619,7 @@ MODULE Geos57A3CldModule
     ! Variables for netCDF I/O
     INTEGER                 :: X,        Y,        Z,       T
     INTEGER                 :: XNestCh,  YNestCh,  ZNestCh, TNestCh
+    INTEGER                 :: XNestNa,  YNestNa,  ZNestNa, TNestNa
     INTEGER                 :: X2x25,    Y2x25,    Z2x25,   T2x25
     INTEGER                 :: X4x5,     Y4x5,     Z4x5,    T4x5
     INTEGER                 :: st4d(4),  ct4d(4)
@@ -639,6 +659,14 @@ MODULE Geos57A3CldModule
        CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'lev',  ZNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! Nested NA grid
+    IF ( doNestNa ) THEN
+       CALL NcGet_DimLen( fOutNestNa, 'lon',  XNestNa )
+       CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'lev',  ZNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'time', TNestNa )
     ENDIF
 
     ! 2 x 2.5 global grid       
@@ -794,6 +822,14 @@ MODULE Geos57A3CldModule
                    ct4d = (/ XNestCh, YNestCh, ZNestCh, 1 /)
                    CALL NcWr( Ptr, fOutNestCh, TRIM( name ), st4d, ct4d )
                 ENDIF
+
+                ! Nested NA (point to proper slice of global data)
+                IF ( doNestNa ) THEN
+                   Ptr  => Qflip( I0_na:I1_na, J0_na:J1_na, : )
+                   st4d = (/ 1,       1,       1,       H /)
+                   ct4d = (/ XNestNa, YNestNa, ZNestNa, 1 /)
+                   CALL NcWr( Ptr, fOutNestNa, TRIM( name ), st4d, ct4d )
+                ENDIF
                 
                 ! Write 2 x 2.5 data
                 IF ( do2x25 ) THEN
@@ -845,7 +881,7 @@ MODULE Geos57A3CldModule
        WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
        !-----------------------------
-       ! SEA4CRS NESTED CHINA GRID
+       ! SEAC4RS NESTED CHINA GRID
        !-----------------------------
        IF ( doNestCh ) THEN
 
@@ -856,10 +892,33 @@ MODULE Geos57A3CldModule
           ! QI
           Ptr  => QI( I0_ch:I1_ch, J0_ch:J1_ch, : )
           CALL NcWr( Ptr, fOutNestCh, 'QI', st4d, ct4d )
+          NULLIFY( Ptr )
 
           ! QL
           Ptr  => QL( I0_ch:I1_ch, J0_ch:J1_ch, : )
           CALL NcWr( Ptr, fOutNestCh, 'QL', st4d, ct4d )
+          NULLIFY( Ptr )
+
+       ENDIF
+
+       !-----------------------------
+       ! NESTED N. AMERICA GRID
+       !-----------------------------
+       IF ( doNestNa ) THEN
+
+          ! netCDF indices
+          st4d = (/ 1,       1,       1,       H /)
+          ct4d = (/ XNestNa, YNestNa, ZNestNa, 1 /)
+
+          ! QI
+          Ptr  => QI( I0_na:I1_na, J0_na:J1_na, : )
+          CALL NcWr( Ptr, fOutNestNa, 'QI', st4d, ct4d )
+          NULLIFY( Ptr )
+
+          ! QL
+          Ptr  => QL( I0_na:I1_na, J0_na:J1_na, : )
+          CALL NcWr( Ptr, fOutNestNa, 'QL', st4d, ct4d )
+          NULLIFY( Ptr )
 
        ENDIF
        
@@ -935,6 +994,7 @@ MODULE Geos57A3CldModule
 !  17 Jan 2012 - R. Yantosca - Bug fix: flip data in vertical immediately
 !                              after reading.  Use pointers for efficiency
 !  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -948,6 +1008,7 @@ MODULE Geos57A3CldModule
     ! Variables for netCDF I/O
     INTEGER                 :: X,        Y,        Z,       T
     INTEGER                 :: XNestCh,  YNestCh,  ZNestCh, TNestCh
+    INTEGER                 :: XNestNa,  YNestNa,  ZNestNa, TNestNa
     INTEGER                 :: X2x25,    Y2x25,    Z2x25,   T2x25
     INTEGER                 :: X4x5,     Y4x5,     Z4x5,    T4x5
     INTEGER                 :: st3d(3),  st4d(4)
@@ -984,13 +1045,20 @@ MODULE Geos57A3CldModule
     WRITE( IU_LOG, '(a)' ) '%%%'
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
-
     ! Nested China grid
     IF ( doNestCh ) THEN
        CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
        CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'lev',  ZNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ENDIF
+
+    ! Nested NA grid
+    IF ( doNestCh ) THEN
+       CALL NcGet_DimLen( fOutNestNa, 'lon',  XNestNa )
+       CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'lev',  ZNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'time', TNestNa )
     ENDIF
 
     ! 2 x 2.5 global grid       
@@ -1157,8 +1225,10 @@ MODULE Geos57A3CldModule
  
        msg = '%%% Archiving  CLOUD, TAUCLI, TAUCLW, OPTDEPTH'
        WRITE( IU_LOG, '(a)' ) TRIM( msg )
-             
-       !%%%%% SEA4CRS NESTED CHINA GRID %%%%%
+       
+       !----------------------------------------
+       ! SEAC4RS NESTED CHINA GRID 
+       !----------------------------------------
        IF ( doNestCh ) THEN
 
           ! netCDF indices
@@ -1185,7 +1255,39 @@ MODULE Geos57A3CldModule
           NULLIFY( Ptr )
        ENDIF
 
-       !%%%%% 2 x 2.5 GLOBAL GRID %%%%%
+       !----------------------------------------
+       ! NESTED N. AMERICA GRID 
+       !----------------------------------------
+       IF ( doNestNa ) THEN
+
+          ! netCDF indices
+          st4d = (/ 1,       1,       1,       H /)
+          ct4d = (/ XNestNa, YNestNa, ZNestNa, 1 /)
+
+          ! CLOUD (flip in vertical)
+          Ptr  => Cld( I0_na:I1_na, J0_na:J1_na, ZNestNa:1:-1 )
+          CALL NcWr( Ptr, fOutNestNa, 'CLOUD',    st4d, ct4d )
+
+          ! TAUCLI (flip in vertical)
+          Ptr  => TauI( I0_na:I1_na, J0_na:J1_na, ZNestNa:1:-1 )
+          CALL NcWr( Ptr, fOutNestNa, 'TAUCLI',   st4d, ct4d )
+
+          ! TAUCLW (flip in vertical)
+          Ptr  => TauW( I0_na:I1_na, J0_na:J1_na, ZNestNa:1:-1 )
+          CALL NcWr( Ptr, fOutNestNa, 'TAUCLW',   st4d, ct4d )
+
+          ! OPTDEPTH (flip in vertical)
+          Ptr  => OptD( I0_na:I1_na, J0_na:J1_na, ZNestNa:1:-1 )
+          CALL NcWr( Ptr, fOutNestNa, 'OPTDEPTH', st4d, ct4d )
+
+          ! Free pointer memory
+          NULLIFY( Ptr )
+       ENDIF
+
+
+       !----------------------------------------
+       ! 2 x 2.5 GLOBAL GRID
+       !----------------------------------------
        IF ( do2x25 ) THEN
 
           ! netCDF indices
@@ -1200,7 +1302,9 @@ MODULE Geos57A3CldModule
 
        ENDIF
 
-       !%%%%% 4 x 5 GLOBAL GRID %%%%%
+       !----------------------------------------
+       ! 4 x 5 GLOBAL GRID
+       !----------------------------------------
        IF ( do4x5 ) THEN
 
           ! netCDF indices

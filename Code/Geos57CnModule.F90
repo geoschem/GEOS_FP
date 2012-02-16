@@ -37,7 +37,7 @@ MODULE Geos57CnModule
   PRIVATE
   
   ! Include files
-  INCLUDE "netcdf.inc"
+# include "netcdf.inc"
 !
 ! !PUBLIC MEMBER FUNCTIONS:
 !
@@ -213,7 +213,7 @@ CONTAINS
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
-       CASE( 'native', 'SEA4CRS', 'nested China', 'nested NA' )
+       CASE( 'native', 'SEAC4RS', 'nested China', 'nested NA' )
           DI = '0.3125'
           DJ = '0.25'
        CASE ( 'nested 0.5 x 0.625' )
@@ -445,7 +445,7 @@ CONTAINS
     ! Open nested China output file
     IF ( doNestCh ) THEN
        fName = TRIM( tempDirTmplNestCh ) // TRIM( dataTmplNestCh )
-       gName = 'SEA4CRS'
+       gName = 'SEAC4RS'
        CALL ExpandDate  ( fName,     20110101,  000000      )      
        CALL StrRepl     ( fName,     '%%%%%%',  'CN    '    )
        CALL StrCompress ( fName, RemoveAll=.TRUE.           )
