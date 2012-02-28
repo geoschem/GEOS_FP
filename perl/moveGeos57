@@ -377,8 +377,8 @@ sub moveFiles(@) {
     $dir    = &replaceTokens( $dir, $fileType );
     &checkDir( $dir );
 
-    # Move command
-    $cmd    = "mv -f $mask $dir";
+    # Move command (list the directory first to force an automount)
+    $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
     
     # Move the files
     print "$cmd\n";
@@ -398,8 +398,8 @@ sub moveFiles(@) {
     $dir    = &replaceTokens( $dir, $fileType );
     &checkDir( $dir );
 
-    # Move command
-    $cmd    = "mv -f $mask $dir";
+    # Move command (list the directory first to force an automount)
+    $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
     
     # Move the files
     print "$cmd\n";
@@ -418,8 +418,8 @@ sub moveFiles(@) {
     $dir    = &replaceTokens( $dir, $fileType );
     &checkDir( $dir );    
 
-    # Move command
-    $cmd    = "mv -f $mask $dir";
+    # Move command (list the directory first to force an automount)
+    $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
     
     # Move the files
     print "$cmd\n";
@@ -438,8 +438,8 @@ sub moveFiles(@) {
     $dir    = &replaceTokens( $dir, $fileType );
     &checkDir( $dir );    
 
-    # Move command
-    $cmd    = "mv -f $mask $dir";
+    # Move command (list the directory first to force an automount)
+    $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
 
     # Move the files
     print "$cmd\n";

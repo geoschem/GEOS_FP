@@ -322,6 +322,7 @@ sub runJob() {
 #
 # !REVISION HISTORY:
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/doGeos5
+#  28 Feb 2012 - R. Yantosca - Now force an automount with an ls command
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -353,8 +354,14 @@ qx( echo "doGeos5: Extracting GEOS-5 Met Data!"    >> \$sLog );
 qx( echo "Started on `date`"                       >> \$sLog );
 qx( echo                                           >> \$sLog );
 
+# List the temp directory first to force a directory mount
+qx( ls $TEMP_DIRECTORY > /dev/null );
+
 # Run the GEOS-5 data extraction code
 qx( umask 022; cd $CODE_DIRECTORY; $EXECUTABLE < $DATE_FILE >> \$sLog );
+
+# Move files from the temp directory to the data directory
+qx( ./moveGeos57 $DATE_STRING $fileTypes >> \$sLog );
 
 # Remove the date file
 qx( rm -f $DATE_FILE >> /dev/null ); 
