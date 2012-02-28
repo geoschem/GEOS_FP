@@ -347,6 +347,7 @@ sub makeJobFile($) {
 #
 # !REVISION HISTORY:
 #  20 Jan 2012 - R. Yantosca - Initial version
+#  28 Feb 2012 - R. Yantosca - Now force an automount with an ls command
 #EOP
 #------------------------------------------------------------------------------
 #BOC
