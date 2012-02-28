@@ -1054,7 +1054,7 @@ MODULE Geos57A3CldModule
     ENDIF
 
     ! Nested NA grid
-    IF ( doNestCh ) THEN
+    IF ( doNestNa ) THEN
        CALL NcGet_DimLen( fOutNestNa, 'lon',  XNestNa )
        CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa ) 
        CALL NcGet_DimLen( fOutNestNa, 'lev',  ZNestNa ) 

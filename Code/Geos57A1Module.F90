@@ -1265,7 +1265,7 @@ MODULE Geos57A1Module
 
              ENDIF
 
-             IF ( doNestCh ) THEN
+             IF ( doNestNa ) THEN
 
                 !----------------------------------------------------------
                 ! NESTED NA GRID: land/water/ice flags
