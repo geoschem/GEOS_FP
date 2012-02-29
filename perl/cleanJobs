@@ -97,6 +97,7 @@ sub main() {
 #
 # !REVISION HISTORY:
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/cleanJobs
+#  29 Feb 2012 - R. Yantosca - Also remove date files in the jobs directory
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -113,13 +114,22 @@ sub main() {
   chomp( @files = readdir( D ) );
   closedir( D );
 
-  # Remove job files only
+  # Loop thru each file
   foreach $file ( @files ) {
+
+    # Remove job files
     if ( $file =~ m/job.doGeos5/ ) {
       $cmd = "rm -f $jobDir/$file";
       print "$cmd\n";
       qx( $cmd );
     } 
+
+    # Remove date files
+    elsif ( $file =~ "201" ) {
+      $cmd = "rm -f $jobDir/$file";
+      print "$cmd\n";
+      qx( $cmd );
+    }
   }				
 
   # Return w/ status
