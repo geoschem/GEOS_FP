@@ -458,7 +458,7 @@ sub moveFiles(@) {
 #
 # !IROUTINE: main
 #
-# !DESCRIPTION: Routine main is the driver routine for the doGeos5 script.
+# !DESCRIPTION: Routine main is the driver routine for the moveGeos57 script.
 #\\
 #\\
 # !INTERFACE:
@@ -475,7 +475,7 @@ sub main() {
 
   # Error check arguments
   if ( scalar( @ARGV ) == 0 ) { 
-    print "Usage: doGeos57 YYYYMMDD\n"; 
+    print "Usage: moveGeos57 YYYYMMDD FILETYPE\n"; 
     exit(1);
   }
 
