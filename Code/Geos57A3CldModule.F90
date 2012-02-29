@@ -58,6 +58,7 @@ MODULE Geos57A3CldModule
 !  11 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  17 Jan 2012 - R. Yantosca - Flip native resolution data after reading
 !  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
+!  28 Feb 2012 - R. Yantosca - Add extra fields
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -101,6 +102,7 @@ MODULE Geos57A3CldModule
 !  11 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  01 Feb 2012 - R. Yantosca - Make all global attribute names lowercase
 !  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
+!  28 Feb 2012 - R. Yantosca - Added netCDF defs for CFAN, CFCU, CFLS, QCCU
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -300,6 +302,45 @@ MODULE Geos57A3CldModule
     ! Define data arrays
     !-------------------------------------------------------------------------
 
+    ! CFAN
+    IF ( StrPos( 'CFAN', tavg3_3d_cld_Nv_Data_c ) >= 0 ) THEN
+       var4  = (/ idLon, idLat, idLev, idTime /)    
+       vId   = vId + 1
+       lName = '3D cloud fraction, anvils'
+       units = 'unitless'
+       gamap = 'GMAO-3D$'
+       CALL NcDef_Variable      ( fOut, 'CFAN', NF_FLOAT, 4, var4, vId      )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+    ENDIF
+
+    ! CFCU
+    IF ( StrPos( 'CFCU', tavg3_3d_cld_Nv_Data_c ) >= 0 ) THEN
+       var4  = (/ idLon, idLat, idLev, idTime /)    
+       vId   = vId + 1
+       lName = '3D cloud fraction, convective'
+       units = 'unitless'
+       gamap = 'GMAO-3D$'
+       CALL NcDef_Variable      ( fOut, 'CFCU', NF_FLOAT, 4, var4, vId      )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+    ENDIF    
+
+    ! CFLS
+    IF ( StrPos( 'CFLS', tavg3_3d_cld_Nv_Data_c ) >= 0 ) THEN
+       var4  = (/ idLon, idLat, idLev, idTime /)    
+       vId   = vId + 1
+       lName = '3D cloud fraction, large-scale'
+       units = 'unitless'
+       gamap = 'GMAO-3D$'
+       CALL NcDef_Variable      ( fOut, 'CFLS', NF_FLOAT, 4, var4, vId      )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+    ENDIF
+
     ! CLOUD
     IF ( StrPos( 'CLOUD', tavg3_3d_rad_Nv_Data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
@@ -321,6 +362,19 @@ MODULE Geos57A3CldModule
        units = 'unitless'
        gamap = 'GMAO-3D$'
        CALL NcDef_Variable      ( fOut, 'OPTDEPTH', NF_FLOAT, 4, var4, vId   )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+    ENDIF
+
+    ! QCCU
+    IF ( StrPos( 'QCCU', tavg3_3d_cld_Nv_data_c ) >= 0 ) THEN
+       var4  = (/ idLon, idLat, idLev, idTime /)    
+       vId   = vId + 1
+       lName = 'Cloud condensate mixing ratio, convective updraft'
+       units = 'kg kg-1'
+       gamap = 'GMAO-3D$'
+       CALL NcDef_Variable      ( fOut, 'QCCU', NF_FLOAT, 4, var4, vId     )
        CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
@@ -1283,7 +1337,6 @@ MODULE Geos57A3CldModule
           ! Free pointer memory
           NULLIFY( Ptr )
        ENDIF
-
 
        !----------------------------------------
        ! 2 x 2.5 GLOBAL GRID
