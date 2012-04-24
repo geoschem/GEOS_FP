@@ -1,0 +1,203 @@
+#!/usr/bin/perl -w
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: gmaoOps
+#
+# !DESCRIPTION: gmaoOps parses the GMAO data processing status web page
+#  and displays information about GEOS-5.7.2 data processing.
+#
+#\\
+#\\
+# !USES:
+#
+  require 5.003;                               # Minimum version of Perl
+  use strict;                                  # IMPLICIT NONE-style syntax
+#
+# !CALLING SEQUENCE:
+#  gmaoOps.pl 
+#
+# !REMARKS:
+#  Requires the Unix "curl" utility to be installed on your system.
+#
+# !REVISION HISTORY:
+#  24 Apr 2012 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: stripHtml
+#
+# !DESCRIPTION: Strips HTML content from a line of text.
+#\\
+#\\
+# !INTERFACE:
+#
+sub stripHtml($) {
+#
+# !INPUT PARAMETERS:
+#
+  my ( $line ) = @_;                          # Line of text to parse
+#
+# !REMARKS:
+#  May not be written in the most effective way, but it works.  TIMTOWDI.
+# 
+# !REVISION HISTORY: 
+#  24 Apr 2012 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+  # Strip white space and HTML characters
+  $line =~ s/ //g;                            # Spaces
+  $line =~ s/\t//g;                           # Horizontal tabs
+  $line =~ s/<tdbgcolor=\#000000>//g;         # Background color = black
+  $line =~ s/<tr>//g;                         # Begin row
+  $line =~ s/<\/tr>//g;                       # End row
+  $line =~ s/<td>//g;                         # Begin column
+  $line =~ s/<\/td>//g;                       # End column
+  $line =~ s/<imgsrc=//g;                     # Image tag
+  $line =~ s/.gif//g;                         # GIF files
+  $line =~ s/<b>//g;                          # Begin bold
+  $line =~ s/<\/b>//g;                        # End bold
+  $line =~ s/<i>//g;                          # Begin italic
+  $line =~ s/<\/i>//g;                        # End italic
+  $line =~ s/\/>//g;                          # End HTML tags
+
+  # Return to calling routine
+  return( $line );
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: formatDateAndTime
+#
+# !DESCRIPTION: Creates a consistent format for strings containing date and
+#  time information.
+#\\
+#\\
+# !INTERFACE:
+#
+sub formatDateAndTime($) {
+#
+# !INPUT PARAMETERS:
+#
+  my ( $dateStr ) = @_;                       # String w/ date & time
+#
+# !REVISION HISTORY: 
+#  24 Apr 2012 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+  # Create a consistent date/time format
+  $dateStr =~ s/_//g;                         # Remove underscore
+  $dateStr =~ s/z//g;                         # Remove z
+
+  # For date strings with MMDD format
+  if ( length( $dateStr ) == 6 ) {
+    $dateStr = substr( $dateStr, 4, 2 ) . ":00z "
+             . substr( $dateStr, 0, 2 ) . "/" 
+             . substr( $dateStr, 2, 2 );
+  }
+
+  # For date strings with YYMMDD format
+  elsif ( length( $dateStr ) == 8 ) {
+    $dateStr = substr( $dateStr, 6, 2 ) . ":00z " 
+             . substr( $dateStr, 2, 2 ) . "/" 
+             . substr( $dateStr, 4, 2 ) . "/20" 
+             . substr( $dateStr, 0, 2 );
+  }
+ 
+  # Return adjusted string
+  return( $dateStr );
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: main
+#
+# !DESCRIPTION: Parses the GMAO status web page and prints a summary of the
+#  GEOS-5.7.2 data production status. 
+#\\
+#\\
+# !INTERFACE:
+#
+sub main() {
+#
+# !REMARKS:
+#  Requires the Unix "curl" utility to be installed on your system.
+# 
+# !REVISION HISTORY: 
+#  24 Apr 2012 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES
+#
+  my $i         = 0;	       
+  my @lines     = qx(curl -s http://gmao.gsfc.nasa.gov/operations/status.php);
+  my $status    = "";
+  my $running   = "";	       
+  my $completed = "";
+  my $delivery  = "";
+  my $note      = "";
+  my %statTags  = ( 'green'  => 'NOMINAL',
+                    'yellow' => 'HOLDING/KNOWN ISSUE',
+                    'red'    => 'HALTED/WORKING ISSUE',
+		    'gray'   => 'NOT STARTED',
+                    ''       => 'COMPLETED'             );
+                     
+  # First strip all newlines, this just makes it easier
+  foreach ( $i = 0;  $i < scalar( @lines ); $i++ ) { 
+    chomp( $lines[$i] ); 
+  }
+
+  # Loop over all lines again
+  foreach ( $i = 0; $i < scalar( @lines ); $i++ ) {
+    
+    # Strip HTML from each line
+    $lines[$i] = &stripHtml( $lines[$i] );
+
+    # Get info about GEOS-5.7.2
+    if ( $lines[$i] =~ m/5.7.2DAS/ ) {
+      $status    = $statTags{          &stripHtml( $lines[++$i] ) };
+      $running   = &formatDateAndTime( &stripHtml( $lines[++$i] ) );
+      $completed = &formatDateAndTime( &stripHtml( $lines[++$i] ) );
+      $delivery  = &formatDateAndTime( &stripHtml( $lines[++$i] ) );
+      $note      =                     &stripHtml( $lines[++$i] );
+    }				
+  }
+ 
+  # Print output
+  print '====== STATUS OF GEOS-5.7.2 DATA PROCESSING @ GMAO ======'."\n";
+  print "GEOS-5.7.2 production status          : $status\n";
+  print "Current date/time being produced      : $running\n";
+  print "Last date/time that has finished      : $completed\n";
+  print "Last date/time available for download : $delivery\n";
+  print "Notes from GMAO                       : $note\n";
+
+  # Return status  
+  return( $? );
+}
+
+#------------------------------------------------------------------------------
+
+# Call main routine
+main();
+
+# Exit and pass error code back to Unix shell
+exit( $? );
+
+

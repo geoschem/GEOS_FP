@@ -208,6 +208,7 @@ sub checkInputs() {
 
   # Replace tokens in variable names
   $CODE_DIRECTORY = &replaceTokens( $CODE_DIRECTORY );
+  $EXECUTABLE     = &replaceTokens( $EXECUTABLE     );
   $JOB_DIRECTORY  = &replaceTokens( $JOB_DIRECTORY  );
   $JOB_FILE       = &replaceTokens( $JOB_FILE       );
   $LOG_DIRECTORY  = &replaceTokens( $LOG_DIRECTORY  );
@@ -260,6 +261,7 @@ sub replaceTokens($) {
   $var =~ s/{JOB}/$JOB_FILE/g;
   $var =~ s/{LOGERR}/$LOG_ERR/g;
   $var =~ s/{USER}/$USER_ID/g;
+  $var =~ s/{THREAD}//g;
 
   # Return to calling program
   return( $var );
@@ -326,6 +328,10 @@ sub runJob() {
 #EOP
 #------------------------------------------------------------------------------
 #BOC
+#
+# !LOCAL VARIABLES
+#
+  my $fileTypes = "A1";
 
   #-----------------------------------------
   # Define file with date 

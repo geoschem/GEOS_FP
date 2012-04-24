@@ -1,0 +1,202 @@
+#!/usr/bin/perl -w
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: schedGeos57Day
+#
+# !DESCRIPTION: schedGeos57Day is a wrapper for Perl script "schedGeos57".  It
+#  schedules several short data download jobs for an entire day.
+#\\
+#\\
+# !USES:
+#
+  require 5.003;                 # Need this version of Perl or newer
+  use strict;                    # Force strict variable declarations
+  use Dates qw( &addDate );      # Routine from "Dates.pm"
+#
+# !CALLING SEQUENCE:
+#  schedGeos57 YYYYMMDD nDays start
+#
+# !REMARKS:
+#  Uses the Unix "at" command to schedule jobs.  
+#
+# !REVISION HISTORY: 
+#  23 Apr 2012 - R. Yantosca - Initial version, based on schedMerraDay
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: adjustTimeAndDay
+#
+# !DESCRIPTION: Adjusts the time and day string for the "at" command.
+#\\
+#\\
+# !INTERFACE:
+#
+sub adjustTimeAndDay($$) {
+#
+# !INPUT PARAMETERS:
+#
+  my ( $time, $day ) = @_;
+#
+# !REVISION HISTORY: 
+#  20 Sep 2010 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  my $atHour = "";
+  my $atDay  = "$day";
+
+  # Change the day string if we go past 24 hours from the start
+  if ( $time >= 24 ) {
+    if    ( $day =~ "today" ) { $atDay = "tomorrow";  } 
+    elsif ( $day =~ "Sun"   ) { $atDay = "Monday";    }
+    elsif ( $day =~ "Mon"   ) { $atDay = "Tuesday";   }
+    elsif ( $day =~ "Tue"   ) { $atDay = "Wednesday"; }
+    elsif ( $day =~ "Wed"   ) { $atDay = "Thursday";  }
+    elsif ( $day =~ "Thu"   ) { $atDay = "Friday";    }
+    elsif ( $day =~ "Fri"   ) { $atDay = "Saturday";  }
+    elsif ( $day =~ "Sat"   ) { $atDay = "Sunday";    }
+  }				
+  
+  # Pick the right time string for the at command
+  # NOTE: due to system reboots we won't go past 3am the next morning
+  $atHour = "$time"."am $atDay";
+  if    ( $time >  24 ) { $time   -= 24; $atHour  = "$time"."am $atDay"; }
+  elsif ( $time == 24 ) { $time    = 12; $atHour  = "$time"."am $atDay"; }
+  elsif ( $time >  12 ) { $time   -= 12; $atHour  = "$time"."pm $atDay"; }
+  elsif ( $time == 12 ) {                $atHour  = "$time"."pm $atDay"; } 
+
+  # Return adjusted time & date string
+  return( $atHour );
+}
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: main
+#
+# !DESCRIPTION: Driver routine for the schedGeos57 script.
+#\\
+#\\
+# !INTERFACE:
+#
+sub main() {
+#
+# !REVISION HISTORY: 
+#  23 Apr 2012 - R. Yantosca - Initial version, based on schedMerraDay
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+  #----------------------------------------
+  # Initialization
+  #----------------------------------------
+
+  # Variable declarations
+  my $atHour     = "";
+  my $atDay      = "";
+  my $cmd        = "";
+  my $date       = 0;
+  my $day        = "";
+  my $host       = "";
+  my $nDays      = 0;
+  my $quiet      = 0;
+  my $start      = 0;
+  my $time       = 0;
+  my @times      = ();
+
+  # Check the # of arguments
+  if ( scalar( @ARGV ) == 5 ) {
+    $date   = $ARGV[0];
+    $nDays  = $ARGV[1];
+    $start  = $ARGV[2];
+    $day    = $ARGV[3];
+    $quiet  = $ARGV[4];
+  } elsif ( scalar( @ARGV ) == 4 ) {
+    $date   = $ARGV[0];
+    $nDays  = $ARGV[1];
+    $start  = $ARGV[2];
+    $day    = $ARGV[3];
+    $quiet  = 0;
+  } elsif ( scalar( @ARGV ) == 3 ) {
+    $date   = $ARGV[0];
+    $nDays  = $ARGV[1];
+    $start  = $ARGV[2];
+    $day    = "today";
+    $quiet  = 0;
+  } elsif ( scalar( @ARGV ) == 2 ) {
+    $date   = $ARGV[0];
+    $nDays  = $ARGV[1];
+    $start  = 5;
+    $day    = "today";
+    $quiet  = 0;
+  } else {
+    print "Usage: schedGeos57Day YYYYMMDD nDays startHour day QUIET\n"; 
+    exit(1); 
+  }
+
+  #----------------------------------------
+  # Check if we are on the proper machine
+  #----------------------------------------
+
+  # Get the name of the machine we are on
+  $host  = qx( uname -n );
+  chomp( $host );
+
+  # Exit if we are not running on the proper machine
+  if ( !( $host =~ "rhea" ) && !( $host =~ "prometheus" ) ) {
+    print "schedGeos57 can only be run on Rhea or Prometheus!\n";
+    exit(1);
+  }
+
+  #----------------------------------------
+  # Schedule the "at" jobs to run 
+  #----------------------------------------
+
+  # Array of hours until 3am tomorrow
+  @times = ( $start .. 27 );
+
+  # Loop over hours
+  foreach $time ( @times ) {
+
+    # Get the time/day to start the at command
+    $atHour = &adjustTimeAndDay( $time, $day );
+
+    # Append at command to the $cmd variable
+    $cmd .= qq(./schedGeos57 $date $nDays '$atHour')."\n";
+
+    # Increment date for next job
+    $date = &addDate( $date, $nDays );
+  }
+
+  # Print the command
+  print "$cmd\n";
+
+  # Issue the command (if QUIET is nonzero)
+#  if ( $quiet != 0 ) { qx( $cmd ); }
+
+  # Exit normally
+  return( $? );
+}
+
+#------------------------------------------------------------------------------
+
+# Call main program
+&main();
+
+# Exit and pass error code back to Unix shell
+exit( $? );
+
+#EOC
+
