@@ -12,27 +12,41 @@
 #\\
 #\\
 # !REMARKS:
-# To build the programs, call "make" with the following syntax:
+#  To build the programs, call "make" with the following syntax:
 #
-#   make TARGET [ OPTIONAL-FLAGS ]
+#    make TARGET [ OPTIONAL-FLAGS ]
 #
-# To display a complete list of options, type "make help".
+#  To display a complete list of options, type "make help".
 #
-# The following variables are exported to the main-level Makefile:
+#  The following variables are accepted either as command-line options,
+#  or may be defined in your ~/.cshrc or ~/.bashrc file:
+#                                                                             .
+#  Variable     Description
+#  ----------   -----------
+#  BIN_NETCDF   Specifies the path for netCDF etc. executables
+#  INC_NETCDF   Specifies the path for netCDF etc. include files & modules
+#  LIB_NETCDF   Specifies the path for netCDF etc. libraries
+#                                                                             .
+#  The following variables are exported to the main-level Makefile:
 #
-# Variable   Description
-# --------   -----------
-# F90        Contains the Fortran compilation commands
-# FREEFORM   Contains the command to force F90 "free format" compilation
-# LD         Contains the command to link to libraries & make executable
-# LINK_NC    Specifies the command to link to the HDF libraries on this system
+#  Variable   Description
+#  --------   -----------
+#  F90        Contains the Fortran compilation commands
+#  FREEFORM   Contains the command to force F90 "free format" compilation
+#  LD         Contains the command to link to libraries & make executable
+#  LINK_NC    Specifies the command to link to the HDF libraries on this system
 #
-# FFLAGS, DIR_HDF, LINK_NC are local variables that are not returned 
-# to the "outside world".
+#  FFLAGS, DIR_HDF, LINK_NC are local variables that are not returned 
+#  to the "outside world".
 #
 # !REVISION HISTORY: 
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS-5
 #  15 Feb 2012 - R. Yantosca - Now compile IFORT w/ -mcmodel=medium -i-dynamic
+#  11 May 2012 - R. Yantosca - Now attempt to use nf-config, nc-config to
+#                              obtain the library linking sequence.  This will
+#                              make the Makefile much more portable.
+#  11 May 2012 - R. Yantosca - Now use INC_NETCDF, BIN_NETCDF, LIB_NETCDF
+#                              env variables to specify directory paths 
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -46,19 +60,26 @@ ifndef COMPILER
 COMPILER := ifort
 endif
 
-###############################################################################
-# Include directory for NETCDF library
-# Modify this accordingly for your system!
-INC_NC  := -I$(BL_INC_NETCDF) -I$(BL_INC_HDF5)
-###############################################################################
-# Library link commands for NETCDF library
-# Modify this accordingly for your system!
-LINK_NC := \
--L$(BL_LIB_NETCDF) -lnetcdf \
--L$(BL_LIB_HDF5) -lhdf5_hl \
--L$(BL_LIB_HDF5) -lhdf5 \
--L$(BL_LIB_ZLIB) -lz
-###############################################################################
+# Library include path
+INC_NC    := -I$(INC_NETCDF)
+
+# Library link path: first try to get the list of proper linking flags
+# for this build of netCDF with nf-config and nc-config. 
+LINK_NC   := $(shell $(BIN_NETCDF)/nf-config --flibs)
+LINK_NC   += $(shell $(BIN_NETCDF)/nc-config --libs)
+LINK_NC   := $(filter -l%,$(LINK_NC))
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#%%%% NOTE TO GEOS-5.7.x USERS: If you do not have netCDF-4.2 installed,
+#%%%% Then you can add/modify the linking sequence here.  (This sequence
+#%%%% is a guess, but is probably good enough for other netCDF builds.)
+ifeq ($(LINK_NC),) 
+LINK_NC   := -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lm -lz
+endif
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Prepend the library directory path to the linking sequence
+LINK_NC   := -L$(LIB_NETCDF) $(LINK_NC)
 
 #==============================================================================
 # MPIF90 compilation options 

@@ -547,6 +547,7 @@ CONTAINS
 !                              the module Geos57InputsModule.F90
 !  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
 !  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
+!  21 Jun 2012 - R. Yantosca - Bug fix: remove 2nd instance of doNestCh
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -591,7 +592,7 @@ CONTAINS
     ENDIF
 
     ! Nested China grid
-    IF ( doNestCh ) THEN
+    IF ( doNestNa ) THEN
        CALL NcGet_DimLen( fOutNestNa, 'lon',  XNestNa )
        CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa ) 
        CALL NcGet_DimLen( fOutNestNa, 'time', TNestNa )

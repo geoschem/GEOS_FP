@@ -29,6 +29,7 @@
 #  13 Jan 2012 - R. Yantosca - Now point file paths on /as/data/geos-rw/
 #  20 Jan 2012 - R. Yantosca - Now specify temporary & data directories
 #  16 Feb 2012 - R. Yantosca - Fix SEAC4RS grid offset for 20-50N (not 40N)
+#  20 Jun 2012 - R. Yantosca - Updated for new SEAC4RS grid
 #
 
 ==> Turn on debug print output?
@@ -89,7 +90,8 @@ T
 GEOS572.YYYYMMDD.%%%%%%.025x03125.SEA4CRS.nc
 /as/scratch/bmy/
 /as/data/geos-rw/GEOS_0.25x0.3125_SEA4CRS.d/GEOS_5.7/YYYY/MM/
-  769  281 1025  561
+  817  321  993  481    
+#  769  281 1025  561   # NOTE: Old SEAC4RS grid
 
 ==> Nested NA output
 F
@@ -104,13 +106,13 @@ F
 none
 
 ==> 2 x 2.5 output
-T
+F
 GEOS572.YYYYMMDD.%%%%%%.2x25.nc
 /as/scratch/bmy/
 /as/data/geos-rw/GEOS_2x2.5.d/GEOS_5.7/YYYY/MM/
 
 ==> 4 x 5 output 
-T
+F
 GEOS572.YYYYMMDD.%%%%%%.4x5.nc
 /as/scratch/bmy/
 /as/data/geos-rw/GEOS_4x5.d/GEOS_5.7/YYYY/MM/
