@@ -209,6 +209,7 @@ MODULE Geos57InputsModule
 !                              tavg3_3d_Mst_Ne collections into multiple
 !                              netCDF output files.
 !  15 Feb 2012 - R. Yantosca - Read information about nested NA grid
+!  16 May 2013 - R. Yantosca - Bug fix: set doNative=T if doNestNa=T
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -367,7 +368,7 @@ MODULE Geos57InputsModule
     CLOSE( IU_TXT )
 
     ! Define a convenience switch for the native grid
-    doNative = ( doNestCh )
+    doNative = ( doNestCh .or. doNestNa )
 
     ! Mapping weights: native grid (use as placeholder for routines below)
     IF ( doNative ) THEN
