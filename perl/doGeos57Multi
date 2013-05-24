@@ -16,8 +16,7 @@
 # !USES:
 #
   require 5.003;        # need this version of Perl or newer
-  use strict 'refs';    # Do not allow symbolic references
-  use strict 'subs';    # Treat all barewords as syntax errors 
+  use strict;           # Do not allow symbolic references
 #
 # !PUBLIC MEMBER FUNCTIONS:
 #
@@ -34,22 +33,22 @@
   #============================================================
   # Define global variables (seen in all subroutines below)
   #============================================================
-  $CODE_DIRECTORY    = "UNDEFINED";
-  $DATE_FILE         = "UNDEFINED";
-  $DATE_STRING       = "UNDEFINED";
-  $DAY_STRING        = "UNDEFINED";
-  $EXECUTABLE        = "UNDEFINED";
-  $HOME_DIRECTORY    = "UNDEFINED";
-  $JOB_DIRECTORY     = "UNDEFINED";
-  $JOB_FILE          = "UNDEFINED";
-  $LOG_DIRECTORY     = "UNDEFINED";
-  $LOG_ERR           = "UNDEFINED";
-  $LOG_FILE          = "UNDEFINED";
-  $MONTH_STRING      = "UNDEFINED";
-  $SUBMIT            = "UNDEFINED";
-  $TEMP_DIRECTORY    = "UNDEFINED";
-  $USER_ID           = "UNDEFINED";
-  $YEAR_STRING       = "UNDEFINED";
+  our $CODE_DIRECTORY    = "UNDEFINED";
+  our $DATE_FILE         = "UNDEFINED";
+  our $DATE_STRING       = "UNDEFINED";
+  our $DAY_STRING        = "UNDEFINED";
+  our $EXECUTABLE        = "UNDEFINED";
+  our $HOME_DIRECTORY    = "UNDEFINED";
+  our $JOB_DIRECTORY     = "UNDEFINED";
+  our $JOB_FILE          = "UNDEFINED";
+  our $LOG_DIRECTORY     = "UNDEFINED";
+  our $LOG_ERR           = "UNDEFINED";
+  our $LOG_FILE          = "UNDEFINED";
+  our $MONTH_STRING      = "UNDEFINED";
+  our $SUBMIT            = "UNDEFINED";
+  our $TEMP_DIRECTORY    = "UNDEFINED";
+  our $USER_ID           = "UNDEFINED";
+  our $YEAR_STRING       = "UNDEFINED";
 #
 # !CALLING SEQUENCE:
 # doGeos57 YYYYMMDD

@@ -13,9 +13,8 @@
 #\\
 # !USES:
 #
-  require 5.003;        # need this version of Perl or newer
-  use strict 'refs';    # Do not allow symbolic references
-  use strict 'subs';    # Treat all barewords as syntax errors 
+  require 5.003;                # need this version of Perl or newer
+  use strict;                   # IMPLICIT NONE syntax
 #
 # !PUBLIC MEMBER FUNCTIONS:
 #
@@ -34,26 +33,30 @@
   #============================================================
 				
   # General variables
-  $DAY_STRING        = "UNDEFINED";
-  $DEFAULTS_FOR_EXE  = "UNDEFINED";
-  $HOME_DIRECTORY    = "UNDEFINED";
-  $MONTH_STRING      = "UNDEFINED";
-  $USER_ID           = "UNDEFINED";
-  $YEAR_STRING       = "UNDEFINED";
-			       
+  our $DAY_STRING        = "UNDEFINED";
+  our $DEFAULTS_FOR_EXE  = "UNDEFINED";
+  our $HOME_DIRECTORY    = "UNDEFINED";
+  our $MONTH_STRING      = "UNDEFINED";
+  our $USER_ID           = "UNDEFINED";
+  our $YEAR_STRING       = "UNDEFINED";
+
   # Data file names and directories
-  $DATA_FILE_NEST_CH = "UNDEFINED";
-  $TEMP_DIR_NEST_CH  = "UNDEFINED";
-  $DATA_DIR_NEST_CH  = "UNDEFINED";
-  $DATA_FILE_NEST_NA = "UNDEFINED";
-  $TEMP_DIR_NEST_NA  = "UNDEFINED";
-  $DATA_DIR_NEST_NA  = "UNDEFINED";
-  $DATA_FILE_2x25    = "UNDEFINED";
-  $TEMP_DIR_2x25     = "UNDEFINED";
-  $DATA_DIR_2x25     = "UNDEFINED";
-  $DATA_FILE_4x5     = "UNDEFINED";
-  $TEMP_DIR_4x5      = "UNDEFINED";
-  $DATA_DIR_4x5      = "UNDEFINED";
+  our $DO_NEST_CH        = "UNDEFINED";
+  our $DATA_FILE_NEST_CH = "UNDEFINED";
+  our $TEMP_DIR_NEST_CH  = "UNDEFINED";
+  our $DATA_DIR_NEST_CH  = "UNDEFINED";
+  our $DO_NEST_NA        = "UNDEFINED";
+  our $DATA_FILE_NEST_NA = "UNDEFINED";
+  our $TEMP_DIR_NEST_NA  = "UNDEFINED";
+  our $DATA_DIR_NEST_NA  = "UNDEFINED";
+  our $DO_2x25           = "UNDEFINED";
+  our $DATA_FILE_2x25    = "UNDEFINED";
+  our $TEMP_DIR_2x25     = "UNDEFINED";
+  our $DATA_DIR_2x25     = "UNDEFINED";
+  our $DO_4x5            = "UNDEFINED";
+  our $DATA_FILE_4x5     = "UNDEFINED";
+  our $TEMP_DIR_4x5      = "UNDEFINED";
+  our $DATA_DIR_4x5      = "UNDEFINED";
 #
 # !CALLING SEQUENCE:
 # moveGeos57 YYYYMMDD
@@ -61,6 +64,8 @@
 # !REVISION HISTORY: 
 #  23 Jan 2012 - R. Yantosca - Initial version
 #  16 Feb 2012 - R. Yantosca - Updated for NA nested grid
+#  24 May 2013 - R. Yantosca - Now read logicals from Geos57Driver.input that
+#                              can be used to shut off file moves
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -152,6 +157,7 @@ sub getDirectories($) {
 # !REVISION HISTORY:
 #  23 Jan 2012 - R. Yantosca - Initial version
 #  16 Feb 2012 - R. Yantosca - Updated for NA nested grid
+#  24 May 2013 - R. Yantosca - Now read logicals from Geos57Driver.input
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -160,7 +166,6 @@ sub getDirectories($) {
 #
   my $line     = "";   
   my @file     = "";
-  my $skipLine = "";
 
   #--------------------------------------
   # Read variable settings from the file
@@ -175,13 +180,13 @@ sub getDirectories($) {
   for ( my $i = 0; $i < scalar( @file ); $i++ ) {
 
     if ( $file[$i] =~ "==> Nested China output" ) {
-      $skipLine          = $file[++$i];
+      $DO_NEST_CH        = $file[++$i];
       $DATA_FILE_NEST_CH = $file[++$i];
       $TEMP_DIR_NEST_CH  = $file[++$i];
       $DATA_DIR_NEST_CH  = $file[++$i];
 
     } elsif ( $file[$i] =~ "==> Nested NA output" ) {
-      $skipLine          = $file[++$i];
+      $DO_NEST_NA        = $file[++$i];
       $DATA_FILE_NEST_NA = $file[++$i];
       $TEMP_DIR_NEST_NA  = $file[++$i];
       $DATA_DIR_NEST_NA  = $file[++$i];
@@ -196,13 +201,13 @@ sub getDirectories($) {
 ###############################################################################
 
     } elsif ( $file[$i] =~ "==> 2 x 2.5 output" ) {
-      $skipLine          = $file[++$i];
+      $DO_2x25           = $file[++$i];
       $DATA_FILE_2x25    = $file[++$i];
       $TEMP_DIR_2x25     = $file[++$i];
       $DATA_DIR_2x25     = $file[++$i];
 
     } elsif ( $file[$i] =~ "==> 4 x 5 output" ) {
-      $skipLine          = $file[++$i];
+      $DO_4x5            = $file[++$i];
       $DATA_FILE_4x5     = $file[++$i];
       $TEMP_DIR_4x5      = $file[++$i];
       $DATA_DIR_4x5      = $file[++$i];
@@ -346,6 +351,7 @@ sub moveFiles(@) {
 # !REVISION HISTORY:
 #  23 Jan 2012 - R. Yantosca - Initial version
 #  16 Feb 2012 - R. Yantosca - Updated for Nested NA grid
+#  24 May 2013 - R. Yantosca - Now block off move statements with logicals
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -367,84 +373,91 @@ sub moveFiles(@) {
     #-------------------------------
     # SEA4CRS nested China grid 
     #-------------------------------
+    if ( $DO_NEST_CH =~ "T" ) {
 
-    # Temporary file mask
-    $mask   = "$TEMP_DIR_NEST_CH$DATA_FILE_NEST_CH";
-    $mask   = &replaceTokens( $mask, $fileType );
+      # Temporary file mask
+      $mask   = "$TEMP_DIR_NEST_CH$DATA_FILE_NEST_CH";
+      $mask   = &replaceTokens( $mask, $fileType );
   
-    # Data directory path
-    $dir    = "$DATA_DIR_NEST_CH";
-    $dir    = &replaceTokens( $dir, $fileType );
-    &checkDir( $dir );
+      # Data directory path
+      $dir    = "$DATA_DIR_NEST_CH";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );
 
-    # Move command (list the directory first to force an automount)
-    $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+      # Move command (list the directory first to force an automount)
+      $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
     
-    # Move the files
-    print "$cmd\n";
-    $result = qx( $cmd );
+      # Move the files
+      print "$cmd\n";
+      $result = qx( $cmd );
+    } 
 
 
     #-------------------------------
     # Nested N. America grid
     #-------------------------------
+    if ( $DO_NEST_NA =~ "T" ) {
 
-    # Temporary file mask
-    $mask   = "$TEMP_DIR_NEST_NA$DATA_FILE_NEST_NA";
-    $mask   = &replaceTokens( $mask, $fileType );
+      # Temporary file mask
+      $mask   = "$TEMP_DIR_NEST_NA$DATA_FILE_NEST_NA";
+      $mask   = &replaceTokens( $mask, $fileType );
   
-    # Data directory path
-    $dir    = "$DATA_DIR_NEST_NA";
-    $dir    = &replaceTokens( $dir, $fileType );
-    &checkDir( $dir );
+      # Data directory path
+      $dir    = "$DATA_DIR_NEST_NA";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );
 
-    # Move command (list the directory first to force an automount)
-    $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+      # Move command (list the directory first to force an automount)
+      $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
     
-    # Move the files
-    print "$cmd\n";
-    $result = qx( $cmd );
+      # Move the files
+      print "$cmd\n";
+      $result = qx( $cmd );
+    }				
 
     #-------------------------------
     # 2 x 2.5 global grid
     #-------------------------------
+    if ( $DO_2x25 =~ "T" ) {
 
-    # File path to temporary directory
-    $mask   = "$TEMP_DIR_2x25$DATA_FILE_2x25";
-    $mask   = &replaceTokens( $mask, $fileType );
+      # File path to temporary directory
+      $mask   = "$TEMP_DIR_2x25$DATA_FILE_2x25";
+      $mask   = &replaceTokens( $mask, $fileType );
     
-    # File path to data directory
-    $dir    = "$DATA_DIR_2x25";
-    $dir    = &replaceTokens( $dir, $fileType );
-    &checkDir( $dir );    
+      # File path to data directory
+      $dir    = "$DATA_DIR_2x25";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );    
 
-    # Move command (list the directory first to force an automount)
-    $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+      # Move command (list the directory first to force an automount)
+      $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
     
-    # Move the files
-    print "$cmd\n";
-    $result = qx( $cmd );
-    
+      # Move the files
+      print "$cmd\n";
+      $result = qx( $cmd );
+    }    
+
     #-------------------------------
     # 4 x 5 global grid
     #-------------------------------
+    if ( $DO_4x5 =~ "T" ) {
+
+      # File path to temporary directory
+      $mask   = "$TEMP_DIR_4x5$DATA_FILE_4x5";
+      $mask   = &replaceTokens( $mask, $fileType );
     
-    # File path to temporary directory
-    $mask   = "$TEMP_DIR_4x5$DATA_FILE_4x5";
-    $mask   = &replaceTokens( $mask, $fileType );
-    
-    # File path to data directory
-    $dir    = "$DATA_DIR_4x5";
-    $dir    = &replaceTokens( $dir, $fileType );
-    &checkDir( $dir );    
+      # File path to data directory
+      $dir    = "$DATA_DIR_4x5";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );    
 
-    # Move command (list the directory first to force an automount)
-    $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+      # Move command (list the directory first to force an automount)
+      $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
 
-    # Move the files
-    print "$cmd\n";
-    $result = qx( $cmd );
-
+      # Move the files
+      print "$cmd\n";
+      $result = qx( $cmd );
+    }
   }
 
   # Return normally
