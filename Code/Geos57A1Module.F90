@@ -851,6 +851,33 @@ MODULE Geos57A1Module
        CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
     ENDIF
 
+    ! saj
+    ! T10M 
+    IF ( StrPos( 'T10M', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
+       var3  = (/ idLon, idLat, idTime /)
+       vId   = vId + 1
+       lName = 'Temperature at 10 m above the displacement height'
+       units = 'K'
+       gamap = 'GMAO-2D'
+       CALL NcDef_Variable      ( fOut, 'T10M', NF_FLOAT, 3, var3, vId       )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+    ENDIF
+
+   ! Q850
+   IF ( StrPos( 'Q850', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
+       var3  = (/ idLon, idLat, idTime /)
+       vId   = vId + 1
+       lName = 'Specific humidity at 850 hPa'
+       units = 'kg kg-1'
+       gamap = 'GMAO-2D'
+       CALL NcDef_Variable      ( fOut, 'Q850', NF_FLOAT, 3, var3, vId       )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+    ENDIF
+
     !=========================================================================
     ! %%% END OF NETCDF DEFINITION SECTION %%%
     !=========================================================================
@@ -958,7 +985,7 @@ MODULE Geos57A1Module
 120 FORMAT( '%%% # of land/water/ice flags fields  : ', i5 )
 130 FORMAT( '%%% TOTAL # OF FIELDS TO BE REGRIDDED : ', i5 )
 
-    !=======================================================================
+    !=======================================================
     ! Open files for output; define variables, attribute, index arrays
     !=======================================================================
 
