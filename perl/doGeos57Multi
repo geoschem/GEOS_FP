@@ -45,7 +45,9 @@
   our $LOG_DIRECTORY     = "UNDEFINED";
   our $LOG_ERR           = "UNDEFINED";
   our $LOG_FILE          = "UNDEFINED";
+  our $MET_DIRECTORY     = "UNDEFINED";
   our $MONTH_STRING      = "UNDEFINED";
+  our $N_FILES           = 144;
   our $SUBMIT            = "UNDEFINED";
   our $TEMP_DIRECTORY    = "UNDEFINED";
   our $USER_ID           = "UNDEFINED";
@@ -64,6 +66,7 @@
 #  16 Feb 2012 - R. Yantosca - Removed routine getDirectories and related
 #                              variables; these are now in moveGeos57
 #  06 Aug 2013 - R. Yantosca - Now email users when the met fields are ready
+#  07 Aug 2013 - R. Yantosca - Add some basic error checking before starting
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -91,6 +94,7 @@ sub getDefaults($$) {
 #
 # !REVISION HISTORY:
 #  20 Jan 2012 - R. Yantosca - Initial version
+#  07 Aug 2013 - R. Yantosca - Now also get value for $MET_DIRECTORY
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -133,6 +137,8 @@ sub getDefaults($$) {
     } elsif ( $file[$i] =~ "==> Emails for Notification" ) {
       $EMAIL_STRING = $file[++$i];
 
+    } elsif ( $file[$i] =~ "==> Raw Met Data Directory" ) {
+      $MET_DIRECTORY = $file[++$i];
     }
   }
 
@@ -512,14 +518,28 @@ sub main() {
 #
 # !REVISION HISTORY:
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/doGeos5
+#  07 Aug 2013 - R. Yantosca - Add some basic error checking to prevent the
+#                              met field job from starting if too few files
 #EOP
 #------------------------------------------------------------------------------
+#
+# !LOCAL VARIABLES:
+#
+  my $status  = 0;
+  my $listCmd = "";
 
   # Error check arguments
   if ( scalar( @ARGV ) == 0 ) { 
     print "Usage: doGeos57Multi YYYYMMDD\n"; 
     exit(1);
   }
+
+  # Quick & dirty test if all the files are present in the met dir
+  # Not an exhaustive check but this should be good enough to prevent the
+  # met field code from starting if there aren't enough files. (bmy, 8/7/13)
+  $listCmd = "ls -1 $MET_DIR/GEOS.fp*";
+  $status  = qx( $listCmd );
+  if ( !( $status == $N_FILES )  ) { print "Not enough files\n"; exit(1); }
 
   # Get default values
   &getDefaults( "doGeos57.input", $ARGV[0] );

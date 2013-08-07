@@ -14,40 +14,43 @@
 #\\
 # !USES:
 #
-  require 5.003;                  # Need this version of Perl or newer
-  use strict;                     # Force strict syntax rules
-  use Dates qw( &addDate 
-                &getLocalTime 
-                &julDay  
-                &ymdExtract   );  # Date & time functions
+require 5.003;                  # Need this version of Perl or newer
+use strict;                     # Force strict syntax rules
+use Dates qw( &addDate 
+              &getLocalTime 
+              &julDay  
+              &ymdExtract   );  # Date & time functions
 #
 # !PUBLIC DATA MEMBERS: 
 #
 
-  # Met field directory
-  our $MET_DIR     = "";
+# Met field directory
+our $MET_DIR     = "";
 
-  # GEOS-FP file collection names
-  our @COLLECTIONS = ( "tavg1_2d_flx_Nx", "tavg1_2d_lnd_Nx", 
-                       "tavg1_2d_rad_Nx", "tavg1_2d_slv_Nx", 
-                       "inst3_3d_asm_Nv", "tavg3_3d_asm_Nv",
-                       "tavg3_3d_cld_Nv", "tavg3_3d_mst_Ne", 
-                       "tavg3_3d_mst_Nv", "tavg3_3d_rad_Nv"  );
+# GEOS-FP file collection names
+our @COLLECTIONS = ( "tavg1_2d_flx_Nx", "tavg1_2d_lnd_Nx", 
+		     "tavg1_2d_rad_Nx", "tavg1_2d_slv_Nx", 
+		     "inst3_3d_asm_Nv", "tavg3_3d_asm_Nv",
+		     "tavg3_3d_cld_Nv", "tavg3_3d_mst_Ne", 
+		     "tavg3_3d_mst_Nv", "tavg3_3d_rad_Nv"  );
 
-  # Today's date
-  our $DATE        = "";
-  our $YEAR        = "";
-  our $MONTH       = "";
-  our $DAY         = "";
+# Number of expected files
+our $N_FILES     = 144;
 
-  # Number of seconds to sleep between tries
-  our $SLEEP_SEC   = 0;
+# Today's date
+our $DATE        = "";
+our $YEAR        = "";
+our $MONTH       = "";
+our $DAY         = "";
+			       
+# Number of seconds to sleep between tries
+our $SLEEP_SEC   = 0;
 
-  # Print data commands without downloading data
-  our $PRINTONLY   = 0;
+# Print data commands without downloading data
+our $PRINTONLY   = 0;
 
-  # List of files on the remote server
-  our $LISTING     = "";
+# List of files on the remote server
+our $LISTING     = "";
 #
 # !PUBLIC MEMBER FUNCTIONS:
 #  &main()       
@@ -65,6 +68,7 @@
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/getGeos5
 #  05 Aug 2013 - R. Yantosca - Modified for GEOS-FP: Renamed to getGeosFp
 #  05 Aug 2013 - R. Yantosca - Added &waitForData routine
+#  07 Aug 2013 - R. Yantosca - Now check if all files are downloaded
 #------------------------------------------------------------------------------
 #EOP
 #------------------------------------------------------------------------------
@@ -142,7 +146,7 @@ sub getDefaults($) {
 #------------------------------------------------------------------------------
 #BOP
 #
-# !IROUTINE: waitForData
+# !IROUTINE: getFileList
 #
 # !DESCRIPTION: Routine waitForData keeps waiting until all of the files
 #  are present on the remote server.
@@ -153,11 +157,12 @@ sub getDefaults($) {
 sub getFileList() {
 #
 # !CALLING SEQUENCE:
-#  &waitForData( YYYYMMDD )   # Waits until all files are present for YYYYMMDD
+#  &getFileList()   # Returns the list of files to be downloaded
 #
 # !REVISION HISTORY:
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/checkGeos5
-#   5 Aug 2013 - R. Yantosca - Modified for GEOS-FP met data
+#  05 Aug 2013 - R. Yantosca - Modified for GEOS-FP met data
+#  07 Aug 2013 - R. Yantosca - Now reload file listing if it can't be found
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -184,14 +189,11 @@ sub getFileList() {
   # Wget command
   $listCmd = "cd $MET_DIR; wget --quiet --no-remove-listing --user=gmao_ops --password= --cut-dirs=5 --retr-symlinks ftp://ftp.nccs.nasa.gov/fp/das/Y$YEAR/M$MONTH/D$DAY/; mv .listing listing; rm index.html*";
 
-  # Get the file listing on the GMAO FTP site
+  # Download a fresh copy of the file listing
   $listOut = qx( $listCmd );
 
   # Make sure we can find the file list from the GMAO FTP site
-  if ( !( -f "$LISTING") ) { 
-    print "Cannot find $LISTING file!\n";
-    exit(1);
-  }
+  while ( !( -f $LISTING ) ) { $listOut = qx( $listCmd ); }
 
   #--------------------------------------------------------------------------
   # Get a listing of files on the remote server via wget
@@ -242,6 +244,7 @@ sub checkData($) {
 #
 # !REVISION HISTORY:
 #  06 Aug 2013 - R. Yantosca - Initial version
+#  07 Aug 2013 - R. Yantosca - Now reload file listing if it can't be found
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -249,20 +252,27 @@ sub checkData($) {
 # !LOCAL VARIABLES:
 #
   # Scalars
+  my $actualSize  = "";
   my $filePath    = "";
   my $grepCmd     = "";
   my $grepOut     = "";
-  my $actualSize  = "";
+  my $listCmd     = "";
+  my $listOut     = "";
   my $targetSize  = "";
 
   # Arrays
   my @substr      = ();
       
-  # Error trap
-  if ( !( -f "$LISTING" ) ) { 
-    print "Cannot find $LISTING file!\n";
-    exit(1);
-  }
+  #-------------------------------
+  # checkData begins here!
+  #-------------------------------
+
+  # Wget command
+  $listCmd = "cd $MET_DIR; wget --quiet --no-remove-listing --user=gmao_ops --password= --cut-dirs=5 --retr-symlinks ftp://ftp.nccs.nasa.gov/fp/das/Y$YEAR/M$MONTH/D$DAY/; mv .listing listing; rm index.html*";
+
+  # The file listing should be present, but if it's not, then
+  # get a fresh copy again from the GMAO ftp site
+  while ( !( -f $LISTING ) ) { $listOut = qx( $listCmd ); }
 
   # Complete path to the file in the download directory
   $filePath    = "$MET_DIR/$file";
@@ -373,8 +383,14 @@ sub getData(@) {
   $msg = &getLocalTime();
   print     "\nOverall status code: $status\n\nExiting at $msg\n";
 
-  # Return status (i.e. # of processes that failed)
-  return( $? );
+  # Doublecheck that all files are present again 
+  $status = 0;
+  foreach $file ( @fileList ) { $status += &checkData( $file ); } 
+  print "Number of files successfully downloaded: $status\n";
+
+  # Return status
+  if ( $status == $N_FILES ) { return(  0 ); }
+  else                       { return( -1 ); }
 }
 #EOC
 #------------------------------------------------------------------------------
@@ -406,7 +422,8 @@ sub main() {
   # Scalars
   my $errMsg    = "Usage: getGeosFp YYYYMMDD [ {0|1} ] ]\n";
   my $printOnly = 0;
-  
+  my $status    = 0;
+
   # Arrays
   my @fileList = ();
 
@@ -424,10 +441,10 @@ sub main() {
   }
 
   # Download data files
-  &getData( @fileList ); 
+  $status = &getData( @fileList ); 
 
   # Return exit status
-  return( $? );
+  return( $status );
 }
 #EOC
 
