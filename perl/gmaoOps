@@ -140,6 +140,7 @@ sub main() {
 # 
 # !REVISION HISTORY: 
 #  24 Apr 2012 - R. Yantosca - Initial version
+#  28 Jun 2013 - R. Yantosca - Changed "5.7.2DAS to 5.11.0DAS"
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -171,7 +172,7 @@ sub main() {
     $lines[$i] = &stripHtml( $lines[$i] );
 
     # Get info about GEOS-5.7.2
-    if ( $lines[$i] =~ m/5.7.2DAS/ ) {
+    if ( $lines[$i] =~ m/5.11.0DAS/ ) {
       $status    = $statTags{          &stripHtml( $lines[++$i] ) };
       $running   = &formatDateAndTime( &stripHtml( $lines[++$i] ) );
       $completed = &formatDateAndTime( &stripHtml( $lines[++$i] ) );
@@ -181,8 +182,8 @@ sub main() {
   }
  
   # Print output
-  print '====== STATUS OF GEOS-5.7.2 DATA PROCESSING @ GMAO ======'."\n";
-  print "GEOS-5.7.2 production status          : $status\n";
+  print '====== STATUS OF GEOS-FP DATA PROCESSING @ GMAO ======'."\n";
+  print "GEOS-FP production status             : $status\n";
   print "Current date/time being produced      : $running\n";
   print "Last date/time that has finished      : $completed\n";
   print "Last date/time available for download : $delivery\n";

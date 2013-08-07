@@ -5,12 +5,12 @@
 #------------------------------------------------------------------------------
 #BOP
 #
-# !MODULE: schedGeos57
+# !MODULE: schedGeosFp
 #
-# !DESCRIPTION: schedGeos57 is a Perl script which schedules a GEOS-5.7.x data 
-#  download to happen automatically via the "at" command.  It calls the 
-#  getGeos57 script to schedule the data download, and the sleepGeos57 script
-#  to start the data processing after all of the data has arrived.
+# !DESCRIPTION: schedGeosFp is a Perl script which schedules a GEOS-FP data
+#  download to happen automatically via the "at" command.  It calls the
+#  getGeosFp script to schedule the data download, and the doGeos57Multi
+#  script to start the data processing after all of the data has arrived.
 #\\
 #\\
 # !USES:
@@ -20,13 +20,13 @@
   use Dates qw( &addDate );    # Routines from "Dates.pm"
 #
 # !CALLING SEQUENCE:
-#  schedGeos5 YYYYMMDD nDays [now]
+#  schedGeosFp YYYYMMDD nDays [now]
 #
 # !REMARKS:
 #  Uses the Unix "at" command to schedule jobs.  
 #
 # !REVISION HISTORY: 
-#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/schedGeos5
+#  07 Aug 2013 - R. Yantosca - Initial version, based on schedGeos57
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -35,7 +35,8 @@
 #
 # !IROUTINE: main
 #
-# !DESCRIPTION: Driver routine for the sleepGeos57 script.
+# !DESCRIPTION: Driver routine for the sleepGeosFp script.  Gets arguments
+#  from the command line and schedules the data procesing job.
 #\\
 #\\
 # !INTERFACE:
@@ -43,7 +44,7 @@
 sub main() {
 #
 # !REVISION HISTORY: 
-#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/schedGeos5
+#  07 Aug 2013 - R. Yantosca - Initial version, based on schedGeos57
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -54,30 +55,9 @@ sub main() {
 
   # Error check # of arguments
   if ( scalar( @ARGV ) != 3 ) {  
-    print "Usage: schedGeos57 YYYYMMDD nDays when\n"; 
+    print "Usage: schedGeosFp YYYYMMDD nDays when\n"; 
     exit(1); 
   }
-
-###############################################################################
-# NOTE: THIS BLOCK OF CODE IS ONLY NECESSARY ON HARVARD MACHINES.
-# USERS OUTSIDE HARVARD CAN COMMENT OUT THIS BLOCK. (bmy, 10/24/11)
-#
-#  # Get the name of the machine we are on
-#  my $host  = qx( uname -n );
-#  chomp( $host );
-#
-#  # Exit if we are trying to run on Sol
-#  if ( $host =~ 'sol.as.harvard.edu' ) {
-#    print "schedGeos57 cannot be run on sol.as.harvard.edu!\n";
-#    exit(1);
-#  }
-#
-#  # Exit if we are trying to run on Argus
-#  if ( $host =~ 'argus.as.harvard.edu' ) {
-#    print "schedGeos57 cannot be run on argus.as.harvard.edu!\n";
-#    exit(1);
-#  }
-###############################################################################
 
   # Initialize
   my $start = $ARGV[0];
@@ -98,9 +78,12 @@ sub main() {
     if ( $nDays < 0 ) { $date = &addDate( $start, -$i ); }
     else              { $date = &addDate( $start,  $i ); }
 
+    # %%% NOTE: Add a check here to delete files from the download dir
+    # %%% if they have been already successfully processed. 
+
     # Add commands to the string
-    $cmd .= "./getGeos57 $date\n";
-    $cmd .= "./sleepGeos57 $date\n";
+    $cmd .= "./getGeosFp $date\n";
+    $cmd .= "./doGeos57Multi $date\n";
   }
 
   # Add the end of file

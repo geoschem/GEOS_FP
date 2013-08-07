@@ -89,15 +89,15 @@ A3Dyn: OMEGA,U,V
 ==> Nested China output
 F
 GEOS572.YYYYMMDD.%%%%%%.025x03125.CH.nc
-/as/scratch/bmy/
+/as/tmp/all/tmp/bmy/GEOS_FP/
 /as/data/geos-rw/GEOS_0.25x0.3125_SEA4CRS.d/GEOS_FP/YYYY/MM/
   801  421  1025 581   # China grid
 
 ==> Nested NA output
 T
 GEOS572.YYYYMMDD.%%%%%%.025x03125.NA.nc
-/as/scratch/bmy
-/as/data/geos-rw/GEOS_0.25x0.3125_SEA4CRS.d/GEOS_FP/YYYY/MM/
+/as/tmp/all/tmp/bmy/GEOS_FP/
+/mnt/gcgrid-rw/GEOS_0.25x0.3125/GEOS_0.25x0.3125_NA.d/GEOS_FP/YYYY/MM/
   161 400 385 601
 
 ==> Nested EUR output
@@ -105,16 +105,16 @@ F
 none
 
 ==> 2 x 2.5 output
-T
+F
 GEOS572.YYYYMMDD.%%%%%%.2x25.nc
-/as/scratch/bmy/
-/as/data/geos-rw/GEOS_2x2.5.d/GEOS_5.7/YYYY/MM/
+/as/tmp/all/tmp/bmy/GEOS_FP/
+/as/data/geos-rw/GEOS_2x2.5.d/GEOS_FP/YYYY/MM/
 
 ==> 4 x 5 output 
 T
 GEOS572.YYYYMMDD.%%%%%%.4x5.nc
-/as/scratch/bmy/
-/as/data/geos-rw/GEOS_4x5.d/GEOS_5.7/YYYY/MM/
+/as/tmp/all/tmp/bmy/GEOS_FP/
+/mnt/gcgrid-rw/GEOS_4x5/GEOS_FP/YYYY/MM/
 
 ==> Mapping Weight Files
 weights_025x03125_to_2x25.txt

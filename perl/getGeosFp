@@ -1,0 +1,440 @@
+#!/usr/bin/perl -w
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: getGeosFp
+#
+# !DESCRIPTION: Perl script getGeosFP downloads 1 day of GEOS-FP raw met
+#  data (0.25 x 0.3125 degree horizontal resolution).  We download the data
+#  directly from the GMAO FTP site with the Unix Wget command.
+#\\
+#\\
+# !USES:
+#
+  require 5.003;                  # Need this version of Perl or newer
+  use strict;                     # Force strict syntax rules
+  use Dates qw( &addDate 
+                &getLocalTime 
+                &julDay  
+                &ymdExtract   );  # Date & time functions
+#
+# !PUBLIC DATA MEMBERS: 
+#
+
+  # Met field directory
+  our $MET_DIR     = "";
+
+  # GEOS-FP file collection names
+  our @COLLECTIONS = ( "tavg1_2d_flx_Nx", "tavg1_2d_lnd_Nx", 
+                       "tavg1_2d_rad_Nx", "tavg1_2d_slv_Nx", 
+                       "inst3_3d_asm_Nv", "tavg3_3d_asm_Nv",
+                       "tavg3_3d_cld_Nv", "tavg3_3d_mst_Ne", 
+                       "tavg3_3d_mst_Nv", "tavg3_3d_rad_Nv"  );
+
+  # Today's date
+  our $DATE        = "";
+  our $YEAR        = "";
+  our $MONTH       = "";
+  our $DAY         = "";
+
+  # Number of seconds to sleep between tries
+  our $SLEEP_SEC   = 0;
+
+  # Print data commands without downloading data
+  our $PRINTONLY   = 0;
+
+  # List of files on the remote server
+  our $LISTING     = "";
+#
+# !PUBLIC MEMBER FUNCTIONS:
+#  &main()       
+#
+# !PRIVATE MEMBER FUNCTIONS:
+#  &getDefaults($)
+#  &getFileList()
+#  &getData(@)
+#
+# !CALLING SEQUENCE:
+#  getGeos57 20110101             # Gets data for 20110101
+#  getGeos57 20110101 1           # Dryrun: shows wget commands only
+#
+# !REVISION HISTORY: 
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/getGeos5
+#  05 Aug 2013 - R. Yantosca - Modified for GEOS-FP: Renamed to getGeosFp
+#  05 Aug 2013 - R. Yantosca - Added &waitForData routine
+#------------------------------------------------------------------------------
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: getDefaults
+#
+# !DESCRIPTION: Routine getDefaults reads an input file and returns the
+#  name of the directory where GEOS-5 "raw" met data files are found.
+#\\
+#\\
+# !INTERFACE:
+#
+sub getDefaults($) {
+#
+# !INPUT PARAMETERS:
+# 
+  # $fileName : Filename containing default settings to be read
+  my ( $fileName ) = @_;
+#
+# !CALLING SEQUENCE:
+#  &getDefaults( FILENAME );
+#
+# !REVISION HISTORY:
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/checkGeos5
+#  05 Aug 2013 - R. Yantosca - Modified for GEOS-FP met data
+#  06 Aug 2013 - R. Yantosca - Now read sleep time between tries [s]
+#  06 Aug 2013 - R. Yantosca - Now save name of file listing @ GMAO FTP
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  my @file   = "";
+
+  #--------------------------------------
+  # Define global date variables
+  #--------------------------------------
+  $YEAR   = substr( $DATE, 0, 4 );   # YYYY
+  $MONTH  = substr( $DATE, 4, 2 );   # MM
+  $DAY    = substr( $DATE, 6, 2 );   # DD	
+
+  #--------------------------------------
+  # Read variable settings from the file
+  #--------------------------------------
+
+  # Read info from input file
+  open( I, "<$fileName" ) or die "Cannot open $fileName!\n";
+  chomp( @file = <I> );
+  close( I );
+
+  # Parse thru each line until we find the "raw" data directory
+  for ( my $i = 0; $i < scalar( @file ); $i++ ) {
+
+    if ( $file[$i] =~ "==> Raw Met Data Directory" ) {
+      $MET_DIR   = $file[++$i];
+
+    } elsif ( $file[$i] =~ "==> Sleep Time [s]" ) {
+      $SLEEP_SEC = $file[++$i];
+ 
+    }
+  }
+
+  # List of files (and file sizes) on the GMAO FTP server
+  $LISTING = "$MET_DIR/listing";
+
+  # Return 
+  return( $? );
+}
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: waitForData
+#
+# !DESCRIPTION: Routine waitForData keeps waiting until all of the files
+#  are present on the remote server.
+#\\
+#\\
+# !INTERFACE:
+#
+sub getFileList() {
+#
+# !CALLING SEQUENCE:
+#  &waitForData( YYYYMMDD )   # Waits until all files are present for YYYYMMDD
+#
+# !REVISION HISTORY:
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/checkGeos5
+#   5 Aug 2013 - R. Yantosca - Modified for GEOS-FP met data
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  # Scalars
+  my $collection  = "";
+  my $grepCmd     = "";
+  my $line        = "";
+  my $listCmd     = ""; 
+  my $listOut     = "";
+
+  # Arrays
+  my @fileList    = ();
+  my @result      = ();
+  my @substr      = ();
+
+  #--------------------------------------------------------------------------
+  # Get a listing of files on the GMAO FTP server via wget
+  # This will be saved to the .listing file in the $MET_DIR
+  #--------------------------------------------------------------------------
+
+  # Wget command
+  $listCmd = "cd $MET_DIR; wget --quiet --no-remove-listing --user=gmao_ops --password= --cut-dirs=5 --retr-symlinks ftp://ftp.nccs.nasa.gov/fp/das/Y$YEAR/M$MONTH/D$DAY/; mv .listing listing; rm index.html*";
+
+  # Get the file listing on the GMAO FTP site
+  $listOut = qx( $listCmd );
+
+  # Make sure we can find the file list from the GMAO FTP site
+  if ( !( -f "$LISTING") ) { 
+    print "Cannot find $LISTING file!\n";
+    exit(1);
+  }
+
+  #--------------------------------------------------------------------------
+  # Get a listing of files on the remote server via wget
+  # This will be saved to the .listing file in the $MET_DIR
+  #--------------------------------------------------------------------------
+
+  # Loop over all collections
+  foreach $collection ( @COLLECTIONS ) {
+
+    # Look for files of this collection in ".listing"
+    $grepCmd = "grep $collection $LISTING";
+    @result  = qx( $grepCmd );
+
+    # Split the line by spaces.  File name is in the 8th space.
+    # Append to the list fo files that will be returned
+    foreach $line ( @result ) {
+      chomp( $line );
+      @substr = split( ' ', $line );
+      @fileList = ( @fileList, $substr[8] );
+    }
+  }
+
+  # Return list of files
+  return( @fileList );
+}
+#
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: checkData
+#
+# !DESCRIPTION: Routine checkData tests  keeps waiting until all of the files
+#  are present on the remote server.
+#\\
+#\\
+# !INTERFACE:
+#
+sub checkData($) {
+#
+# !INPUT PARAMETERS:
+#
+  my ( $file ) = @_;   # Downloaded file to be checked
+#
+# !CALLING SEQUENCE:
+#  &checkData( $fileName )
+#
+# !REVISION HISTORY:
+#  06 Aug 2013 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  # Scalars
+  my $filePath    = "";
+  my $grepCmd     = "";
+  my $grepOut     = "";
+  my $actualSize  = "";
+  my $targetSize  = "";
+
+  # Arrays
+  my @substr      = ();
+      
+  # Error trap
+  if ( !( -f "$LISTING" ) ) { 
+    print "Cannot find $LISTING file!\n";
+    exit(1);
+  }
+
+  # Complete path to the file in the download directory
+  $filePath    = "$MET_DIR/$file";
+
+  # Exit if we haven't downloaded the file yet
+  # This will prompt the file download to begin
+  if ( !( -f $filePath ) ) { return( -2 ); }
+
+  # Size of the downloaded file
+  $actualSize  = -s "$filePath";
+
+  # Find the target size of the file on the GMAO server 
+  # (which is in the .listing file in the download directory)
+  $grepCmd     = "grep $file $LISTING";
+  $grepOut     = qx( $grepCmd );
+  @substr      = split( ' ', $grepOut );
+  $targetSize  = "$substr[4]";
+
+  # The downloaded file size should match the size on the server
+  # or else return an error code
+  if ( $actualSize eq $targetSize ) { return(  0 );  }
+  else                              { return( -1 );  }
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: getData
+#
+# !DESCRIPTION: Routine getData downloads 1-day of GEOS-FP data via the
+#  Unix wget command.
+#\\
+#\\
+# !INTERFACE:
+#
+sub getData(@) {
+#
+# !INPUT PARAMETERS:
+#
+  # @fileList: List of files to download from GMAO server
+  my ( @fileList ) = @_;
+#
+# !CALLING SEQUENCE:
+#  &getGeos57Data( 20080101 20080108 );   
+#
+# !REVISION HISTORY:
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/getGeos5
+#  25 Oct 2011 - R. Yantosca - Remove variables for previous day; unnecessary
+#  25 Oct 2011 - R. Yantosca - Updated comments
+#  12 Jan 2012 - R. Yantosca - Comment out sections that download the
+#                              tavg3_3d_odt_Nv and tavg3_3d_qdt_Nv files
+#  05 Aug 2013 - R. Yantosca - Modified for GEOS-FP (w/ Sajeev Philip)
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  # Scalars
+  my $file    = "";
+  my $grepCmd = "";
+  my $msg     = "";
+  my $wgetCmd = "";
+  my $wgetOut = "";
+  my $status  = 0;
+
+  #--------------------------------------------------------------------------
+  # Download files
+  #--------------------------------------------------------------------------
+  
+  # Loop over all collections
+  foreach $file ( @fileList ) {
+
+    # Create command for downloading files in each collection
+    $wgetCmd = "cd $MET_DIR; wget --quiet -r -nH --user=gmao_ops --password= --cut-dirs=5 --retr-symlinks ftp://ftp.nccs.nasa.gov/fp/das/Y$YEAR/M$MONTH/D$DAY/$file";
+
+    if ( $PRINTONLY ) {
+      
+      #----------------------------------------------------------------------
+      # If $PRINTONLY == 1, then just print the data download commands
+      # (useful for debugging)
+      #----------------------------------------------------------------------
+
+      # Print command
+      print "   $wgetCmd\n"; 
+
+    } else { 
+
+      #----------------------------------------------------------------------
+      # Otherwise, download the GEOS-FP data
+      #----------------------------------------------------------------------
+
+      # Keep trying to download the file until we
+      # match the target size as listed on the server
+      while( $status = &checkData( $file ) ) {
+         $wgetOut = qx( $wgetCmd );
+      }
+    }
+  }
+
+  #--------------------------------------------------------------------------
+  # Print info & return
+  #--------------------------------------------------------------------------
+
+  # Print the overall status code to stdout & log before exiting
+  $msg = &getLocalTime();
+  print     "\nOverall status code: $status\n\nExiting at $msg\n";
+
+  # Return status (i.e. # of processes that failed)
+  return( $? );
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: main
+#
+# !DESCRIPTION: Main is the driver program for the getGeosFp script.
+#\\
+#\\
+# !INTERFACE:
+#
+sub main() {
+#
+# !CALLING SEQUENCE:
+#  &main( YYYYMMDD [0|1] );
+#
+# !REVISION HISTORY:
+#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/getGeos5
+#  05 Aug 2013 - R. Yantosca - Modified for GEOS-FP data (w/ Sajeev Philip)
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES!
+#
+  # Scalars
+  my $errMsg    = "Usage: getGeosFp YYYYMMDD [ {0|1} ] ]\n";
+  my $printOnly = 0;
+  
+  # Arrays
+  my @fileList = ();
+
+  # Submit data download request.  Pass proper # of arguments.
+  if    ( scalar( @ARGV ) == 2 ) { $DATE = $ARGV[0];  $PRINTONLY = $ARGV[1]; }
+  elsif ( scalar( @ARGV ) == 1 ) { $DATE = $ARGV[0];  $PRINTONLY = 0;        }
+  else                           { print "$errMsg\n"; exit(1);               }
+ 
+  # Get info from the defautls file, also set default date
+  &getDefaults( "doGeos57.input" );
+
+  # We expect 144 files for a normal day's worth of GEOS-FP met data
+  while ( scalar( @fileList = &getFileList() ) != 144 ) { 
+    sleep( $SLEEP_SEC );
+  }
+
+  # Download data files
+  &getData( @fileList ); 
+
+  # Return exit status
+  return( $? );
+}
+#EOC
+
+#------------------------------------------------------------------------------
+
+# Call main driver routine
+main();
+
+# Exit and pass status code to Unix shell
+exit( $? );

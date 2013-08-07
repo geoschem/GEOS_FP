@@ -19,17 +19,23 @@
 # Program Executable     : Name of executable file (should be "Geos5Driver")
 # Submit Statement       : {JOB} will be replaced w/ the actual job script name
 #
+# !REMARKS:
+#  You need to add a \ before the @ sign in email addresses,
+#  otherwise Perl won't know how to deal with it.
+#
 # !REVISION HISTORY: 
 #  24 Oct 2011 - R. Yantosca - Initial version (based on doGeos5.input)
 #  13 Jan 2012 - R. Yantosca - Executable is now named "Geos57Driver.x"
 #  20 Jan 2012 - R. Yantosca - Now add variable for the file containing
 #                              the default settings for the executable
-
+#  06 Aug 2013 - R. Yantosca - Now add list of emails for notification
+#  06 Aug 2013 - R. Yantosca - Now add sleep time between tries [s]
+#
 ==> Login String
 byantosca:NpHh5Qdc
 
 ==> Raw Met Data Directory
-/as/priv/ftp/gmao/gmao/
+/as/priv/ftp/gmao/gmao
 
 ==> Code Directory
 ../bin
@@ -51,6 +57,12 @@ Geos57Driver{THREAD}.x
 
 ==> Submit Statement
 {JOB} &
+
+==> Sleep Time [s]
+300
+
+==> Emails for Notification
+yantosca\@seas.harvard.edu,jennyf\@uow.edu.au,kyu0110\@gmail.com,leizhu\@fas.harvard.edu,shiki.kim\@gmail.com
 
 END OF FILE
 #EOP

@@ -37,6 +37,7 @@
   our $DATE_FILE         = "UNDEFINED";
   our $DATE_STRING       = "UNDEFINED";
   our $DAY_STRING        = "UNDEFINED";
+  our $EMAIL_STRING      = "UNDEFINED";
   our $EXECUTABLE        = "UNDEFINED";
   our $HOME_DIRECTORY    = "UNDEFINED";
   our $JOB_DIRECTORY     = "UNDEFINED";
@@ -51,7 +52,10 @@
   our $YEAR_STRING       = "UNDEFINED";
 #
 # !CALLING SEQUENCE:
-# doGeos57 YYYYMMDD
+#  doGeos57Nulti YYYYMMDD
+#
+# !REMARKS:
+#  Also used for GEOS-FP data.
 #
 # !REVISION HISTORY: 
 #  20 Jan 2012 - R. Yantosca - Initial version
@@ -59,6 +63,7 @@
 #                              simultaneously
 #  16 Feb 2012 - R. Yantosca - Removed routine getDirectories and related
 #                              variables; these are now in moveGeos57
+#  06 Aug 2013 - R. Yantosca - Now email users when the met fields are ready
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -124,6 +129,9 @@ sub getDefaults($$) {
 
     } elsif ( $file[$i] =~ "==> Program Executable" ) {
       $EXECUTABLE = $file[++$i];
+
+    } elsif ( $file[$i] =~ "==> Emails for Notification" ) {
+      $EMAIL_STRING = $file[++$i];
 
     }
   }
@@ -347,17 +355,29 @@ sub makeJobFile($) {
 # !REVISION HISTORY:
 #  20 Jan 2012 - R. Yantosca - Initial version
 #  28 Feb 2012 - R. Yantosca - Now force an automount with an ls command
+#  06 Aug 2013 - R. Yantosca - Now email user when met fields are ready
 #EOP
 #------------------------------------------------------------------------------
 #BOC
 #
 # !LOCAL VARIABLES:
 #
+  # Pick the proper file types
+  my $fileTypes = "";    
+  if    ( $thread == 0 ) { $fileTypes = "A1 I3";                      }
+  elsif ( $thread == 1 ) { $fileTypes = "A3cld A3dyn";                }
+  elsif ( $thread == 2 ) { $fileTypes = "A3mstC A3mstE";              }
+  else                   { print "Invalid thread number!\n"; exit(1); }
+
   # Create shadow variables
+  my $body      = "File types $fileTypes are now created for $DATE_STRING. ";
+     $body     .= "Files shall be visible on /mnt/gcgrid within 15 minutes.";
+  my $email     = $EMAIL_STRING;
   my $exeFile   = $EXECUTABLE;
   my $jobFile   = $JOB_FILE;
   my $logFile   = $LOG_FILE;
-  my $fileTypes = "";
+  my $subject   = "GEOS-FP $fileTypes met fields for $DATE_STRING are ready!";
+  my $mailCmd   = qq( echo "$body" > X | mail -s "$subject" $email < X; rm X );
 
   #-----------------------------------------
   # Create a file with the date of the data
@@ -376,12 +396,6 @@ sub makeJobFile($) {
   $exeFile =~ s/{THREAD}/$thread/g;
   $jobFile =~ s/{THREAD}/$thread/g;
   $logFile =~ s/{THREAD}/$thread/g;
-
-  # Pick the proper file types
-  if    ( $thread == 0 ) { $fileTypes = "A1 I3";                      }
-  elsif ( $thread == 1 ) { $fileTypes = "A3cld A3dyn";                }
-  elsif ( $thread == 2 ) { $fileTypes = "A3mstC A3mstE";              }
-  else                   { print "Invalid thread number!\n"; exit(1); }
 
   # Create HERE document
   my $txt =<<EOF;
@@ -407,6 +421,9 @@ qx( umask 022; cd $CODE_DIRECTORY; $exeFile < $DATE_FILE >> \$sLog );
 
 # Move files from the temp directory to the data directory
 qx( ./moveGeos57 $DATE_STRING $fileTypes >> \$sLog );
+
+# Send an email that the job is finished
+if ( \$\? == 0 ) { qx( $mailCmd ); }
 
 # Remove the date file
 qx( rm -f $DATE_FILE >> /dev/null ); 
