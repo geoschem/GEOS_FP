@@ -1,0 +1,529 @@
+#!/usr/bin/perl -w
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: purgeGeosFp
+#
+# !DESCRIPTION: This perl script checks to see if all met fields for a given
+#  date have been processed properly.  If so, it will remove the "raw" met
+#  data files from the data download directory.  This is more or less 
+#  customized for SEAC4RS, in order to let the data download process proceed
+#  in a "hands-off" fashion.
+#\\
+#\\
+# !USES:
+#
+require 5.003;                           # Need this version of Perl or newer
+use English;                             # Use English language
+use Carp;                                # Get detailed error messages
+use strict;                              # IMPLICIT NONE syntax
+#
+# !PUBLIC DATA MEMBERS:
+#
+
+# Raw met field directory
+our $RAW_MET_DIR        = "";            # Dir where raw met fields are stored
+	
+# Nested grid met fields
+our $NESTED_MET_DIR     = "";		 # Nested met field directory
+our $FILE_NESTED_A1     = "";		 # Nested GEOS5-FP "A1"     file name
+our $SIZE_NESTED_A1     = "";		 # Nested GEOS5-FP "A1"     file size
+our $FILE_NESTED_A3cld  = "";		 # Nested GEOS5-FP "A3cld"  file name
+our $SIZE_NESTED_A3cld  = "";		 # Nested GEOS5-FP "A3cld"  file size
+our $FILE_NESTED_A3dyn  = "";		 # Nested GEOS5-FP "A3dyn"  file name
+our $SIZE_NESTED_A3dyn  = "";		 # Nested GEOS5-FP "A3dyn"  file size
+our $FILE_NESTED_A3mstC = "";		 # Nested GEOS5-FP "A3mstC" file name
+our $SIZE_NESTED_A3mstC = "";		 # Nested GEOS5-FP "A3mstC" file size
+our $FILE_NESTED_A3mstE = "";		 # Nested GEOS5-FP "A3mstE" file name
+our $SIZE_NESTED_A3mstE = "";		 # Nested GEOS5-FP "A3mstE" file size
+our $FILE_NESTED_I3     = "";		 # Nested GEOS5-FP "I3"     file name
+our $SIZE_NESTED_I3     = "";		 # Nested GEOS5-FP "I3"     file size
+	 
+# Global grid met fields		 
+our $GLOBAL_MET_DIR     = "";		 # Global met field directory
+our $FILE_GLOBAL_A1     = "";		 # Global GEOS5-FP "A1"     file name
+our $SIZE_GLOBAL_A1     = "";		 # Global GEOS5-FP "A1"     file size
+our $FILE_GLOBAL_A3cld  = "";		 # Global GEOS5-FP "A3cld"  file name
+our $SIZE_GLOBAL_A3cld  = "";		 # Global GEOS5-FP "A3cld"  file size
+our $FILE_GLOBAL_A3dyn  = "";		 # Global GEOS5-FP "A3dyn"  file name
+our $SIZE_GLOBAL_A3dyn  = "";		 # Global GEOS5-FP "A3dyn"  file size
+our $FILE_GLOBAL_A3mstC = "";		 # Global GEOS5-FP "A3mstC" file name
+our $SIZE_GLOBAL_A3mstC = "";		 # Global GEOS5-FP "A3mstC" file size
+our $FILE_GLOBAL_A3mstE = "";		 # Global GEOS5-FP "A3mstE" file name
+our $SIZE_GLOBAL_A3mstE = "";		 # Global GEOS5-FP "A3mstE" file size
+our $FILE_GLOBAL_I3     = "";		 # Global GEOS5-FP "I3"     file name
+our $SIZE_GLOBAL_I3     = "";		 # Global GEOS5-FP "I3"     file size
+#		
+# !PUBLIC MEMBER FUNCTIONS:
+#  &main()
+#
+# !PRIVATE MEMBER FUNCTIONS:
+#  &getDefaults : Reads default values
+#  &checkNested : Checks to see if all files are present for nested simulation 
+#  &replaceDate : Replaces YYYY, MM, DD in a string with date values
+#
+# !CALLING SEQUENCE:
+#  sleepNrt YYYYMMDD
+#
+# !REMARKS:
+#  (1) Reads default values from input file "doGeos57.input".
+#  (2) This is more or less a kludge for SEAC4RS.  This will allow the
+#      met field scripts to operate in a more or less "hands-off" manner.
+#
+# !REVISION HISTORY: 
+#  08 Aug 2013 - R. Yantosca - Initial version, based on sleepNRT (SEAC4RS)
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: getDefaults
+#
+# !DESCRIPTION: Routine getDefaults reads default values (such as directory
+#  paths, file names, file sizes, etc) from the "doNrt.input" file.  This 
+#  allows you to be able to change directories, file names, etc. without 
+#  having to rewrite scripts.
+#\\
+#\\
+# !INTERFACE:
+#
+sub getDefaults($) {
+#
+# !INPUT PARAMETERS:
+#
+  my ( $fileName ) = @_;  # File in which NRT defaults are stored
+#
+# !CALLING SEQUENCE:
+#  ( $logDir, $webDir ) = &getDefaults( $fileName );
+#
+# !REVISION HISTORY:
+#  22 May 2013 - R. Yantosca - Based on "sleepNrt" from NRT-ARCTAS
+#  29 Jul 2013 - R. Yantosca - Fixed typo in perl script directory heading
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  my $line   = "";
+  my @file   = "";
+  my @result = "";
+
+  # Read defaults file into an array (remove newlines)
+  open( I, "<$fileName" ) or die "Cannot open $fileName!\n";
+  chomp( @file = <I> );
+  close( I );
+
+  # Loop thru each line in the file; parse information into global variables
+  for ( my $i = 0; $i < scalar( @file ); $i++ ) {
+
+    if ( $file[$i] =~ "==> Raw Met Data Directory" ) {
+      $RAW_MET_DIR = $file[++$i]; 
+
+    } elsif ( $file[$i] =~ "==> Nested-Grid Met Fields" ) {
+      $NESTED_MET_DIR                              =             $file[++$i]  ;
+      ( $SIZE_NESTED_A1,     $FILE_NESTED_A1     ) = split( ' ', $file[++$i] );
+      ( $SIZE_NESTED_A3cld,  $FILE_NESTED_A3cld  ) = split( ' ', $file[++$i] );
+      ( $SIZE_NESTED_A3dyn,  $FILE_NESTED_A3dyn  ) = split( ' ', $file[++$i] );
+      ( $SIZE_NESTED_A3mstC, $FILE_NESTED_A3mstC ) = split( ' ', $file[++$i] );
+      ( $SIZE_NESTED_A3mstE, $FILE_NESTED_A3mstE ) = split( ' ', $file[++$i] );
+      ( $SIZE_NESTED_I3,     $FILE_NESTED_I3     ) = split( ' ', $file[++$i] );
+
+    } elsif ( $file[$i] =~ "==> Global-Grid Met Fields" ) {
+      $GLOBAL_MET_DIR                              =             $file[++$i]  ;
+      ( $SIZE_GLOBAL_A1,     $FILE_GLOBAL_A1     ) = split( ' ', $file[++$i] );
+      ( $SIZE_GLOBAL_A3cld,  $FILE_GLOBAL_A3cld  ) = split( ' ', $file[++$i] );
+      ( $SIZE_GLOBAL_A3dyn,  $FILE_GLOBAL_A3dyn  ) = split( ' ', $file[++$i] );
+      ( $SIZE_GLOBAL_A3mstC, $FILE_GLOBAL_A3mstC ) = split( ' ', $file[++$i] );
+      ( $SIZE_GLOBAL_A3mstE, $FILE_GLOBAL_A3mstE ) = split( ' ', $file[++$i] );
+      ( $SIZE_GLOBAL_I3,     $FILE_GLOBAL_I3     ) = split( ' ', $file[++$i] );
+    
+    }
+  }
+
+  # Return normally
+  return( $? );
+}
+#
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: uniq
+#
+# !DESCRIPTION: Returns the unique values in an array (analogous to the
+#  UNIQ function in IDL.
+#\\
+#\\
+# !INTERFACE:
+#
+sub uniq(@) {
+#
+# !INPUT PARAMETERS:
+#
+  my ( @array ) = @_;   # Input array to be parsed
+#
+# !RETURN VALUE:
+#
+  my $unique = ();      # Retursn unique values in @array
+#
+# !CALLING SEQUENCE:
+#  $unique = &uniq( @array );
+#
+# !REMARKS:
+#  Algorithm from this Internet thread: 
+#     http://stackoverflow.com/questions/439647/
+#     how-do-i-print-unique-elements-in-perl-array
+#
+# !REVISION HISTORY:
+#  08 Aug 2013 - R. Yantosca - Initial version,
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+
+  # Create a hash
+  my %seen;
+
+  # Populate the hash with only unique values, save into an array
+  my @unique = grep { ! $seen{$_}++ } @array;
+
+  # Return the value of unique arrays
+  return( @unique );
+}
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: replaceDate
+#
+# !DESCRIPTION: Routine replaceDate replaces date tokens (YYYY, MM, DD) in
+#  a string with the actual year, month, and date values.
+#\\
+#\\
+# !INTERFACE:
+#
+sub replaceDate($$) {
+#
+# !INPUT PARAMETERS:
+#
+  my ( $str, $date ) = @_;  # $str: String w/ tokens; 
+                            # $date: YYYYMMDD date
+#
+# !RETURN VALUE:
+#
+  my $newStr = "";          # Updated string 
+#
+# !CALLING SEQUENCE:
+#  $newStr = &replaceDate( "file.YYYYMMDD", 20130101 );
+#
+# !REVISION HISTORY:
+#  08 Aug 2013 - R. Yantosca - Initial version, based on NrtUtils.PM (SEAC4RS)
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  my $yyyy = substr( $date, 0, 4 );    # Extract year  from $date
+  my $mm   = substr( $date, 4, 2 );    # Extract month from $date
+  my $dd   = substr( $date, 6, 2 );    # Extract day   from $date
+
+  # Replace tokens
+  $newStr =  $str;          
+  $newStr =~ s/YYYY/$yyyy/g;           # Replace year 
+  $newStr =~ s/MM/$mm/g;               # Replace month
+  $newStr =~ s/DD/$dd/g;               # Replace day
+
+  # Return modified string
+  return( $newStr );
+}
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: getRawMetFieldDates
+#
+# !DESCRIPTION: Routine getRawMetFieldDates finds a list of dates corresponding
+#  to the files that are currently sitting in the raw met field directory.
+#\\
+#\\
+# !INTERFACE:
+#
+sub getRawMetFieldDates() {
+#
+# !RETURN VALUE:
+#
+  my @dates = ();   # Dates of files in the r
+#
+# !CALLING SEQUENCE:
+#  @dates = &checkRawMetFiles();
+#
+# !REVISION HISTORY:
+#  08 Aug 2013 - R. Yantosca - Initial version, based on "sleepNrt" (SEAC4RS)
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  # Scalars
+  my $cmd       = "";
+  my $file      = "";
+		
+  # Arrays
+  my @files     = ();
+  my @subString = ();
+
+  # Get the list of files in the data download directory
+  $cmd = "ls -1 $RAW_MET_DIR/*GEOS.fp*";
+  chomp( @files = qx( $cmd ) );
+
+  # Find the date corresponding to each raw met field file
+  foreach $file ( @files ) {
+    @subString = split( '\.', $file );   
+    @dates     = ( @dates, substr( $subString[4], 0, 8 ) );
+  }
+
+  # Then take only the unique values
+  @dates = uniq( @dates );
+
+  # Return to calling routine
+  return( @dates );
+}
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: processedMetExists
+#
+# !DESCRIPTION: Routine processedMetExists makes sure that all met field and restart
+#  files are present before the SEAC4RS GLOBAL AND NESTED GRID SIMULATIONS 
+#  are started.
+#\\
+#\\
+# !INTERFACE:
+#
+sub processedMetExists($) {
+#
+# !INPUT PARAMETERS:
+#
+  my ( $date ) = @_;	    # Today's date in YYYYMMDD format
+#
+# !RETURN VALUE:
+#
+  my $rc         = 0;       # Will return 0 if successful
+#
+# !CALLING SEQUENCE:
+#  &checkFiles( YYYYMMDD )
+#
+# !REVISION HISTORY:
+#  08 Aug 2013 - R. Yantosca - Initial version, based on "sleepNrt" (SEAC4RS)
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  # For global grid
+  my $g_a1     = "$GLOBAL_MET_DIR/$FILE_GLOBAL_A1";     # A1     met, today
+  my $g_a3Cld  = "$GLOBAL_MET_DIR/$FILE_GLOBAL_A3cld";  # A3cld  met, today
+  my $g_a3Dyn  = "$GLOBAL_MET_DIR/$FILE_GLOBAL_A3dyn";  # A3dyn  met, today
+  my $g_a3MstC = "$GLOBAL_MET_DIR/$FILE_GLOBAL_A3mstC"; # A3mstC met, today
+  my $g_a3MstE = "$GLOBAL_MET_DIR/$FILE_GLOBAL_A3mstE"; # A3mstE met, today
+  my $g_i3     = "$GLOBAL_MET_DIR/$FILE_GLOBAL_I3";     # I3     met, today
+
+  # For nested grid
+  my $n_a1     = "$NESTED_MET_DIR/$FILE_NESTED_A1";     # A1     met, today
+  my $n_a3Cld  = "$NESTED_MET_DIR/$FILE_NESTED_A3cld";  # A3cld  met, today
+  my $n_a3Dyn  = "$NESTED_MET_DIR/$FILE_NESTED_A3dyn";  # A3dyn  met, today
+  my $n_a3MstC = "$NESTED_MET_DIR/$FILE_NESTED_A3mstC"; # A3mstC met, today
+  my $n_a3MstE = "$NESTED_MET_DIR/$FILE_NESTED_A3mstE"; # A3mstE met, today
+  my $n_i3     = "$NESTED_MET_DIR/$FILE_NESTED_I3";	# I3     met, today
+
+  #========================================================================
+  # Replace tokens in file names & directory paths
+  #========================================================================
+  $g_a1     = &replaceDate( $g_a1,     $date );
+  $g_a3Cld  = &replaceDate( $g_a3Cld,  $date );
+  $g_a3Dyn  = &replaceDate( $g_a3Dyn,  $date );
+  $g_a3MstC = &replaceDate( $g_a3MstC, $date );
+  $g_a3MstE = &replaceDate( $g_a3MstE, $date );
+  $g_i3     = &replaceDate( $g_i3,     $date );
+  $n_a1     = &replaceDate( $n_a1,     $date );
+  $n_a3Cld  = &replaceDate( $n_a3Cld,  $date );
+  $n_a3Dyn  = &replaceDate( $n_a3Dyn,  $date );
+  $n_a3MstC = &replaceDate( $n_a3MstC, $date );
+  $n_a3MstE = &replaceDate( $n_a3MstE, $date );
+  $n_i3     = &replaceDate( $n_i3,     $date );
+
+  #========================================================================
+  # Check if processed met field files are fully-sized
+  #========================================================================
+
+  # Global met files
+  if ( -f $g_a1     ) { $rc += ( -s $g_a1     eq $SIZE_GLOBAL_A1     ); }
+  if ( -f $g_a3Cld  ) { $rc += ( -s $g_a3Cld  eq $SIZE_GLOBAL_A3cld  ); }
+  if ( -f $g_a3Dyn  ) { $rc += ( -s $g_a3Dyn  eq $SIZE_GLOBAL_A3dyn  ); }
+  if ( -f $g_a3MstC ) { $rc += ( -s $g_a3MstC eq $SIZE_GLOBAL_A3mstC ); }
+  if ( -f $g_a3MstE ) { $rc += ( -s $g_a3MstE eq $SIZE_GLOBAL_A3mstE ); }
+  if ( -f $g_i3     ) { $rc += ( -s $g_i3     eq $SIZE_GLOBAL_I3     ); }
+
+  # Nested met files
+  if ( -f $n_a1     ) { $rc += ( -s $n_a1     eq $SIZE_NESTED_A1     ); }
+  if ( -f $n_a3Cld  ) { $rc += ( -s $n_a3Cld  eq $SIZE_NESTED_A3cld  ); }
+  if ( -f $n_a3Dyn  ) { $rc += ( -s $n_a3Dyn  eq $SIZE_NESTED_A3dyn  ); }
+  if ( -f $n_a3MstC ) { $rc += ( -s $n_a3MstC eq $SIZE_NESTED_A3mstC ); }
+  if ( -f $n_a3MstE ) { $rc += ( -s $n_a3MstE eq $SIZE_NESTED_A3mstE ); }
+  if ( -f $n_i3     ) { $rc += ( -s $n_i3     eq $SIZE_NESTED_I3     ); }
+
+  # Return success or failure
+  return( $rc );
+}
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: checkRawMetFiles
+#
+# !DESCRIPTION: Routine checkNested makes sure that all met field and restart
+#  files are present before the SEAC4RS GLOBAL AND NESTED GRID SIMULATIONS 
+#  are started.
+#\\
+#\\
+# !INTERFACE:
+#
+sub purgeRawMetFiles($) {
+#
+# !INPUT PARAMETERS:
+#
+  my ( $date ) = @_;	    # Today's date in YYYYMMDD format
+#
+# !RETURN VALUE:
+#
+  my $rc         = 0;       # Will return 0 if successful
+#
+# !CALLING SEQUENCE:
+#  &checkFiles( YYYYMMDD )
+#
+# !REVISION HISTORY:
+#  08 Aug 2013 - R. Yantosca - Initial version, based on "sleepNrt" (SEAC4RS)
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  # For global grid
+  my $cmd    = "rm $RAW_MET_DIR/*$date*\n";
+  my $result = "";
+
+  # Print ht
+  print "$cmd\n";
+  chomp( $result = qx( $cmd ) );
+  print "$result\n";
+
+  # Print the 
+  return( $? );
+}
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: main
+#
+# !DESCRIPTION: Routine "main" is the driver program for this script.
+#\\
+#\\
+# !INTERFACE:
+#
+sub main() {
+#
+# !CALLING SEQUENCE:
+#  sleepNrt YYYYMMDD
+#
+# !REVISION HISTORY:
+#  23 May 2013 - R. Yantosca - Initial version, based on NRT-ARCTAS
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  # Scalars
+  my $date       = "";
+  my $errMsg     = "Usage: purgeGeosFp YYYYMMDD\n";
+  my $todaysDate = "";
+
+  # Arrays
+  my @dates      = ();
+
+  # Make sure we have the proper # of arguments
+  if ( scalar( @ARGV ) == 1 ) { $todaysDate = $ARGV[0];     } 
+  else                        { print "$errMsg\n"; exit(1); }
+
+  # Read defaults from the input file
+  if ( &getDefaults( "doGeos57.input" ) ) {
+    print "ERROR: Could not read 'doGeos57.input' file!\n";
+    exit(2);
+  }  
+
+  # Find the dates of raw met field files in the download directory
+  @dates =  &getRawMetFieldDates();
+  print "purgeGeosFp: Test if we need to delete met fields for dates @dates!\n";
+
+  # Loop over each date in the list
+  foreach $date ( @dates ) {
+
+    # Test if any of the files in the met field directory 
+    # are for today's date
+    if ( $date == $todaysDate ) {
+
+      # As a safety feature, we will not delete met data for today's date
+      # in the event that we have to restart a met field processing job
+      print "purgeGeosFp: We will not delete met files for today's date: $date\n";
+      
+    } else {
+
+      # For all other dates, check if the met files have been
+      # created properly and are of the expeced file size
+      if ( &processedMetExists( $date ) == 12 ) { 
+
+	# If so, then delete the raw data files for those dates
+	# so that we do not run out of space in the download directory
+	print "purgeGeosFp: Removing raw met files for $date\n";
+        &purgeRawMetFiles( $date );
+      }	
+    }
+  }
+
+  # Return the error status code
+  return( $? );
+}
+#EOC
+
+# Call main program
+main();
+
+# Exit and pass status code back to Unix shell
+exit( $? );
+
+

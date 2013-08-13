@@ -45,6 +45,8 @@ sub main() {
 #
 # !REVISION HISTORY: 
 #  07 Aug 2013 - R. Yantosca - Initial version, based on schedGeos57
+#  08 Aug 2013 - R. Yantosca - Now calls purgeGeosFp to remove raw met data
+#                              files for prior days from the download directory
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -78,10 +80,8 @@ sub main() {
     if ( $nDays < 0 ) { $date = &addDate( $start, -$i ); }
     else              { $date = &addDate( $start,  $i ); }
 
-    # %%% NOTE: Add a check here to delete files from the download dir
-    # %%% if they have been already successfully processed. 
-
     # Add commands to the string
+    $cmd .= "./purgeGeosFp $date\n";
     $cmd .= "./getGeosFp $date\n";
     $cmd .= "./doGeos57Multi $date\n";
   }

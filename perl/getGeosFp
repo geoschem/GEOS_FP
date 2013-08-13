@@ -381,12 +381,14 @@ sub getData(@) {
 
   # Print the overall status code to stdout & log before exiting
   $msg = &getLocalTime();
-  print     "\nOverall status code: $status\n\nExiting at $msg\n";
+  print "\ngetGeosFp: Overall status code: $status\n\nExiting at $msg\n";
 
   # Doublecheck that all files are present again 
   $status = 0;
-  foreach $file ( @fileList ) { $status += &checkData( $file ); } 
-  print "Number of files successfully downloaded: $status\n";
+  foreach $file ( @fileList ) { 
+    if ( &checkData( $file ) == 0 ) { $status++; }
+  } 
+  print "getGeosFp: Number of files successfully downloaded: $status\n";
 
   # Return status
   if ( $status == $N_FILES ) { return(  0 ); }

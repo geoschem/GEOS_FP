@@ -33,25 +33,25 @@
   #============================================================
   # Define global variables (seen in all subroutines below)
   #============================================================
-  our $CODE_DIRECTORY    = "UNDEFINED";
-  our $DATE_FILE         = "UNDEFINED";
-  our $DATE_STRING       = "UNDEFINED";
-  our $DAY_STRING        = "UNDEFINED";
-  our $EMAIL_STRING      = "UNDEFINED";
-  our $EXECUTABLE        = "UNDEFINED";
-  our $HOME_DIRECTORY    = "UNDEFINED";
-  our $JOB_DIRECTORY     = "UNDEFINED";
-  our $JOB_FILE          = "UNDEFINED";
-  our $LOG_DIRECTORY     = "UNDEFINED";
-  our $LOG_ERR           = "UNDEFINED";
-  our $LOG_FILE          = "UNDEFINED";
-  our $MET_DIRECTORY     = "UNDEFINED";
-  our $MONTH_STRING      = "UNDEFINED";
+  our $CODE_DIRECTORY    = "";
+  our $DATE_FILE         = "";
+  our $DATE_STRING       = "";
+  our $DAY_STRING        = "";
+  our $EMAIL_STRING      = "";
+  our $EXECUTABLE        = "";
+  our $HOME_DIRECTORY    = "";
+  our $JOB_DIRECTORY     = "";
+  our $JOB_FILE          = "";
+  our $LOG_DIRECTORY     = "";
+  our $LOG_ERR           = "";
+  our $LOG_FILE          = "";
+  our $MET_DIRECTORY     = "";
+  our $MONTH_STRING      = "";
   our $N_FILES           = 144;
-  our $SUBMIT            = "UNDEFINED";
-  our $TEMP_DIRECTORY    = "UNDEFINED";
-  our $USER_ID           = "UNDEFINED";
-  our $YEAR_STRING       = "UNDEFINED";
+  our $SUBMIT            = "";
+  our $TEMP_DIRECTORY    = "";
+  our $USER_ID           = "";
+  our $YEAR_STRING       = "";
 #
 # !CALLING SEQUENCE:
 #  doGeos57Nulti YYYYMMDD
@@ -248,6 +248,7 @@ sub checkInputs() {
   &checkDir( $JOB_DIRECTORY  );
   &checkDir( $LOG_DIRECTORY  );
   &checkDir( $TEMP_DIRECTORY );
+  &checkDir( $MET_DIRECTORY  );
 
   # Return normally
   return(0);
@@ -325,7 +326,7 @@ sub checkDir($) {
 
   # Stop with error if directory doesn't exist
   if ( !( -d $dir ) ) { 
-    print "doGeos5 ERROR: Directory does not exist: $dir\n";
+    print "doGeos57Multi: ERROR: Directory does not exist: $dir\n";
     exit(1)
   }
   
@@ -520,6 +521,8 @@ sub main() {
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/doGeos5
 #  07 Aug 2013 - R. Yantosca - Add some basic error checking to prevent the
 #                              met field job from starting if too few files
+#  13 Aug 2013 - R. Yantosca - Now add an informational message if all met
+#                              field files are present
 #EOP
 #------------------------------------------------------------------------------
 #
@@ -534,15 +537,20 @@ sub main() {
     exit(1);
   }
 
+  # Get default values
+  &getDefaults( "doGeos57.input", $ARGV[0] );
+
   # Quick & dirty test if all the files are present in the met dir
   # Not an exhaustive check but this should be good enough to prevent the
   # met field code from starting if there aren't enough files. (bmy, 8/7/13)
-  $listCmd = "ls -1 $MET_DIR/GEOS.fp*";
-  $status  = qx( $listCmd );
-  if ( !( $status == $N_FILES )  ) { print "Not enough files\n"; exit(1); }
-
-  # Get default values
-  &getDefaults( "doGeos57.input", $ARGV[0] );
+  $listCmd = "ls -1 $MET_DIRECTORY/GEOS.fp* | wc -l";
+  chomp( $status  = qx( $listCmd ) );
+  if ( $status == $N_FILES ) { 
+    print "doGeos57Multi: All files present!  Now processing met for $ARGV[0]!\n"; 
+  } else {
+    print "doGeos57Multi: Not enough raw met files for $ARGV[0]!\n"; 
+    exit(1); 
+  }
 
   # Get system variables
   &getSysVars();

@@ -1,0 +1,140 @@
+#!/usr/bin/perl -w
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: schedGeosFpInAdvance
+#
+# !DESCRIPTION: schedGeosFpInAdvance is a Perl script which schedules a 
+#  GEOS-FP data for severaly days in advance.  The job is started at the
+#  same time every day, for ndays intot he future.
+#\\
+#\\
+# !USES:
+#
+require 5.003;                 # Need this version of Perl or newer
+use strict;                    # Force strict variable declarations
+use Dates qw( &addDate 
+              &ymdExtract 
+              &getDayOfWeek ); # Import routines from module Dates.pm
+#
+# !CALLING SEQUENCE:
+#  schedGeosFpInAdvance YYYYMMDD nDays [now]
+#
+# !REMARKS:
+#  Uses the Unix "at" command to schedule jobs.  
+#
+# !REVISION HISTORY: 
+#  08 Aug 2013 - R. Yantosca - Initial version
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: main
+#
+# !DESCRIPTION: Driver routine for the sleepGeosFp script.  Gets arguments
+#  from the command line and schedules the data procesing job.
+#\\
+#\\
+# !INTERFACE:
+#
+sub scheduleJobs(@) {
+#
+# !INPUT PARAMETERS:
+#
+  # Starting date and # of days to submit 
+  my( $startDate, $nDays ) = @_;
+#
+# !REVISION HISTORY: 
+#  08 Aug 2013 - R. Yantosca - Initial version
+#  13 Aug 2013 - R. Yantosca - Start job later on Mondays (avoid downtime)
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  my $atCmd    = "";
+  my $atOut    = "";
+  my $today    = "";
+  my $tomorrow = "";
+  my $tomYear  = "";
+  my $tomMonth = "";
+  my $tomDay   = "";
+  my $when     = "";
+  
+  # Loop over the # of days
+  for ( my $i=0; $i<abs($nDays); $i++ ) {
+
+    # Get the calendar date for the Ith date after start date
+    # NOTE: if nDays is negative, then we'll go back in time!
+    if ( $nDays < 0 ) { $today = &addDate( $startDate, -$i ); }
+    else              { $today = &addDate( $startDate,  $i ); }
+
+    # Find tomorrow's date
+    $tomorrow = &addDate( $today, 1 );
+
+    # Split tomorrow's date
+    ( $tomYear, $tomMonth, $tomDay ) = &ymdExtract( $tomorrow );
+
+    # Start the job later on Mondays due to the maintenance window
+    if ( &getDayOfWeek( $tomorrow ) == 1 ) { $when = "10am"; }
+    else                                   { $when = "7am";  }
+    
+    # Command string for "at"
+    # Schedule each job
+    $atCmd = qq(schedGeosFp $today 1 "$when $tomMonth/$tomDay/$tomYear");
+    print "$atCmd\n";
+    
+    # Schedule the job
+    chomp( $atOut = qx( $atCmd ) );
+    print "$atOut\n";
+
+  }			       
+}
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: main
+#
+# !DESCRIPTION: Driver routine for the sleepGeosFp script.  Gets arguments
+#  from the command line and schedules the data procesing job.
+#\\
+#\\
+# !INTERFACE:
+#
+sub main() {
+#
+# !REVISION HISTORY: 
+#  08 Aug 2013 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+  # Error check # of arguments
+  if ( scalar( @ARGV ) != 2 ) {  
+    print "Usage: schedGeosFp YYYYMMDD nDays\n"; 
+    exit(1); 
+  }
+
+  # Schedule jobs in the future
+  &scheduleJobs( @ARGV );
+
+  # Return status
+  return( $? );
+}
+#EOC
+
+#------------------------------------------------------------------------------
+
+# Call main program
+main();
+
+# Return status to shell
+exit( $? );
+
+
