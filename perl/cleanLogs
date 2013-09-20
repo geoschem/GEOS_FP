@@ -8,7 +8,7 @@
 # !MODULE: cleanLogs
 #
 # !DESCRIPTION: This Perl script removes all individual log files from
-#  GEOS-5.7.2 data processing jobs from the log directory.
+#  GEOS-FP data processing jobs from the log directory.
 #\\
 #\\
 # !USES:
@@ -97,6 +97,8 @@ sub main() {
 #
 # !REVISION HISTORY:
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS-5/perl/cleanLogs
+#  20 Sep 2013 - R. Yantosca - Now reads input file "doGeosFp.input"
+
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -106,7 +108,7 @@ sub main() {
   my $cmd    = "";
   my $file   = "";
   my @files  = ();
-  my $logDir = &getDefaults( "doGeos57.input" );
+  my $logDir = &getDefaults( "doGeosFp.input" );
   
   # Read all log files in the directory
   opendir( D, "$logDir" ) or die "$logDir is an invalid directory!\n";

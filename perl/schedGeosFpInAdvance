@@ -28,13 +28,17 @@ use Dates qw( &addDate
 #
 # !REVISION HISTORY: 
 #  08 Aug 2013 - R. Yantosca - Initial version
+#  20 Sep 2013 - R. Yantosca - Updated comments
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
 #------------------------------------------------------------------------------
 #BOP
 #
-# !IROUTINE: main
+# !IROUTINE: scheduleJobs
 #
-# !DESCRIPTION: Driver routine for the sleepGeosFp script.  Gets arguments
-#  from the command line and schedules the data procesing job.
+# !DESCRIPTION: Schedules a GEOS-FP met field processing jobs for a number
+#  of days in advance of a starting date.
 #\\
 #\\
 # !INTERFACE:
@@ -117,7 +121,7 @@ sub main() {
 
   # Error check # of arguments
   if ( scalar( @ARGV ) != 2 ) {  
-    print "Usage: schedGeosFp YYYYMMDD nDays\n"; 
+    print "Usage: schedGeosFpInAdvance YYYYMMDD nDays\n"; 
     exit(1); 
   }
 

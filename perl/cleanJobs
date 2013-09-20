@@ -8,7 +8,7 @@
 # !MODULE: cleanJobs
 #
 # !DESCRIPTION: This Perl script removes all individual job scripts
-#  from GEOS-5 data processing jobs from the job directory.
+#  from GEOS-FP data processing jobs from the job directory.
 #\\
 #\\
 # !USES:
@@ -98,6 +98,7 @@ sub main() {
 # !REVISION HISTORY:
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/cleanJobs
 #  29 Feb 2012 - R. Yantosca - Also remove date files in the jobs directory
+#  20 Sep 2013 - R. Yantosca - Now reads input file "doGeosFp.input"
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -107,7 +108,7 @@ sub main() {
   my $cmd    = "";
   my $file   = "";
   my @files  = ();
-  my $jobDir = &getDefaults( "doGeos57.input" );
+  my $jobDir = &getDefaults( "doGeosFp.input" );
   
   # Read all log files in the directory
   opendir( D, "$jobDir" ) or die "$jobDir is an invalid directory\n";

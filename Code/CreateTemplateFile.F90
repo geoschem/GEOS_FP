@@ -35,6 +35,7 @@ PROGRAM CreateTemplateFile
 !
 ! !REVISION HISTORY: 
 !  05 Jan 2012 - R. Yantosca - Initial version
+!  20 Sep 2013 - R. Yantosca - Edited attributes for COARDS compliance
 !
 ! !REMARKS:
 !  netCDF library modules originally written by Jules Kouatchou, GSFC
@@ -159,15 +160,15 @@ PROGRAM CreateTemplateFile
   var1 = (/ idLon /)
   vId  = 0
   CALL NcDef_variable( fId, 'lon', NF_DOUBLE, 1, var1, vId )
-  CALL NcDef_var_attributes( fId, vId,  'long_name', 'Longitude'   )
-  CALL NcDef_var_attributes( fId, vId,  'units',     'degree_east' )
+  CALL NcDef_var_attributes( fId, vId,  'long_name', 'Longitude'    )
+  CALL NcDef_var_attributes( fId, vId,  'units',     'degrees_east' )
   
   ! Define latitude variable
   var1 = (/ idLat /)
   vId  = vId + 1
   CALL NcDef_variable( fId, 'lat', NF_DOUBLE, 1, var1, vId )
-  CALL NcDef_var_attributes( fId, vId, 'long_name', 'Latitude'     )
-  CALL NcDef_var_attributes( fId, vId, 'units',     'degree_north' )
+  CALL NcDef_var_attributes( fId, vId, 'long_name', 'Latitude'      )
+  CALL NcDef_var_attributes( fId, vId, 'units',     'degrees_north' )
   
   ! Define vertical (pressure) variable
   var1 = (/ idTime /)
@@ -187,7 +188,7 @@ PROGRAM CreateTemplateFile
   vId  = vId + 1
   CALL NcDef_variable( fId, 'LWI', NF_FLOAT, 3, var3, vId )
   CALL NcDef_var_attributes( fId, vId, 'long_name',      'LWI'       )
-  CALL NcDef_var_attributes( fId, vId, 'units',          'unitless'  )
+  CALL NcDef_var_attributes( fId, vId, 'units',          '1'         )
   CALL NcDef_var_attributes( fId, vId, 'gamap_category', 'GMAO-2D'   )
   
   ! FRLAND
@@ -195,7 +196,7 @@ PROGRAM CreateTemplateFile
   vId  = vId + 1
   CALL NcDef_variable( fId, 'FRLAND', NF_FLOAT, 3, var3, vId )
   CALL NcDef_var_attributes( fId, vId, 'long_name',      'FRLAND'    )
-  CALL NcDef_var_attributes( fId, vId, 'units',          'fraction'  )
+  CALL NcDef_var_attributes( fId, vId, 'units',          '1'         )
   CALL NcDef_var_attributes( fId, vId, 'gamap_category', 'GMAO-2D'   )
   
   ! FRLANDICE
@@ -203,7 +204,7 @@ PROGRAM CreateTemplateFile
   vId  = vId + 1
   CALL NcDef_variable( fId, 'FRLANDIC', NF_FLOAT, 3, var3, vId )
   CALL NcDef_var_attributes( fId, vId, 'long_name',      'FRLANDIC'  )
-  CALL NcDef_var_attributes( fId, vId, 'units',          'fraction'  )
+  CALL NcDef_var_attributes( fId, vId, 'units',          '1'         )
   CALL NcDef_var_attributes( fId, vId, 'gamap_category', 'GMAO-2D'   )
   
   !=========================================================================

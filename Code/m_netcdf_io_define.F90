@@ -16,10 +16,20 @@
 !
       public  NcDef_dimension
       public  NcDef_variable
-      public  NcDef_var_attributes
       public  NcDef_glob_attributes
       public  NcSetFill
       public  NcEnd_def
+
+      INTERFACE NcDef_var_attributes
+         MODULE PROCEDURE NcDef_var_attributes_c
+         MODULE PROCEDURE NcDef_var_attributes_r4
+         MODULE PROCEDURE NcDef_var_attributes_r8
+      END INTERFACE
+!
+! !PRIVATE MEMBER FUNCTIONS:
+!
+      PRIVATE :: NcDef_var_attributes_c
+      PRIVATE :: NcDef_var_attributes_r4
 !
 ! !DESCRIPTION: Provides netCDF utility routines to define dimensions, 
 !  variables and attributes.
@@ -30,7 +40,8 @@
 !
 ! !REVISION HISTORY:
 !  Initial code.
-!
+!  20 Sep 2013 - R. Yantosca - Now overload NCDEF_VAR_ATTRIBUTES routine
+!                              so that we can write REAL*4 or REAL*8 atts
 !EOP
 !-------------------------------------------------------------------------
 
@@ -158,7 +169,7 @@ CONTAINS
 !
 ! !INTERFACE:
 !
-      subroutine NcDef_var_attributes(ncid,var_id,att_name,att_val)
+      subroutine NcDef_var_attributes_c(ncid,var_id,att_name,att_val)
 !
 ! !USES:
 !
@@ -202,7 +213,116 @@ CONTAINS
 
       return
 
-      end subroutine NcDef_var_attributes
+      end subroutine NcDef_var_attributes_c
+!EOC
+!-------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: NcDef_var_attributes
+!
+! !INTERFACE:
+!
+      subroutine NcDef_var_attributes_r4(ncid,var_id,att_name,att_val)
+!
+! !USES:
+!
+      use m_do_err_out
+!
+      implicit none
+      include 'netcdf.inc'
+!
+! !INPUT PARAMETERS:
+!!    ncid    : netCDF file id
+!!    var_id  : netCDF variable id
+!!    att_name: attribute name
+!!    att_val : attribute value
+      REAL*4,            INTENT(IN) :: att_val
+      character (len=*), intent(in) :: att_name
+      integer,           intent(in) :: ncid, var_id
+!
+! !DESCRIPTION: Defines netCDF attributes.
+!\\
+!\\
+! !AUTHOR: 
+!  Jules Kouatchou and Maharaj Bhat
+!
+! !REVISION HISTORY:
+!  20 Sep 2013 - R. Yantosca - Initial version
+!EOP
+!-------------------------------------------------------------------------
+!BOC
+!
+! !LOCAL VARIABLES:
+      character (len=128) :: err_msg
+      integer             :: mylen, ierr
+!
+      mylen = 1
+      ierr  = Nf_Put_Att_Real( ncid,     var_id, att_name, &
+                               NF_FLOAT, mylen,  att_val )
+
+      if (ierr.ne.NF_NOERR) then
+         err_msg = 'Nf_Put_Att_Text: can not define attribute : ' // Trim (att_name)
+         call Do_Err_Out (err_msg, .true., 0, 0, 0, 0, 0.0d0, 0.0d0)
+      end if
+
+      return
+
+      end subroutine NcDef_var_attributes_r4
+!EOC
+!-------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: NcDef_var_attributes
+!
+! !INTERFACE:
+!
+      subroutine NcDef_var_attributes_r8(ncid,var_id,att_name,att_val)
+!
+! !USES:
+!
+      use m_do_err_out
+!
+      implicit none
+      include 'netcdf.inc'
+!
+! !INPUT PARAMETERS:
+!!    ncid    : netCDF file id
+!!    var_id  : netCDF variable id
+!!    att_name: attribute name
+!!    att_val : attribute value
+      REAL*8,            INTENT(IN) :: att_val
+      character (len=*), intent(in) :: att_name
+      integer,           intent(in) :: ncid, var_id
+!
+! !DESCRIPTION: Defines netCDF attributes.
+!\\
+!\\
+! !AUTHOR: 
+!  Jules Kouatchou and Maharaj Bhat
+!
+! !REVISION HISTORY:
+!  Initial code.
+!  20 Sep 2013 - R. Yantosca - Initial version
+!EOP
+!-------------------------------------------------------------------------
+!BOC
+!
+! !LOCAL VARIABLES:
+      character (len=128) :: err_msg
+      integer             ::  mylen, ierr
+!
+      mylen = 1
+      ierr  = Nf_Put_Att_Double( ncid,      var_id, att_name, &
+                                 NF_DOUBLE, mylen,  att_val )
+
+      if (ierr.ne.NF_NOERR) then
+         err_msg = 'Nf_Put_Att_Text: can not define attribute : ' // Trim (att_name)
+         call Do_Err_Out (err_msg, .true., 0, 0, 0, 0, 0.0d0, 0.0d0)
+      end if
+
+      return
+
+      end subroutine NcDef_var_attributes_r8
 !EOC
 !-------------------------------------------------------------------------
 !BOP

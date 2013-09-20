@@ -481,8 +481,8 @@ sub main() {
   else                        { print "$errMsg\n"; exit(1); }
 
   # Read defaults from the input file
-  if ( &getDefaults( "doGeos57.input" ) ) {
-    print "ERROR: Could not read 'doGeos57.input' file!\n";
+  if ( &getDefaults( "doGeosFp.input" ) ) {
+    print "ERROR: Could not read 'doGeosFp.input' file!\n";
     exit(2);
   }  
 

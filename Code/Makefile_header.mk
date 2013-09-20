@@ -88,9 +88,9 @@ ifeq ($(COMPILER),mpif90)
 
 # Pick correct options for debug run or regular run 
 ifdef DEBUG
-FFLAGS   := -cpp -w -O0 -auto -noalign -mcmodel=medium -i-dynamic -g -traceback
+FFLAGS   := -cpp -w -O0 -auto -noalign -mcmodel=medium -shared-intel -g -traceback
 else
-FFLAGS   := -cpp -w -O2 -auto -noalign -mcmodel=medium -i-dynamic -openmp
+FFLAGS   := -cpp -w -O2 -auto -noalign -mcmodel=medium -shared-intel -openmp
 endif
 
 # Add option for "array out of bounds" checking
@@ -117,9 +117,9 @@ ifeq ($(COMPILER),ifort)
 
 # Pick correct options for debug run or regular run 
 ifdef DEBUG
-FFLAGS   := -cpp -w -O0 -auto -noalign -mcmodel=medium -i-dynamic -g -traceback
+FFLAGS   := -cpp -w -O0 -auto -noalign -mcmodel=medium -shared-intel -g -traceback
 else
-FFLAGS   := -cpp -w -O2 -auto -noalign -mcmodel=medium -i-dynamic -openmp
+FFLAGS   := -cpp -w -O2 -auto -noalign -mcmodel=medium -shared-intel -openmp
 endif
 
 # Add flag to denote if we are using the sample data (wh

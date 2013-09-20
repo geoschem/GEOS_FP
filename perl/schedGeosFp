@@ -47,6 +47,7 @@ sub main() {
 #  07 Aug 2013 - R. Yantosca - Initial version, based on schedGeos57
 #  08 Aug 2013 - R. Yantosca - Now calls purgeGeosFp to remove raw met data
 #                              files for prior days from the download directory
+#  20 Sep 2013 - R. Yantosca - Now call doGeosFpMulti
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -83,7 +84,7 @@ sub main() {
     # Add commands to the string
     $cmd .= "./purgeGeosFp $date\n";
     $cmd .= "./getGeosFp $date\n";
-    $cmd .= "./doGeos57Multi $date\n";
+    $cmd .= "./doGeosFpMulti $date\n";
   }
 
   # Add the end of file

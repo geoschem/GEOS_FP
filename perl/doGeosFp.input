@@ -1,0 +1,92 @@
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !INCLUDE: doGeosFp.input  
+#
+# !DESCRIPTION: Input file specifies the various default settings for
+# directories etc. for the doGeosFpMulti script.
+#\\
+#\\
+# !REMARKS:
+# Login String           : Username:Password from your GES-DISC subscription
+# Raw Met Data Directory : Dir where GEOS-5 "raw" met data is found
+# Code Directory         : Dir where the executable file is found
+# Job Directory          : Dir where job scripts are found
+# Log Directory          : Dir where output logs will be sent
+# Temporary Directory    : Dir for temporary files (can be same as Job Dir)
+# Program Executable     : Name of executable file (should be "Geos5Driver")
+# Submit Statement       : {JOB} will be replaced w/ the actual job script name
+#
+# !REMARKS:
+#  You need to add a \ before the @ sign in email addresses,
+#  otherwise Perl won't know how to deal with it.
+#
+# !REVISION HISTORY: 
+#  24 Oct 2011 - R. Yantosca - Initial version (based on doGeos5.input)
+#  13 Jan 2012 - R. Yantosca - Executable is now named "Geos57Driver.x"
+#  20 Jan 2012 - R. Yantosca - Now add variable for the file containing
+#                              the default settings for the executable
+#  06 Aug 2013 - R. Yantosca - Now add list of emails for notification
+#  06 Aug 2013 - R. Yantosca - Now add sleep time between tries [s]
+!  20 Sep 2013 - R. Yantosca - Renamed to doGeosFp.input
+#
+==> Login String
+byantosca:NpHh5Qdc
+
+==> Raw Met Data Directory
+/as/priv/ftp/gmao/gmao
+
+==> Code Directory
+../bin
+
+==> Job Directory
+../jobs
+
+==> Log Directory
+../logs
+
+==> Temporary Directory
+../jobs
+
+==> Program Executable
+GeosFpDriver{THREAD}.x
+
+==> Defaults for Executable
+../bin/GeosFpDriver.input
+
+==> Submit Statement
+{JOB} &
+
+==> Sleep Time [s]
+300
+
+==> Emails for Notification
+yantosca\@seas.harvard.edu
+
+#--------------------------------------------------------
+# FOR SEAC4RS: Test if met has been created properly
+#--------------------------------------------------------
+
+==> Global-Grid Met Fields
+/as/data/geos/GEOS_4x5/GEOS_FP/YYYY/MM
+ 14635500   GEOS572.YYYYMMDD.A1.4x5.nc
+ 68682296   GEOS572.YYYYMMDD.A3cld.4x5.nc
+ 45895156   GEOS572.YYYYMMDD.A3dyn.4x5.nc
+ 30527276   GEOS572.YYYYMMDD.A3mstC.4x5.nc
+ 30951228   GEOS572.YYYYMMDD.A3mstE.4x5.nc
+ 23002208   GEOS572.YYYYMMDD.I3.4x5.nc
+
+==> Nested-Grid Met Fields
+/as/data/geos/GEOS_0.25x0.3125_NA/GEOS_FP/YYYY/MM
+ 200718156  GEOS572.YYYYMMDD.A1.025x03125.NA.nc
+ 942457112  GEOS572.YYYYMMDD.A3cld.025x03125.NA.nc
+ 629760532  GEOS572.YYYYMMDD.A3dyn.025x03125.NA.nc
+ 418872332  GEOS572.YYYYMMDD.A3mstC.025x03125.NA.nc
+ 424689948  GEOS572.YYYYMMDD.A3mstE.025x03125.NA.nc
+ 315609728  GEOS572.YYYYMMDD.I3.025x03125.NA.nc
+
+END OF FILE
+#EOP
+#------------------------------------------------------------------------------

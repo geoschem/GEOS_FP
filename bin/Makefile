@@ -33,9 +33,6 @@ DIR   = ../Code
 EXE0   = Geos57Driver0.x
 EXE1   = Geos57Driver1.x
 EXE2   = Geos57Driver2.x
-EXE3   = Geos57Driver3.x
-EXE4   = Geos57Driver4.x
-EXE5   = Geos57Driver5.x
 
 #==============================================================================
 # Makefile targets (for now, build w/ the sample data)
