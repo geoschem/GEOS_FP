@@ -5,8 +5,8 @@
 ;
 ; !ROUTINE: adjust_cn
 ;
-; !DESCRIPTION: Routine to adjust the existing GEOS_FP data files for 
-;  COARDS compliance.  Also merges the ap and bp fields into the CN file.
+; !DESCRIPTION: Routine to adjust the existing GEOS_FP "CN" (constant)
+;  data files for better COARDS compliance.
 ;\\
 ;\\
 ; !USES:
@@ -32,8 +32,15 @@
 ;
 ; !LOCAL VARIABLES:
 ;
- local fIn,     time, lat, lon, frLake, frLand, frLandIc, 
-       frOcean, phis, ap,  bp,  lev,    fOut
+ local fIn,     time, lat, lon, FRLAKE, FRLAND, FRLANDIC, 
+       FROCEAN, PHIS, ap,  bp,  lev,    fOut
+;
+; !REMARKS:
+;  (1) Adds a calendar attribute onto the "time" index variable.
+;  (2) Also merges the ap and bp fields into the CN file.  We need to take 
+;       these out of the 3-D files because ESMF/MAPL cannot read netCDF 
+;       files in which there are variables with more than one vertical 
+;       dimension.
 ;
 ; !REVISION HISTORY:
 ;  23 Sep 2013 - R. Yantosca - Initial version
@@ -49,11 +56,11 @@ begin
   time                   = fIn->time
   lat                    = fIn->lat
   lon                    = fIn->lon
-  frLake                 = fIn->FRLAKE
-  frLand                 = fIn->FRLAND
-  frLandIc               = fIn->FRLANDIC
-  frOcean                = fIn->FROCEAN
-  phis                   = fIn->PHIS
+  FRLAKE                 = fIn->FRLAKE
+  FRLAND                 = fIn->FRLAND
+  FRLANDIC               = fIn->FRLANDIC
+  FROCEAN                = fIn->FROCEAN
+  PHIS                   = fIn->PHIS
 
   ;=========================================================================
   ; Read the AP and BP fields
@@ -62,16 +69,17 @@ begin
   ap                     = fApBp->ap
   bp                     = fApBp->bp
 
+  ; Rename the dimensions of ap and bp to "lev"
+  ap!0                   = "lev"
+  bp!0                   = "lev"
+
   ; Create a new index variable for levels
+  ; Redefine "lev" for all relevant variables
   lev                    = fspan( 1.0, 73.0, 73 )
   lev!0                  = "lev"
   lev@long_name          = "levels"
   lev@units              = "1"
   lev&lev                = lev
-
-  ; Rename the dimensions of ap and bp to "lev"
-  ap!0                   = "lev"
-  bp!0                   = "lev"
   ap&lev                 = lev
   bp&lev                 = lev
 
@@ -88,11 +96,11 @@ begin
 
     ; Redefine the latitude dimension for all relevant variables
     lat&lat              = lat
-    frLake&lat           = lat
-    frLand&lat           = lat
-    frLandIc&lat         = lat
-    frOcean&lat          = lat
-    phis&lat             = lat
+    FRLAKE&lat           = lat
+    FRLAND&lat           = lat
+    FRLANDIC&lat         = lat
+    FROCEAN&lat          = lat
+    PHIS&lat             = lat
   end if
 
   ;=========================================================================
@@ -100,28 +108,48 @@ begin
   ;=========================================================================
 
   ; The time index array should have a calendar specified
+  ; Redefine time for all relevant variables
   time@calendar          = "gregorian"
   time&time              = time
+  FRLAKE&time            = time
+  FRLAND&time            = time
+  FRLANDIC&time          = time
+  FROCEAN&time           = time
+  PHIS&time              = time
 
   ; Unitless quantities should have units = "1"
-  frLake@units           = "1"
-  frLand@units           = "1"
-  frLandIc@units         = "1"
-  frOcean@units          = "1"
+  FRLAKE@units           = "1"
+  FRLAND@units           = "1"
+  FRLANDIC@units         = "1"
+  FROCEAN@units          = "1"
   bp@units               = "1"
 
   ; Add common COARDS variable attributes
-  add_coards_var_atts( frLake   )
-  add_coards_var_atts( frLand   )
-  add_coards_var_atts( frLandIc )
-  add_coards_var_atts( frOcean  )
-  add_coards_var_atts( phis     )
+  add_coards_var_atts( FRLAKE   )
+  add_coards_var_atts( FRLAND   )
+  add_coards_var_atts( FRLANDIC )
+  add_coards_var_atts( FROCEAN  )
+  add_coards_var_atts( PHIS     )
   add_coards_var_atts( ap       )
   add_coards_var_atts( bp       )
 
   ;=========================================================================
   ; Save to output file
   ;=========================================================================
+
+  ; Print data (uncomment for debugging)
+  ;printVarSummary( time     )
+  ;printVarSummary( lev      )
+  ;printVarSummary( lon      )
+  ;printVarSummary( lat      )
+  ;printVarSummary( FRLAKE   )
+  ;printVarSummary( FRLAND   )
+  ;printVarSummary( FRLANDIC )
+  ;printVarSummary( FROCEAN  )
+  ;printVarSummary( PHIS     )
+  ;printVarSummary( ap       )
+  ;printVarSummary( bp       )
+  ;exit
 
   ; Open output file (remove prior version)
   system( "rm -f " + outFile )
@@ -130,30 +158,17 @@ begin
   fOut->lev              = lev
   fOut->lat              = lat
   fOut->lon              = lon
-  fOut->FRLAKE           = frLake
-  fOut->FRLAND           = frLand
-  fOut->FRLANDIC         = frLandIc
-  fOut->FROCEAN          = frOcean
-  fOut->PHIS             = phis
+  fOut->FRLAKE           = FRLAKE
+  fOut->FRLAND           = FRLAND
+  fOut->FRLANDIC         = FRLANDIC
+  fOut->FROCEAN          = FROCEAN
+  fOut->PHIS             = PHIS
   fOut->ap               = ap
   fOut->bp               = bp
 
   ; Copy global attributes from the input file and
   ; adjust the attribute names to be COARDS compliant
   add_coards_global_atts( fIn, fOut )
-  
-  ; Print data (uncomment for debugging)
-  ;printVarSummary( time     )
-  ;printVarSummary( lev      )
-  ;printVarSummary( lon      )
-  ;printVarSummary( lat      )
-  ;printVarSummary( frLake   )
-  ;printVarSummary( frLand   )
-  ;printVarSummary( frLandIc )
-  ;printVarSummary( frOcean  )
-  ;printVarSummary( phis     )
-  ;printVarSummary( ap       )
-  ;printVarSummary( bp       )
   
 end
 ;EOC

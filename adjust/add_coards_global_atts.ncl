@@ -32,6 +32,10 @@
 ;
  local fileName
 ;
+; !REMARKS:
+;  NOTE: Due to a bug, some files have the global attribute "Delta_time" 
+;  of "delta_time".  We test for both here.
+;
 ; !REVISION HISTORY:
 ;  23 Sep 2013 - R. Yantosca - Initial version
 ;EOP
@@ -81,8 +85,15 @@ begin
   fOut@End_Date             = fIn@end_date
   fOut@End_Time             = fIn@end_time
 
-  ; Lon, lat, time increments
-  fOut@Delta_Time           = fIn@delta_time
+  ; Time increment
+  if      ( isatt( fIn, "delta_time" ) ) then
+    fOut@Delta_Time         = fIn@delta_time
+  else if ( isatt( fIn, "Delta_time" ) ) 
+    fOut@Delta_Time         = fIn@Delta_time
+  end if 
+  end if
+
+  ; Lon, lat increments
   fOut@Delta_Lon            = fIn@delta_lon
   fOut@Delta_Lat            = fIn@delta_lat
 
