@@ -169,6 +169,14 @@ MODULE GeosFpRegridModule
   REAL*4, PUBLIC :: xmid_4x5 ( I4x5     )              ! Lon centers
   REAL*4, PUBLIC :: ymid_4x5 ( J4x5     )              ! Lat centers
   REAL*4, PUBLIC :: zmid_4x5 ( L4x5     )              ! Vertical levels
+
+  !--------------------------
+  ! For netCDF: force poles 
+  ! to be -90/+90 for MAPL
+  !--------------------------
+  REAL*4, PUBLIC :: nc_ymid_1x125( J1x125 )
+  REAL*4, PUBLIC :: nc_ymid_2x25 ( J2x25  )
+  REAL*4, PUBLIC :: nc_ymid_4x5  ( J4x5   )
 !
 ! !AUTHOR:
 ! Original MAP_A2A code from S-J Lin
@@ -185,6 +193,9 @@ MODULE GeosFpRegridModule
 !  26 Oct 2011 - R. Yantosca - Now make all lon & lat arrays public
 !  03 Jan 2012 - R. Yantosca - Now define index arrays for vertical levels
 !  12 Jan 2012 - R. Yantosca - Now define index arrays for vertical edges
+!  23 Sep 2013 - R. Yantosca - Define adjusted polar arrays for netCDF files
+!                              since ESMF/MAPL expects the poles to always
+!                              be at -90 and +90 degrees
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1272,12 +1283,12 @@ MODULE GeosFpRegridModule
 !   Originally written by S-J Lin 
 !
 ! !REVISION HISTORY: 
-!   21 Sep 2000 - R. Yantosca - Converted to F90 freeform format and inserted
-!                               into "Geos3RegridModule".  Added F90 type 
-!                               declarations to be consistent with  
-!                               TypeModule.f90.  Also updated comments. 
-!   08 Nov 2006 - R. Yantosca - Inserted into GeosFpRegridModule.f90
-!   12 Dec 2008 - R. Yantosca - Added ProTeX documentation headers
+!  21 Sep 2000 - R. Yantosca - Converted to F90 freeform format and inserted
+!                              into "Geos3RegridModule".  Added F90 type 
+!                              declarations to be consistent with  
+!                              TypeModule.f90.  Also updated comments. 
+!  08 Nov 2006 - R. Yantosca - Inserted into GeosFpRegridModule.f90
+!  12 Dec 2008 - R. Yantosca - Added ProTeX documentation headers
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1373,6 +1384,9 @@ MODULE GeosFpRegridModule
 !  26 Oct 2011 - R. Yantosca - Now initialize lon & lat center arrays
 !  03 Jan 2012 - R. Yantosca - Now define index arrays for vertical levels
 !  12 Jan 2012 - R. Yantosca - Now define index arrays for vertical edges
+!  23 Sep 2013 - R. Yantosca - Define special output lat arrays for netCDF
+!                              files so that the poles are -90/+90 degrees.
+!                              This facilitates the standalone GIGC w/ MAPL.
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1627,6 +1641,27 @@ MODULE GeosFpRegridModule
     DO L = 1, L4x5+1
        zedge_4x5(L) = L
     ENDDO
+
+    !======================================================================
+    ! Define special latitude arrays for the netCDF files, since ESMF/MAPL
+    ! require the poles to be at -90/+90 degrees.  This will ensure that
+    ! the GIGC standalone code will work properly. (bmy, 9/23/13)
+    !======================================================================
+
+    ! Start with the lat arrays
+    nc_ymid_1x125                = ymid_1x125
+    nc_ymid_2x25                 = ymid_2x25
+    nc_ymid_4x5                  = ymid_4x5
+
+    ! Overwrite the South pole
+    nc_ymid_1x125(1     )        = -90e0
+    nc_ymid_2x25 (1     )        = -90e0
+    nc_ymid_4x5  (1     )        = -90e0
+
+    ! Overwrite the North pole
+    nc_ymid_1x125(J1x125)        = +90e0
+    nc_ymid_2x25 (J2x25 )        = +90e0
+    nc_ymid_4x5  (J4x5  )        = +90e0
 
   END SUBROUTINE GeosFpRegridInit
 !EOC
