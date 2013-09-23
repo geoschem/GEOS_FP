@@ -101,6 +101,7 @@ MODULE GeosFpA3MstEModule
 !  01 Feb 2012 - R. Yantosca - Bug fix: do not use Z+1 for vertical dimension,
 !                              as the proper value is passed in the arg list
 !  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
+!  23 Sep 2013 - R. Yantosca - Add calendar attribute to time
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -110,7 +111,7 @@ MODULE GeosFpA3MstEModule
     ! Scalars
     CHARACTER(LEN=255) :: sysTime
     CHARACTER(LEN=255) :: lName,   units,   gamap,   DI,    DJ
-    CHARACTER(LEN=255) :: delta_t, begin_d, begin_t, incr,  msg
+    CHARACTER(LEN=255) :: delta_t, begin_d, begin_t, incr,  msg, cal
     INTEGER            :: idLon,   idLat,   idLev,   idAp
     INTEGER            :: idBp,    idTime,  vId,     omode
 
@@ -141,69 +142,69 @@ MODULE GeosFpA3MstEModule
   
     ! Title string
     lName = 'GEOS-FP time-averaged 3-hour moist parameters on level edges (A3mstE), processed for GEOS-Chem input'
-    CALL NcDef_Glob_Attributes( fOut, 'Title',              TRIM( lName ) )
+    CALL NcDef_Glob_Attributes( fOut, 'Title',                TRIM( lName ) )
 
     ! Contact
     lName = "GEOS-Chem Support Team (geos-chem-support@as.harvard.edu)"
-    CALL NcDef_Glob_Attributes( fOut, 'Contact',            TRIM( lName ) )
-    
-   ! References
-    lName = "www.geos-chem.org; wiki.geos-chem.org"
-    CALL NcDef_Glob_Attributes( fOut, 'References',         TRIM( lName ) )
-
-    ! Filename
-    lName = NotDir( outFileName )
-    CALL NcDef_Glob_Attributes( fOut, 'Filename',           TRIM( lName ) )
-
-    ! History
-    sysTime = SystemTimeStamp()
-    lName = 'File generated on: ' // TRIM( sysTime )
-    CALL NcDef_Glob_Attributes( fOut, 'History' ,           TRIM( lName ) )
-    CALL NcDef_Glob_Attributes( fOut, 'ProductionDateTime', TRIM( lName ) )
-
-    ! Format
-    lName = "NetCDF-3" ;
-    CALL NcDef_Glob_Attributes( fOut, 'Format' ,            TRIM( lName ) )
-                                                            
-    ! Format                                                
-    lName = "global" ;                                      
-    CALL NcDef_Glob_Attributes( fOut, 'SpatialCoverage',    TRIM( lName ) )
-                                                            
-    ! Conventions                                           
-    lName = 'COARDS'                                        
-    CALL NcDef_Glob_Attributes( fOut, 'Conventions',        TRIM( lName ) )
-                                                            
-    ! Version                                               
-    lName = 'GEOS5-FP'                                      
-    CALL NcDef_Glob_Attributes( fOut, 'Version',            TRIM( lName ) )
-                                                            
-    ! Model                                                 
-    lName = 'GEOS-FP'                                       
-    CALL NcDef_Glob_Attributes( fOut, 'Model',              TRIM( lName ) )
-                                                            
-    ! NLayers                                               
-    lName = '72'                                            
-    CALL NcDef_Glob_Attributes( fOut, 'Nlayers',            TRIM( lName ) )
-                                                            
-    ! Start Date (hardwire to 2011/01/01)                   
-    lName = '20110101'                                      
-    CALL NcDef_Glob_Attributes( fOut, 'Start_Date',         TRIM( lName ) )
-                                                            
-    ! Start Time                                            
-    lName = '00:00:00.0'                                    
-    CALL NcDef_Glob_Attributes( fOut, 'Start_Time',         TRIM( lName ) )
-                                                            
-    ! End Date (hardwire to 2011/01/01)                     
-    lName = '20110101'                                      
-    CALL NcDef_Glob_Attributes( fOut, 'End_Date',           TRIM( lName ) )
-                                                            
-    ! End Time                                              
-    lName = '00:00:00.0'                                    
-    CALL NcDef_Glob_Attributes( fOut, 'End_Time',           TRIM( lName ) )
-                                                            
-    ! Delta-time                                            
-    lName = '000000'                                        
-    CALL NcDef_Glob_Attributes( fOut, 'Delta_Time',         TRIM( lName ) )
+    CALL NcDef_Glob_Attributes( fOut, 'Contact',              TRIM( lName ) )
+                                                              
+   ! References                                               
+    lName = "www.geos-chem.org; wiki.geos-chem.org"           
+    CALL NcDef_Glob_Attributes( fOut, 'References',           TRIM( lName ) )
+                                                              
+    ! Filename                                                
+    lName = NotDir( outFileName )                             
+    CALL NcDef_Glob_Attributes( fOut, 'Filename',             TRIM( lName ) )
+                                                              
+    ! History                                                 
+    sysTime = SystemTimeStamp()                               
+    lName = 'File generated on: ' // TRIM( sysTime )          
+    CALL NcDef_Glob_Attributes( fOut, 'History' ,             TRIM( lName ) )
+    CALL NcDef_Glob_Attributes( fOut, 'ProductionDateTime',   TRIM( lName ) )
+    CALL NcDef_Glob_Attributes( fOut, 'ModificationDateTime', TRIM( lName ) )                                                         
+    ! Format                                                  
+    lName = "NetCDF-3" ;                                      
+    CALL NcDef_Glob_Attributes( fOut, 'Format' ,              TRIM( lName ) )
+                                                              
+    ! Format                                                  
+    lName = "global" ;                                        
+    CALL NcDef_Glob_Attributes( fOut, 'SpatialCoverage',      TRIM( lName ) )
+                                                              
+    ! Conventions                                             
+    lName = 'COARDS'                                          
+    CALL NcDef_Glob_Attributes( fOut, 'Conventions',          TRIM( lName ) )
+                                                              
+    ! Version                                                 
+    lName = 'GEOS-FP'                                        
+    CALL NcDef_Glob_Attributes( fOut, 'Version',              TRIM( lName ) )
+                                                              
+    ! Model                                                   
+    lName = 'GEOS-5'                                         
+    CALL NcDef_Glob_Attributes( fOut, 'Model',                TRIM( lName ) )
+                                                              
+    ! NLayers                                                 
+    lName = '72'                                              
+    CALL NcDef_Glob_Attributes( fOut, 'Nlayers',              TRIM( lName ) )
+                                                              
+    ! Start Date (hardwire to 2011/01/01)                     
+    lName = '20110101'                                        
+    CALL NcDef_Glob_Attributes( fOut, 'Start_Date',           TRIM( lName ) )
+                                                              
+    ! Start Time                                              
+    lName = '00:00:00.0'                                      
+    CALL NcDef_Glob_Attributes( fOut, 'Start_Time',           TRIM( lName ) )
+                                                              
+    ! End Date (hardwire to 2011/01/01)                       
+    lName = '20110101'                                        
+    CALL NcDef_Glob_Attributes( fOut, 'End_Date',             TRIM( lName ) )
+                                                              
+    ! End Time                                                
+    lName = '00:00:00.0'                                      
+    CALL NcDef_Glob_Attributes( fOut, 'End_Time',             TRIM( lName ) )
+                                                              
+    ! Delta-time                                              
+    lName = '000000'                                          
+    CALL NcDef_Glob_Attributes( fOut, 'Delta_Time',           TRIM( lName ) )
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
@@ -222,10 +223,10 @@ MODULE GeosFpA3MstEModule
     END SELECT
 
     ! Delta-lon
-    CALL NcDef_Glob_Attributes( fOut, 'Delta_Lon',          TRIM( DI    ) )
+    CALL NcDef_Glob_Attributes( fOut, 'Delta_Lon',            TRIM( DI    ) )
 
     ! Delta-lat
-    CALL NcDef_Glob_Attributes( fOut, 'Delta_Lat',          TRIM( DJ    ) )
+    CALL NcDef_Glob_Attributes( fOut, 'Delta_Lat',            TRIM( DJ    ) )
 
     !-------------------------------------------------------------------------
     ! Define dimensions and index arrays.  NOTE: COARDS specifies that index 
@@ -268,6 +269,7 @@ MODULE GeosFpA3MstEModule
     ! Time index array
     var1    = (/ idTime /)
     vId     = vId + 1
+    cal     = 'gregorian'
     lName   = 'time'
     units   = UnitsForTime( yyyymmdd )
     delta_t = '0000-00-00 03:00:00'
@@ -275,6 +277,7 @@ MODULE GeosFpA3MstEModule
     begin_t = '000000'
     incr    = '030000'
     CALL NcDef_Variable      ( fOut, 'time', NF_INT,  1, var1, vId           )
+    CALL NcDef_Var_Attributes( fOut, vId, 'calendar',      TRIM( cal     )  )
     CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName   )  )
     CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units   )  ) 
     CALL NcDef_Var_Attributes( fOut, vId, 'delta_t',        TRIM( delta_t )  ) 
@@ -418,6 +421,9 @@ MODULE GeosFpA3MstEModule
 !  20 Sep 2013 - R. Yantosca - Change and/or add attributes for COARDS
 !  20 Sep 2013 - R. Yantosca - Now save CMFMC to the A3mstE file
 !  20 Sep 2013 - R. Yantosca - Now save out nested Europe grid
+!  23 Sep 2013 - R. Yantosca - Now define netCDF latitude such that the poles
+!                              are at -90/+90.  This facilitates the GIGC
+!                              using ESMF/MAPL.
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -469,61 +475,61 @@ MODULE GeosFpA3MstEModule
     IF ( doNestCh ) THEN
        fName = TRIM( tempDirTmplNestCh ) // TRIM( dataTmplNestCh )
        gName = 'nested CH'
-       CALL ExpandDate  ( fName,     yyyymmdd,  000000                  )      
-       CALL StrRepl     ( fName,     '%%%%%%',  'A3mstE'                )
-       CALL NcOutFileDef( I_NestCh,  J_NestCh,  L025x03125+1, TIMES_A3,  &
-                          xMid_025x03125(I0_ch:I1_ch),                   &
-                          yMid_025x03125(J0_ch:J1_ch),                   &
-                          zEdge_025x03125,                    a3Mins,    &
-                          gName,     fName,     fOutNestCh              )
+       CALL ExpandDate  ( fName,     yyyymmdd,  000000                     )    
+       CALL StrRepl     ( fName,     '%%%%%%',  'A3mstE'                   )
+       CALL NcOutFileDef( I_NestCh,  J_NestCh,  L025x03125+1, TIMES_A3,     &
+                          xMid_025x03125(I0_ch:I1_ch),                      &
+                          yMid_025x03125(J0_ch:J1_ch),                      &
+                          zEdge_025x03125,                       a3Mins,    &
+                          gName,     fName,        fOutNestCh              )
     ENDIF
 
     ! Open nested EU output file
     IF ( doNestEu ) THEN
        fName = TRIM( tempDirTmplNestEu ) // TRIM( dataTmplNestEu )
        gName = 'nested EU'
-       CALL ExpandDate  ( fName,     yyyymmdd,  000000                  )      
-       CALL StrRepl     ( fname,     '%%%%%%',  'A3mstE'                )
-       CALL NcOutFileDef( I_NestEu,  J_NestEu,  L025x03125+1, TIMES_A3,  &
-                          xMid_025x03125(I0_eu:I1_eu),                   &
-                          yMid_025x03125(J0_eu:J1_eu),                   &
-                          zEdge_025x03125,                    a3Mins,    &
-                          gName,     fName,     fOutNestEu              )
+       CALL ExpandDate  ( fName,     yyyymmdd,  000000                     )   
+       CALL StrRepl     ( fname,     '%%%%%%',  'A3mstE'                   )
+       CALL NcOutFileDef( I_NestEu,  J_NestEu,  L025x03125+1,    TIMES_A3,  &
+                          xMid_025x03125(I0_eu:I1_eu),                      &
+                          yMid_025x03125(J0_eu:J1_eu),                      &
+                          zEdge_025x03125,                       a3Mins,    &
+                          gName,     fName,        fOutNestEu              )
     ENDIF
 
     ! Open nested NA output file
     IF ( doNestNa ) THEN
        fName = TRIM( tempDirTmplNestNa ) // TRIM( dataTmplNestNa )
        gName = 'nested NA'
-       CALL ExpandDate  ( fName,     yyyymmdd,  000000                  )      
-       CALL StrRepl     ( fName,     '%%%%%%',  'A3mstE'                )
-       CALL NcOutFileDef( I_NestNa,  J_NestNa,  L025x03125+1, TIMES_A3,  &
-                          xMid_025x03125(I0_na:I1_na),                   &
-                          yMid_025x03125(J0_na:J1_na),                   &
-                          zEdge_025x03125,                    a3Mins,    &
-                          gName,     fName,     fOutNestNa              )
+       CALL ExpandDate  ( fName,     yyyymmdd,  000000                     )   
+       CALL StrRepl     ( fName,     '%%%%%%',  'A3mstE'                   )
+       CALL NcOutFileDef( I_NestNa,  J_NestNa,  L025x03125+1,    TIMES_A3,  &
+                          xMid_025x03125(I0_na:I1_na),                      &
+                          yMid_025x03125(J0_na:J1_na),                      &
+                          zEdge_025x03125,                       a3Mins,    &
+                          gName,     fName,        fOutNestNa              )
     ENDIF
 
     ! Open 2 x 2.5 output file
     IF ( do2x25 ) THEN
        fName = TRIM( tempDirTmpl2x25 ) // TRIM( dataTmpl2x25 )
        gName = '2 x 2.5 global'
-       CALL ExpandDate  ( fName,     yyyymmdd,  000000                  )      
-       CALL StrRepl     ( fName,     '%%%%%%',  'A3mstE'                )
-       CALL NcOutFileDef( I2x25,     J2x25,     L2x25+1,      TIMES_A3,  &
-                          xMid_2x25, yMid_2x25, zEdge_2x25,   a3Mins,    &
-                          gName,     fName,     fOut2x25                )
+       CALL ExpandDate  ( fName,     yyyymmdd,     000000                  )   
+       CALL StrRepl     ( fName,     '%%%%%%',     'A3mstE'                )
+       CALL NcOutFileDef( I2x25,     J2x25,        L2x25+1,      TIMES_A3,  &
+                          xMid_2x25, nc_yMid_2x25, zEdge_2x25,   a3Mins,    &
+                          gName,     fName,        fOut2x25                )
     ENDIF
 
     ! Open 4 x 5 output file 
     IF ( do4x5 ) THEN
        fName = TRIM( tempDirTmpl4x5 ) // TRIM( dataTmpl4x5 )
        gName = '4 x 5 global'
-       CALL ExpandDate  ( fName,     yyyymmdd,  000000                  )      
-       CALL StrRepl     ( fName,     '%%%%%%',  'A3mstE'                )
-       CALL NcOutFileDef( I4x5,      J4x5,      L4x5+1,       TIMES_A3,  &
-                          xMid_4x5,  yMid_4x5,  zEdge_4x5,    a3Mins,    &
-                          gName,     fName,     fOut4x5                 )
+       CALL ExpandDate  ( fName,     yyyymmdd,     000000                  )   
+       CALL StrRepl     ( fName,     '%%%%%%',     'A3mstE'                )
+       CALL NcOutFileDef( I4x5,      J4x5,         L4x5+1,       TIMES_A3,  &
+                          xMid_4x5,  nc_yMid_4x5,  zEdge_4x5,    a3Mins,    &
+                          gName,     fName,        fOut4x5                 )
     ENDIF
 
     !=======================================================================
