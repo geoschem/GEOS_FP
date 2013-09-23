@@ -1,0 +1,18 @@
+README -- describes contents of GEOS_FP/adjust
+23 Sep 2013
+GEOS-Chem Support Team
+geos-chem-support@as.harvard.edu
+
+
+This directory contains scripts to adjust the existing GEOS-FP data files 
+as follows:
+
+(1) Files will be renamed from GEOS572*.nc to GEOSFP*.nc
+
+(2) Attributes have been modified for COARDS compliance
+
+(3) Each file now contains only one vertical dimension.  This will facilitate
+    the standalone Grid-Independent GEOS-Chem using ESMF/MAPL.  The MAPL
+    netCDF read & regrid  routines cannot handle more than one vertical
+    dimension per netCDF file.
+
