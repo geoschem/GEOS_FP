@@ -102,6 +102,7 @@ MODULE GeosFpA3MstEModule
 !                              as the proper value is passed in the arg list
 !  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !  23 Sep 2013 - R. Yantosca - Add calendar attribute to time
+!  24 Sep 2013 - R. Yantosca - Bug fix: now use correct start & end dates
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -186,16 +187,16 @@ MODULE GeosFpA3MstEModule
     lName = '72'                                              
     CALL NcDef_Glob_Attributes( fOut, 'Nlayers',              TRIM( lName ) )
                                                               
-    ! Start Date (hardwire to 2011/01/01)                     
-    lName = '20110101'                                        
+    ! Start Date
+    lName = yyyymmdd_string
     CALL NcDef_Glob_Attributes( fOut, 'Start_Date',           TRIM( lName ) )
                                                               
     ! Start Time                                              
     lName = '00:00:00.0'                                      
     CALL NcDef_Glob_Attributes( fOut, 'Start_Time',           TRIM( lName ) )
                                                               
-    ! End Date (hardwire to 2011/01/01)                       
-    lName = '20110101'                                        
+    ! End Date
+    lName = yyyymmdd_string
     CALL NcDef_Glob_Attributes( fOut, 'End_Date',             TRIM( lName ) )
                                                               
     ! End Time                                                

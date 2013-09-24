@@ -103,6 +103,7 @@ MODULE GeosFpI3Module
 !  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !  20 Sep 2013 - R. Yantosca - Change and/or add attributes for COARDS
 !  23 Sep 2013 - R. Yantosca - Add calendar attribute to time
+!  24 Sep 2013 - R. Yantosca - Bug fix: now use correct start & end dates
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -143,7 +144,7 @@ MODULE GeosFpI3Module
     !-------------------------------------------------------------------------
   
     ! Title string
-    lName = 'GEOS-FP instantaneous 3-hour (I3) fields, processed for GEOS-Chem input'
+    lName = 'GEOS-FP instantaneous 3-hour parameters (I3), processed for GEOS-Chem input'
     CALL NcDef_Glob_Attributes( fOut, 'Title',                TRIM( lName ) )
 
     ! Contact
@@ -189,16 +190,16 @@ MODULE GeosFpI3Module
     lName = '72'                                              
     CALL NcDef_Glob_Attributes( fOut, 'Nlayers',              TRIM( lName ) )
                                                               
-    ! Start Date (hardwire to 2011/01/01)                     
-    lName = '20110101'                                        
+    ! Start Date
+    lName = yyyymmdd_string                                     
     CALL NcDef_Glob_Attributes( fOut, 'Start_Date',           TRIM( lName ) )
                                                               
     ! Start Time                                              
     lName = '00:00:00.0'                                      
     CALL NcDef_Glob_Attributes( fOut, 'Start_Time',           TRIM( lName ) )
                                                               
-    ! End Date (hardwire to 2011/01/01)                       
-    lName = '20110101'                                        
+    ! End Date
+    lName = yyyymmdd_string
     CALL NcDef_Glob_Attributes( fOut, 'End_Date',             TRIM( lName ) )
                                                               
     ! End Time                                                

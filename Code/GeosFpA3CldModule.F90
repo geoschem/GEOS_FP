@@ -118,6 +118,7 @@ MODULE GeosFpA3CldModule
 !  19 Sep 2013 - R. Yantosca - Change and/or add attributes for COARDS
 !  19 Sep 2013 - R. Yantosca - Now take CLOUD = min( CFAN + CFLS, 1 )
 !  23 Sep 2013 - R. Yantosca - Add calendar attribute to time
+!  24 Sep 2013 - R. Yantosca - Bug fix: now use correct start & end dates
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -158,7 +159,7 @@ MODULE GeosFpA3CldModule
     !-------------------------------------------------------------------------
   
     ! Title string
-    lName = 'GEOS-FP time-averaged 3-hour cloud fields (A3cld), processed for GEOS-Chem input'
+    lName = 'GEOS-FP time-averaged 3-hour cloud parameters (A3cld), processed for GEOS-Chem input'
     CALL NcDef_Glob_Attributes( fOut, 'Title',                TRIM( lName ) )
 
     ! Contact
@@ -204,16 +205,16 @@ MODULE GeosFpA3CldModule
     lName = '72'                                              
     CALL NcDef_Glob_Attributes( fOut, 'Nlayers',              TRIM( lName ) )
                                                               
-    ! Start Date (hardwire to 2011/01/01)                     
-    lName = '20110101'                                        
+    ! Start Date
+    lName = yyyymmdd_string                                        
     CALL NcDef_Glob_Attributes( fOut, 'Start_Date',           TRIM( lName ) )
                                                               
     ! Start Time                                              
     lName = '00:00:00.0'                                      
     CALL NcDef_Glob_Attributes( fOut, 'Start_Time',           TRIM( lName ) )
                                                               
-    ! End Date (hardwire to 2011/01/01)                       
-    lName = '20110101'                                        
+    ! End Date
+    lName = yyyymmdd_string
     CALL NcDef_Glob_Attributes( fOut, 'End_Date',             TRIM( lName ) )
                                                               
     ! End Time                                                
@@ -313,26 +314,26 @@ MODULE GeosFpA3CldModule
        !%%% UNCOMMENT THIS CODE IF YOU WANT TO ONLY USE CFAN TO CREATE CLOUD
        !%%% BUT NOT TO SAVE IT OUT TO THE NETCDF FILE (bmy, 9/20/13)
        !
-       readOnly_CfAn = .TRUE.
+       !readOnly_CfAn = .TRUE.
        !
        !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
        !%%% UNCOMMENT THIS CODE IF YOU WANT TO SAVE OUT CFAN TO THE 
        !%%% NETCDF FILE (bmy, 9/20/13)
        !
-       !var4  = (/ idLon, idLat, idLev, idTime /)    
-       !vId   = vId + 1
-       !lName = '3D cloud fraction, anvils'
-       !units = '1'
-       !gamap = 'GMAO-3D$'
-       !CALL NcDef_Variable      ( fOut, 'CFAN', NF_FLOAT, 4, var4, vId       )
-       !CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
-       !CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
-       !CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
-       !CALL NcDef_Var_Attributes( fOut, vId, 'missing_value',  FILL_VALUE    )
-       !CALL NcDef_Var_Attributes( fOut, vId, '_FillValue',     FILL_VALUE    )
-       !CALL NcDef_Var_Attributes( fOut, vId, 'scale_factor',   1e0           )
-       !CALL NcDef_Var_Attributes( fOut, vId, 'add_offset',     0e0           )
-       !use_CfAn = .TRUE.
+       var4  = (/ idLon, idLat, idLev, idTime /)    
+       vId   = vId + 1
+       lName = '3D cloud fraction, anvils'
+       units = '1'
+       gamap = 'GMAO-3D$'
+       CALL NcDef_Variable      ( fOut, 'CFAN', NF_FLOAT, 4, var4, vId       )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'missing_value',  FILL_VALUE    )
+       CALL NcDef_Var_Attributes( fOut, vId, '_FillValue',     FILL_VALUE    )
+       CALL NcDef_Var_Attributes( fOut, vId, 'scale_factor',   1e0           )
+       CALL NcDef_Var_Attributes( fOut, vId, 'add_offset',     0e0           )
+       use_CfAn = .TRUE.
        !
        !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     ELSE
@@ -365,26 +366,26 @@ MODULE GeosFpA3CldModule
        !%%% UNCOMMENT THIS CODE IF YOU WANT TO ONLY USE CFAN TO CREATE CLOUD
        !%%% BUT NOT TO SAVE IT OUT TO THE NETCDF FILE (bmy, 9/20/13)
        !
-       readOnly_CfLs = .TRUE.
+       !readOnly_CfLs = .TRUE.
        !
        !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
        !%%% UNCOMMENT THIS CODE IF YOU WANT TO SAVE OUT CFLS TO THE 
        !%%% NETCDF FILE (bmy, 9/20/13)
        !
-       !var4  = (/ idLon, idLat, idLev, idTime /)    
-       !vId   = vId + 1
-       !lName = '3D cloud fraction, large-scale'
-       !units = '1'
-       !gamap = 'GMAO-3D$'
-       !CALL NcDef_Variable      ( fOut, 'CFLS', NF_FLOAT, 4, var4, vId       )
-       !CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
-       !CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
-       !CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
-       !CALL NcDef_Var_Attributes( fOut, vId, 'missing_value',  FILL_VALUE    )
-       !CALL NcDef_Var_Attributes( fOut, vId, '_FillValue',     FILL_VALUE    )
-       !CALL NcDef_Var_Attributes( fOut, vId, 'scale_factor',   1e0           )
-       !CALL NcDef_Var_Attributes( fOut, vId, 'add_offset',     0e0           )
-       !use_CfLs = .TRUE.
+       var4  = (/ idLon, idLat, idLev, idTime /)    
+       vId   = vId + 1
+       lName = '3D cloud fraction, large-scale'
+       units = '1'
+       gamap = 'GMAO-3D$'
+       CALL NcDef_Variable      ( fOut, 'CFLS', NF_FLOAT, 4, var4, vId       )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'missing_value',  FILL_VALUE    )
+       CALL NcDef_Var_Attributes( fOut, vId, '_FillValue',     FILL_VALUE    )
+       CALL NcDef_Var_Attributes( fOut, vId, 'scale_factor',   1e0           )
+       CALL NcDef_Var_Attributes( fOut, vId, 'add_offset',     0e0           )
+       use_CfLs = .TRUE.
        !
        !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     ELSE

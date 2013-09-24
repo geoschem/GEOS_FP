@@ -116,6 +116,7 @@ MODULE GeosFpA1Module
 !  01 Feb 2012 - R. Yantosca - Make all global attribute names lowercase
 !  20 Sep 2013 - R. Yantosca - Change and/or add attribute names for COARDS
 !  23 Sep 2013 - R. Yantosca - Add calendar attribute to time
+!  24 Sep 2013 - R. Yantosca - Bug fix: now use correct start & end dates
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -155,7 +156,7 @@ MODULE GeosFpA1Module
     !-------------------------------------------------------------------------
   
     ! Title string
-    lName = 'GEOS-FP 1-hour time-averaged (A1) fields, processed for GEOS-Chem input'
+    lName = 'GEOS-FP 1-hour time-averaged parameters (A1), processed for GEOS-Chem input'
     CALL NcDef_Glob_Attributes( fOut, 'Title',                TRIM( lName ) )
 
     ! Contact
@@ -201,16 +202,16 @@ MODULE GeosFpA1Module
     lName = '72'                                              
     CALL NcDef_Glob_Attributes( fOut, 'Nlayers',              TRIM( lName ) )
                                                               
-    ! Start Date (hardwire to 2011/01/01)                     
-    lName = '20110101'                                        
+    ! Start Date
+    lName = yyyymmdd_string                                       
     CALL NcDef_Glob_Attributes( fOut, 'Start_Date',           TRIM( lName ) )
                                                               
     ! Start Time                                              
     lName = '00:00:00.0'                                      
     CALL NcDef_Glob_Attributes( fOut, 'Start_Time',           TRIM( lName ) )
                                                               
-    ! End Date (hardwire to 2011/01/01)                       
-    lName = '20110101'                                        
+    ! End Date
+    lName = yyyymmdd_string
     CALL NcDef_Glob_Attributes( fOut, 'End_Date',             TRIM( lName ) )
                                                               
     ! End Time                                                

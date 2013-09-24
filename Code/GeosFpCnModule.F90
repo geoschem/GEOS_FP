@@ -154,7 +154,7 @@ CONTAINS
     !-------------------------------------------------------------------------
   
     ! Title string
-    lName = 'GEOS-FP constant (CN) fields, processed for GEOS-Chem input'
+    lName = 'GEOS-FP constant parameters (CN), processed for GEOS-Chem input'
     CALL NcDef_Glob_Attributes( fOut, 'Title',                TRIM( lName ) )
 
     ! Contact
