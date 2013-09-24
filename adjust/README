@@ -1,5 +1,5 @@
 README -- describes contents of GEOS_FP/adjust
-23 Sep 2013
+24 Sep 2013
 GEOS-Chem Support Team
 geos-chem-support@as.harvard.edu
 
@@ -9,10 +9,16 @@ as follows:
 
 (1) Files will be renamed from GEOS572*.nc to GEOSFP*.nc
 
-(2) Attributes have been modified for COARDS compliance
+(2) Attributes have been modified for COARDS compliance:
+    (a) The "time" dimension now has an attribute: calendar="gregorian"
+    (b) We now use global attribute "Conventions" instead of "conventions"
+    (c) Variables having a units attribute of "unitless" or "fraction"
+        now carry a units attribute of "1".
 
 (3) Each file now contains only one vertical dimension.  This will facilitate
     the standalone Grid-Independent GEOS-Chem using ESMF/MAPL.  The MAPL
     netCDF read & regrid  routines cannot handle more than one vertical
     dimension per netCDF file.
 
+(4) The CMFMC file is now moved from the A3dyn to the A3mstE file.  A3mstE
+    now contains all GEOS-Chem met fields on level edges.
