@@ -142,6 +142,9 @@ begin
   ; Copy global attributes from the input file and
   ; adjust the attribute names to be COARDS compliant
   add_coards_global_atts( fIn, fOut )
-  
+
+  ; Redefine the title string
+  fOut@Title             = "GEOS-FP time-averaged 3-hour dynamical parameters (A3dyn), processed for GEOS-Chem input"
+
 end
 ;EOC

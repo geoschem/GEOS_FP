@@ -3,10 +3,10 @@
 ;------------------------------------------------------------------------------
 ;BOP
 ;
-; !ROUTINE: adjust_i3
+; !ROUTINE: adjust_a3mstc
 ;
-; !DESCRIPTION: Routine to adjust the existing GEOS_FP "I3" (instantaneous
-;  3-hour) data files for better COARDS compliance.
+; !DESCRIPTION: Routine to adjust the existing GEOS_FP "A3mstC" (moist
+;  variables, 3-hour time averaged) data files for better COARDS compliance.
 ;\\
 ;\\
 ; !USES:
@@ -20,21 +20,21 @@
 ;
 ; !INTERFACE:
 ;
- undef( "adjust_i3" )
- procedure adjust_i3( inFile  : string, 
-                      outFile : string  )
+ undef( "adjust_a3mstc" )
+ procedure adjust_a3mstc( inFile  : string, 
+                          outFile : string  )
 ;
 ; !INPUT PARAMETERS:
-;  inFile   : Name of GEOS-5.7.2 "CN" file w/ input data
-;  apBpFile ; Name of file w/ Ap and Bp data
-;  outFile  : Name of GEOSFP "CN" file w/ vars & atts adjusted for COARDS
+;  inFile   : Name of GEOS-5.7.2 "A3mstC" file w/ input data
+;  outFile  : Name of GEOSFP "A3mstC" file w/ vars & atts adjusted for COARDS
 ;
 ; !LOCAL VARIABLES:
 ;
- local fIn, time, lev, lat, lon, PS, PV, QV, T, fOut
+ local fIn, time, lev, lat, lon, DQRCU, DQRLSAN, REEVAPCN, REEVAPLS, fOut
 ;
 ; !REMARKS:
-;  Also add a calendar attribute onto the "time" index variable.
+;  (1) Adds a calendar attribute onto the "time" index variable.
+;  (2) Ensures that the poles have latitudes -90 and +90 degrees.
 ;
 ; !REVISION HISTORY:
 ;  23 Sep 2013 - R. Yantosca - Initial version
@@ -51,10 +51,10 @@ begin
   lev                    = fIn->lev
   lat                    = fIn->lat
   lon                    = fIn->lon
-  PS                     = fIn->PS
-  PV                     = fIn->PV
-  QV                     = fIn->QV
-  T                      = fIn->T
+  DQRCU                  = fIn->DQRCU
+  DQRLSAN                = fIn->DQRLSAN
+  REEVAPCN               = fIn->REEVAPCN
+  REEVAPLS               = fIn->REEVAPLS
 
   ;=========================================================================
   ; For ESMF/MAPL, we need to make sure that the latitudes at the poles
@@ -69,10 +69,10 @@ begin
 
     ; Redefine the latitude dimension for all relevant variables
     lat&lat              = lat
-    PS&lat               = lat
-    PV&lat               = lat
-    QV&lat               = lat
-    T&lat                = lat
+    DQRCU&lat            = lat
+    DQRLSAN&lat          = lat
+    REEVAPCN&lat         = lat
+    REEVAPLS&lat         = lat
   end if
 
   ;=========================================================================
@@ -80,41 +80,42 @@ begin
   ;=========================================================================
 
   ; The time index array should have a calendar specified
-  ; Redefine "time" for all relevant variables
+  ; Redefine time for all relevant variables
   time@calendar          = "gregorian"
   time&time              = time
-  PS&time                = time
-  PV&time                = time
-  QV&time                = time
-  T&time                 = time
+  DQRCU&time             = time
+  DQRLSAN&time           = time
+  REEVAPCN&time          = time
+  REEVAPLS&time          = time
 
   ; The units of the lev index array has to be 1
-  ; Redefine "lev" for all relevant variables
+  ; Redefine lev for all relevant variables
   lev@units              = "1"
   lev&lev                = lev
-  PV&lev                 = lev
-  QV&lev                 = lev
-  T&lev                  = lev
+  DQRCU&lev              = lev
+  DQRLSAN&lev            = lev
+  REEVAPCN&lev           = lev
+  REEVAPLS&lev           = lev
 
   ; Add common COARDS variable attributes
-  add_coards_var_atts( PS )
-  add_coards_var_atts( PV )
-  add_coards_var_atts( QV )
-  add_coards_var_atts( T  )
+  add_coards_var_atts( DQRCU    )
+  add_coards_var_atts( DQRLSAN  )
+  add_coards_var_atts( REEVAPCN )
+  add_coards_var_atts( REEVAPLS )
 
   ;=========================================================================
   ; Save to output file
   ;=========================================================================
 
   ; Print data (uncomment for debugging)
-  ;printVarSummary( time )
-  ;printVarSummary( lev  )
-  ;printVarSummary( lon  )
-  ;printVarSummary( lat  )
-  ;printVarSummary( PS   )
-  ;printVarSummary( PV   )
-  ;printVarSummary( QV   )
-  ;printVarSummary( T    )
+  ;printVarSummary( time     )
+  ;printVarSummary( lev      )
+  ;printVarSummary( lon      )
+  ;printVarSummary( lat      )
+  ;printVarSummary( DQRCU    )
+  ;printVarSummary( DQRLSAN  )
+  ;printVarSummary( REEVAPCN )
+  ;printVarSummary( REEVAPLS )
   ;exit
 
   ; Open output file (remove prior version)
@@ -124,17 +125,17 @@ begin
   fOut->lev              = lev
   fOut->lat              = lat
   fOut->lon              = lon
-  fOut->PS               = PS
-  fOut->PV               = PV
-  fOut->QV               = QV
-  fOut->T                = T
+  fOut->DQRCU            = DQRCU
+  fOut->DQRLSAN          = DQRLSAN
+  fOut->REEVAPCN         = REEVAPCN
+  fOut->REEVAPLS         = REEVAPLS
 
   ; Copy global attributes from the input file and
   ; adjust the attribute names to be COARDS compliant
   add_coards_global_atts( fIn, fOut )
- 
+  
   ; Redefine the title string
-  fOut@Title             = "GEOS-FP instantaneous 3-hour parameters (I3), processed for GEOS-Chem input"
+  fOut@Title             = "GEOS-FP time-averaged 3-hour moist parameters on level centers (A3mstC), processed for GEOS-Chem input"
 
 end
 ;EOC

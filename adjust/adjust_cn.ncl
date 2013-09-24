@@ -21,13 +21,11 @@
 ; !INTERFACE:
 ;
  undef( "adjust_cn" )
- procedure adjust_cn( inFile   : string, 
-                      apBpFile : string, 
-                      outFile  : string  )
+ procedure adjust_cn( inFile  : string, 
+                      outFile : string  )
 ;
 ; !INPUT PARAMETERS:
 ;  inFile   : Name of GEOS-5.7.2 "CN" file w/ input data
-;  apBpFile ; Name of file w/ Ap and Bp data
 ;  outFile  : Name of GEOSFP "CN" file w/ vars & atts adjusted for COARDS
 ;
 ; !LOCAL VARIABLES:
@@ -37,13 +35,11 @@
 ;
 ; !REMARKS:
 ;  (1) Adds a calendar attribute onto the "time" index variable.
-;  (2) Also merges the ap and bp fields into the CN file.  We need to take 
-;       these out of the 3-D files because ESMF/MAPL cannot read netCDF 
-;       files in which there are variables with more than one vertical 
-;       dimension.
+;  (2) Ensures that the poles have latitudes -90 and +90 degrees.
 ;
 ; !REVISION HISTORY:
 ;  23 Sep 2013 - R. Yantosca - Initial version
+;  24 Sep 2013 - R. Yantosca - Split off Ap, Bp handling to adjust_apbp.ncl
 ;EOP
 ;------------------------------------------------------------------------------
 ;BOC
@@ -61,27 +57,6 @@ begin
   FRLANDIC               = fIn->FRLANDIC
   FROCEAN                = fIn->FROCEAN
   PHIS                   = fIn->PHIS
-
-  ;=========================================================================
-  ; Read the AP and BP fields
-  ;=========================================================================
-  fApBp                  = addfile( apBpFile, "r" )
-  ap                     = fApBp->ap
-  bp                     = fApBp->bp
-
-  ; Rename the dimensions of ap and bp to "lev"
-  ap!0                   = "lev"
-  bp!0                   = "lev"
-
-  ; Create a new index variable for levels
-  ; Redefine "lev" for all relevant variables
-  lev                    = fspan( 1.0, 73.0, 73 )
-  lev!0                  = "lev"
-  lev@long_name          = "levels"
-  lev@units              = "1"
-  lev&lev                = lev
-  ap&lev                 = lev
-  bp&lev                 = lev
 
   ;=========================================================================
   ; For ESMF/MAPL, we need to make sure that the latitudes at the poles
@@ -122,7 +97,6 @@ begin
   FRLAND@units           = "1"
   FRLANDIC@units         = "1"
   FROCEAN@units          = "1"
-  bp@units               = "1"
 
   ; Add common COARDS variable attributes
   add_coards_var_atts( FRLAKE   )
@@ -130,8 +104,6 @@ begin
   add_coards_var_atts( FRLANDIC )
   add_coards_var_atts( FROCEAN  )
   add_coards_var_atts( PHIS     )
-  add_coards_var_atts( ap       )
-  add_coards_var_atts( bp       )
 
   ;=========================================================================
   ; Save to output file
@@ -147,15 +119,12 @@ begin
   ;printVarSummary( FRLANDIC )
   ;printVarSummary( FROCEAN  )
   ;printVarSummary( PHIS     )
-  ;printVarSummary( ap       )
-  ;printVarSummary( bp       )
   ;exit
 
   ; Open output file (remove prior version)
   system( "rm -f " + outFile )
   fOut                   = addfile( outFile, "c" )
   fOut->time             = time
-  fOut->lev              = lev
   fOut->lat              = lat
   fOut->lon              = lon
   fOut->FRLAKE           = FRLAKE
@@ -163,12 +132,13 @@ begin
   fOut->FRLANDIC         = FRLANDIC
   fOut->FROCEAN          = FROCEAN
   fOut->PHIS             = PHIS
-  fOut->ap               = ap
-  fOut->bp               = bp
 
   ; Copy global attributes from the input file and
   ; adjust the attribute names to be COARDS compliant
   add_coards_global_atts( fIn, fOut )
-  
+ 
+  ; Redefine the title string
+  fOut@Title             = "GEOS-FP constant parameters (CN), processed for GEOS-Chem input"
+
 end
 ;EOC

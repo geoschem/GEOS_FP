@@ -3,9 +3,9 @@
 ;------------------------------------------------------------------------------
 ;BOP
 ;
-; !ROUTINE: adjust_a3cld
+; !ROUTINE: adjust_a3mste
 ;
-; !DESCRIPTION: Routine to adjust the existing GEOS_FP "A3cld" (cloud 
+; !DESCRIPTION: Routine to adjust the existing GEOS_FP "A3mstE" (moist 
 ;  variables, 3-hour time averaged) data files for better COARDS compliance.
 ;\\
 ;\\
@@ -20,23 +20,25 @@
 ;
 ; !INTERFACE:
 ;
- undef( "adjust_a3cld" )
- procedure adjust_a3cld( inFile  : string, 
-                         outFile : string  )
+ undef( "adjust_a3mste" )
+ procedure adjust_a3mste( inFile  : string, 
+                          outFile : string  )
 ;
 ; !INPUT PARAMETERS:
-;  inFile   : Name of GEOS-5.7.2 "A3cld" file w/ input data
-;  outFile  : Name of GEOSFP "A3cld" file w/ vars & atts adjusted for COARDS
+;  inFile   : Name of GEOS-5.7.2 "A3mstE" file w/ input data
+;  outFile  : Name of GEOSFP "A3mstE" file w/ vars & atts adjusted for COARDS
 ;
 ; !LOCAL VARIABLES:
 ;
- local fIn,      time, lev, lat, lon,    CLOUD, 
-       OPTDEPTH, QCCU, QI,  QL,  TAUCLI, TAUCLW, fOut
+ local fileDyn, fDyn,  time,    lev,   lat,     lon, 
+       CMFMC,   PFICU, PFILSAN, PFLCU, PFLLSAN, fOut
 ;
 ; !REMARKS:
 ;  (1) Adds a calendar attribute onto the "time" index variable.
 ;  (2) Ensures that the poles have latitudes -90 and +90 degrees.
-;  (3) Omits saving out CFAN, CFCU.  We really only need CLOUD.
+;  (3) Moves the CMFMC field from A3dyn to A3mstE, so that we can keep
+;       all variables on level edges in the same file.  This is necessary
+;       when reading netCDF files with ESMF/MAPL.
 ;
 ; !REVISION HISTORY:
 ;  23 Sep 2013 - R. Yantosca - Initial version
@@ -46,20 +48,27 @@
 begin
 
   ;=========================================================================
-  ; Read data from the input file
+  ; Read data from the A3mstE input file
   ;=========================================================================
   fIn                    = addfile( inFile, "r" )
   time                   = fIn->time
   lev                    = fIn->lev
   lat                    = fIn->lat
   lon                    = fIn->lon
-  CLOUD                  = fIn->CLOUD
-  OPTDEPTH               = fIn->OPTDEPTH
-  QCCU                   = fIn->QCCU
-  QI                     = fIn->QI
-  QL                     = fIn->QL
-  TAUCLI                 = fIn->TAUCLI
-  TAUCLW                 = fIn->TAUCLW
+  PFICU                  = fIn->PFICU
+  PFILSAN                = fIn->PFILSAN
+  PFLCU                  = fIn->PFLCU
+  PFLLSAN                = fIn->PFLLSAN
+
+  ;=========================================================================
+  ; Read CMFMC data from the A3dyn file
+  ; Change vertical dimension from "ap" to "lev"
+  ;=========================================================================
+  fileDyn                = str_sub_str( inFile, "A3mstE", "A3dyn" )
+  fDyn                   = addfile( fileDyn, "r" )
+  CMFMC                  = fDyn->CMFMC
+  CMFMC!1                = "lev"
+  CMFMC&lev              = lev
 
   ;=========================================================================
   ; For ESMF/MAPL, we need to make sure that the latitudes at the poles
@@ -74,13 +83,11 @@ begin
 
     ; Redefine the latitude dimension for all relevant variables
     lat&lat              = lat
-    CLOUD&lat            = lat
-    OPTDEPTH&lat         = lat
-    QCCU&lat             = lat
-    QI&lat               = lat
-    QL&lat               = lat
-    TAUCLI&lat           = lat
-    TAUCLW&lat           = lat
+    CMFMC&lat            = lat 
+    PFICU&lat            = lat
+    PFILSAN&lat          = lat
+    PFLCU&lat            = lat
+    PFLLSAN&lat          = lat
   end if
 
   ;=========================================================================
@@ -91,40 +98,28 @@ begin
   ; Redefine time for all relevant variables
   time@calendar          = "gregorian"
   time&time              = time
-  CLOUD&time             = time
-  OPTDEPTH&time          = time
-  QCCU&time              = time
-  QI&time                = time
-  QL&time                = time
-  TAUCLI&time            = time
-  TAUCLW&time            = time
+  CMFMC&time             = time 
+  PFICU&time             = time
+  PFILSAN&time           = time
+  PFLCU&time             = time
+  PFLLSAN&time           = time
 
   ; The units of the lev index array has to be 1
   ; Redefine lev for all relevant variables
   lev@units              = "1"
   lev&lev                = lev
-  CLOUD&lev              = lev
-  OPTDEPTH&lev           = lev
-  QCCU&lev               = lev
-  QI&lev                 = lev
-  QL&lev                 = lev
-  TAUCLI&lev             = lev
-  TAUCLW&lev             = lev
-
-  ; Quantities that are unitless need to have a unit string of "1"
-  CLOUD@units            = "1"
-  OPTDEPTH@units         = "1"
-  TAUCLI@units           = "1"
-  TAUCLW@units           = "1"
+  CMFMC&lev              = lev 
+  PFICU&lev              = lev
+  PFILSAN&lev            = lev
+  PFLCU&lev              = lev
+  PFLLSAN&lev            = lev
 
   ; Add common COARDS variable attributes
-  add_coards_var_atts( CLOUD    )
-  add_coards_var_atts( OPTDEPTH )
-  add_coards_var_atts( QCCU     )
-  add_coards_var_atts( QI       )
-  add_coards_var_atts( QL       )
-  add_coards_var_atts( TAUCLI   )
-  add_coards_var_atts( TAUCLW   )
+  add_coards_var_atts( CMFMC   )
+  add_coards_var_atts( PFICU   )
+  add_coards_var_atts( PFILSAN )
+  add_coards_var_atts( PFLCU   )
+  add_coards_var_atts( PFLLSAN )
 
   ;=========================================================================
   ; Save to output file
@@ -135,13 +130,11 @@ begin
   ;printVarSummary( lev      )
   ;printVarSummary( lon      )
   ;printVarSummary( lat      )
-  ;printVarSummary( CLOUD    )
-  ;printVarSummary( OPTDEPTH )
-  ;printVarSummary( QCCU     )
-  ;printVarSummary( QI       )
-  ;printVarSummary( QL       )
-  ;printVarSummary( TAUCLI   )
-  ;printVarSummary( TAUCLW   )
+  ;printVarSummary( CMFMC    )
+  ;printVarSummary( PFICU    )
+  ;printVarSummary( PFILSAN  )
+  ;printVarSummary( PFLCU    )
+  ;printVarSummary( PFLLSAN  )
   ;exit
 
   ; Open output file (remove prior version)
@@ -151,20 +144,17 @@ begin
   fOut->lev              = lev
   fOut->lat              = lat
   fOut->lon              = lon
-  fOut->CLOUD            = CLOUD
-  fOut->OPTDEPTH         = OPTDEPTH
-  fOut->QCCU             = QCCU
-  fOut->QI               = QI
-  fOut->QL               = QL
-  fOut->TAUCLI           = TAUCLI
-  fOut->TAUCLW           = TAUCLW
+  fOut->CMFMC            = CMFMC
+  fOut->PFICU            = PFICU
+  fOut->PFILSAN          = PFILSAN
+  fOut->PFLCU            = PFLCU
+  fOut->PFLLSAN          = PFLLSAN
 
   ; Copy global attributes from the input file and
   ; adjust the attribute names to be COARDS compliant
   add_coards_global_atts( fIn, fOut )
-  
-  ; Redefine the title string
-  fOut@Title             = "GEOS-FP time-averaged 3-hour cloud parameters (A3cld), processed for GEOS-Chem input"
 
+  ; Redefine the title string
+  fOut@Title             = "GEOS-FP time-averaged 3-hour moist parameters on level edges (A3mstE), processed for GEOS-Chem input"
 end
 ;EOC

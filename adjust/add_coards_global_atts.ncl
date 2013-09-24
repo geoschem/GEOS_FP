@@ -50,6 +50,7 @@ begin
 
   ; Basic contact info
   fOut@Title                = str_sub_str( fIn@title, "GEOS-5.7.2", "GEOS-FP" )
+  fOut@Title                = str_sub_str( fOut@Title, " for GEOS-Chem", ", processed for GEOS-Chem input" )
   fOut@Contact              = fIn@contact
   fOut@References           = fIn@references
 
