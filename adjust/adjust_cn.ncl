@@ -5,7 +5,7 @@
 ;
 ; !ROUTINE: adjust_cn
 ;
-; !DESCRIPTION: Routine to adjust the existing GEOS_FP "CN" (constant)
+; !DESCRIPTION: Routine to adjust the existing GEOS-FP "CN" (constant)
 ;  data files for better COARDS compliance.
 ;\\
 ;\\

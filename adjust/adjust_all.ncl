@@ -28,9 +28,10 @@
  undef( "adjust_all" )
 ;
 ; !CALLING SEQUENCE:
-;  ncl adjust_all.ncl 'dir="MY_DIR_NAME"'
+;  ncl 'dir="/directory/path/to/files/"' adjust_all.ncl
 
 ; !REMARKS:
+;  (1) Make sure the directory path ends in a "/".
 ;
 ; !REVISION HISTORY:
 ;  11 Sep 2013 - R. Yantosca - Initial version
@@ -38,10 +39,14 @@
 ;------------------------------------------------------------------------------
 ;BOC
 begin
-  
-  ; Specify for testing for now
-  dir       = "/as/tmp/all/tmp/bmy/GEOS_FP/adjust/"
-  date      = "20130923" 
+
+  ;=========================================================================
+  ; Make sure the user specifes an input directory
+  ;=========================================================================
+  if ( .not. isvar( "dir" ) ) then
+    print( "Input directory not specified!  Exiting ..." )
+    exit
+  end if
 
   ;=========================================================================
   ; Adjust the A1 files

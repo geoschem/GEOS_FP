@@ -5,7 +5,7 @@
 ;
 ; !ROUTINE: adjust_a3mste
 ;
-; !DESCRIPTION: Routine to adjust the existing GEOS_FP "A3mstE" (moist 
+; !DESCRIPTION: Routine to adjust the existing GEOS-FP "A3mstE" (moist 
 ;  variables, 3-hour time averaged) data files for better COARDS compliance.
 ;\\
 ;\\

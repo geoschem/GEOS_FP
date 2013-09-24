@@ -5,7 +5,7 @@
 ;
 ; !ROUTINE: adjust_a3cld
 ;
-; !DESCRIPTION: Routine to adjust the existing GEOS_FP "A3cld" (cloud 
+; !DESCRIPTION: Routine to adjust the existing GEOS-FP "A3cld" (cloud 
 ;  variables, 3-hour time averaged) data files for better COARDS compliance.
 ;\\
 ;\\

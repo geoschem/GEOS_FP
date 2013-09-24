@@ -5,7 +5,7 @@
 ;
 ; !ROUTINE: adjust_a1
 ;
-; !DESCRIPTION: Routine to adjust the existing GEOS_FP "A1" (surface
+; !DESCRIPTION: Routine to adjust the existing GEOS-FP "A1" (surface
 ;  variables, 1-hour time averaged) data files for better COARDS compliance.
 ;\\
 ;\\

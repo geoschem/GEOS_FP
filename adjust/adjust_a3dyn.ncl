@@ -5,7 +5,7 @@
 ;
 ; !ROUTINE: adjust_a3dyn
 ;
-; !DESCRIPTION: Routine to adjust the existing GEOS_FP "A3dyn" (dynamics,
+; !DESCRIPTION: Routine to adjust the existing GEOS-FP "A3dyn" (dynamics,
 ;  3-hour time averaged) data files for better COARDS compliance.
 ;\\
 ;\\

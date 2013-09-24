@@ -5,7 +5,7 @@
 ;
 ; !ROUTINE: adjust_i3
 ;
-; !DESCRIPTION: Routine to adjust the existing GEOS_FP "I3" (instantaneous
+; !DESCRIPTION: Routine to adjust the existing GEOS-FP "I3" (instantaneous
 ;  3-hour) data files for better COARDS compliance.
 ;\\
 ;\\

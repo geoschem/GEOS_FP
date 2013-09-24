@@ -23,6 +23,7 @@
 # !REVISION HISTORY: 
 #  12 Jan 2012 - R. Yantosca - Initial version
 #  12 Jan 2012 - R. Yantosca - Split source code doc from netCDF code doc
+#  24 Sep 2013 - R. Yantosca - Now add NCL scripts in adjust to the doc list
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -32,11 +33,12 @@
 #==============================================================================
 
 # Define variables
-SHELL   = /bin/sh
-BINDIR  = ../bin
-CODEDIR = ../Code
-MAINDIR = ../
-PERLDIR = ../perl
+SHELL   :=/bin/bash
+ADJDIR  :=../adjust
+BINDIR  :=../bin
+CODEDIR :=../Code
+MAINDIR :=../
+PERLDIR :=../perl
 
 #==============================================================================
 # Default targets
@@ -44,7 +46,7 @@ PERLDIR = ../perl
 
 .PHONY: doc clean
 
-doc: srcdoc ncdoc makedoc perldoc
+doc: srcdoc ncdoc makedoc perldoc adjdoc
 
 clean:
 	rm -f *.tex *.ps *.pdf
@@ -54,31 +56,31 @@ clean:
 #==============================================================================
 
 # Source files
-SRC1 =                                 \
+SRC1 :=                                \
 ./src.intro                            \
 $(CODEDIR)/CreateTemplateFile.F90      \
 $(CODEDIR)/CharpakModule.F	       \
-$(CODEDIR)/Geos57A1Module.F90	       \
-$(CODEDIR)/Geos57A3CldModule.F90       \
-$(CODEDIR)/Geos57A3DynModule.F90       \
-$(CODEDIR)/Geos57A3MstCModule.F90      \
-$(CODEDIR)/Geos57A3MstEModule.F90      \
-$(CODEDIR)/Geos57CnModule.F90	       \
-$(CODEDIR)/Geos57I3Module.F90	       \
-$(CODEDIR)/Geos57InputsModule.F90      \
-$(CODEDIR)/Geos57RegridModule.F90      \
-$(CODEDIR)/Geos57UtilityModule.F90     \
-$(CODEDIR)/Geos57Driver.F90            \
-$(CODEDIR)/Geos57Driver0.F90	       \
-$(CODEDIR)/Geos57Driver1.F90	       \
-$(CODEDIR)/Geos57Driver2.F90
+$(CODEDIR)/GeosFpA1Module.F90	       \
+$(CODEDIR)/GeosFpA3CldModule.F90       \
+$(CODEDIR)/GeosFpA3DynModule.F90       \
+$(CODEDIR)/GeosFpA3MstCModule.F90      \
+$(CODEDIR)/GeosFpA3MstEModule.F90      \
+$(CODEDIR)/GeosFpCnModule.F90	       \
+$(CODEDIR)/GeosFpI3Module.F90	       \
+$(CODEDIR)/GeosFpInputsModule.F90      \
+$(CODEDIR)/GeosFpRegridModule.F90      \
+$(CODEDIR)/GeosFpUtilityModule.F90     \
+$(CODEDIR)/GeosFpDriver.F90            \
+$(CODEDIR)/GeosFpDriver0.F90	       \
+$(CODEDIR)/GeosFpDriver1.F90	       \
+$(CODEDIR)/GeosFpDriver2.F90
 
 
 # LaTeX etc. files
-TEX1 = Geos57Driver.tex
-DVI1 = Geos57Driver.dvi
-PDF1 = Geos57Driver.pdf
-PS1  = Geos57Driver.ps
+TEX1 :=GeosFpDriver.tex
+DVI1 :=GeosFpDriver.dvi
+PDF1 :=GeosFpDriver.pdf
+PS1  :=GeosFpDriver.ps
 
 srcdoc:
 	rm -f $(TEX1)
@@ -109,10 +111,10 @@ $(CODEDIR)/m_netcdf_io_read.F90	       \
 $(CODEDIR)/m_netcdf_io_write.F90
 
 # LaTeX etc. files
-TEX4 = NcdfUtilities.tex
-DVI4 = NcdfUtilities.dvi
-PDF4 = NcdfUtilities.pdf
-PS4  = NcdfUtilities.ps
+TEX4 :=NcdfUtilities.tex
+DVI4 :=NcdfUtilities.dvi
+PDF4 :=NcdfUtilities.pdf
+PS4  :=NcdfUtilities.ps
 
 ncdoc:
 	rm -f $(TEX4)
@@ -137,10 +139,10 @@ $(CODEDIR)/Makefile_header.mk \
 ./Makefile
 
 # LaTeX etc. files
-TEX2 = Geos57Driver_Makefiles.tex
-DVI2 = Geos57Driver_Makefiles.dvi
-PDF2 = Geos57Driver_Makefiles.pdf
-PS2  = Geos57Driver_Makefiles.ps
+TEX2 = GeosFpDriver_Makefiles.tex
+DVI2 = GeosFpDriver_Makefiles.dvi
+PDF2 = GeosFpDriver_Makefiles.pdf
+PS2  = GeosFpDriver_Makefiles.ps
 
 makedoc:
 	rm -f $(TEX2)
@@ -159,22 +161,22 @@ makedoc:
 # Source files 
 SRC3 =                    \
 ./perl.intro              \
-$(PERLDIR)/doGeos57       \
-$(PERLDIR)/doGeos57.input \
-$(PERLDIR)/getGeos57      \
-$(PERLDIR)/checkGeos57    \
-$(PERLDIR)/sleepGeos57    \
-$(PERLDIR)/schedGeos57    \
+$(PERLDIR)/doGeosFp       \
+$(PERLDIR)/doGeosFp.input \
+$(PERLDIR)/getGeosFp      \
+$(PERLDIR)/checkGeosFp    \
+$(PERLDIR)/sleepGeosFp    \
+$(PERLDIR)/schedGeosFp    \
 $(PERLDIR)/cleanJobs      \
 $(PERLDIR)/cleanLogs      \
-$(PERLDIR)/delGeos57      \
+$(PERLDIR)/delGeosFp      \
 $(PERLDIR)/Dates.pm
 
 # LaTeX etc. files
-TEX3 = Geos57Driver_Perl.tex
-DVI3 = Geos57Driver_Perl.dvi
-PDF3 = Geos57Driver_Perl.pdf
-PS3  = Geos57Driver_Perl.ps
+TEX3 = GeosFpDriver_Perl.tex
+DVI3 = GeosFpDriver_Perl.dvi
+PDF3 = GeosFpDriver_Perl.pdf
+PS3  = GeosFpDriver_Perl.ps
 
 perldoc:
 	rm -f $(TEX3)
@@ -186,6 +188,41 @@ perldoc:
 	dvips $(DVI3) -o $(PS3)
 	rm -f *.aux *.dvi *.log *.toc
 
+#==============================================================================
+# Build documentation for NCL scripts
+#==============================================================================
+
+# Source files 
+SRC4=                                 \
+./adjust.intro                        \
+$(ADJDIR)/adjust_all.ncl              \
+$(ADJDIR)/add_coards_global_atts.ncl  \
+$(ADJDIR)/add_coards_var_atts.ncl     \
+$(ADJDIR)/adjust_a1.ncl               \
+$(ADJDIR)/adjust_a3cld.ncl            \
+$(ADJDIR)/adjust_a3dyn.ncl            \
+$(ADJDIR)/adjust_a3mstc.ncl           \
+$(ADJDIR)/adjust_a3mste.ncl           \
+$(ADJDIR)/adjust_cn.ncl               \
+$(ADJDIR)/adjust_i3.ncl               \
+$(ADJDIR)/notdir.ncl                  \
+$(ADJDIR)/adjust_apbp.ncl
+
+# LaTeX etc. files
+TEX4 = AdjustForCoards.tex
+DVI4 = AdjustForCoards.dvi
+PDF4 = AdjustForCoards.pdf
+PS4  = AdjustForCoards.ps
+
+adjdoc:
+	rm -f $(TEX4)
+	protex -sfN $(SRC4) > $(TEX4)
+	latex $(TEX4)
+	latex $(TEX4)
+	latex $(TEX4)
+	dvipdf $(DVI4) $(PDF4)
+	dvips $(DVI4) -o $(PS4)
+	rm -f *.aux *.dvi *.log *.toc
 
 #==============================================================================
 #  Help Screen
@@ -198,6 +235,8 @@ help:
 	@echo 'doc      Builds documentation (*.ps, *.pdf) for both source code and makefiles (default)'
 	@echo 'srcdoc   Builds documentation (*.ps, *.pdf) only for source code files'
 	@echo 'makedoc  Builds documentation (*.ps, *.pdf) only for makefiles'
+	@echo 'perldoc  Builds documentation (*.ps, *.pdf) only for Perl scripts'
+	@echo 'adjdoc   Builds documentation (*.ps, *.pdf) only for NCL scripts'
 	@echo 'clean    Removes all files (*.tex, *.ps, *.pdf)'
 	@echo 'help     Displays this help screen'
 

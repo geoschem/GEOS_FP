@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-#  $Id: protex,v 1.2 2009/07/29 21:33:40 bmy Exp $
+#  $Id: protex,v 1.2 2009/09/16 14:05:52 bmy Exp $
 #
 #BOP
 #
@@ -33,6 +33,7 @@
 #   -C   & C++ code \\ \hline
 #   -F   & F90 code (default) \\ \hline
 #   -S   & Shell script \\ \hline \hline
+#   -N   & NCL (NCAR Command Language) script \\ \hline \hline
 # \end{tabular}
 # \end{center}
 #
@@ -90,25 +91,25 @@
 #  28Jul2009  R. Yantosca  Hack added to suppress printing "Fortran" if we 
 #                          are using the "!MODULE" tag for shell scripts or 
 #                          Makefiles.
-#
+#  11 Sep 2013 - R. Yantosca - Added support for NCL scripts (with ; comments)
 #EOP
 #----------------------------------------------------------------------------
 
 # Keep this if you don't know what it does...
 # -------------------------------------------
-  $[ = 1;                 # set array base to 1
-  $, = ' ';               # set output field separator
-  $\ = "\n";              # set output record separator
+  $[ = 1;                  # set array base to 1
+  $, = ' ';                # set output field separator
+  $\ = "\n";               # set output record separator
 
 # Set valid options lists
 # -----------------------
   $GlobOptions = 'hbg';    # Global options (i.e for all files)
-  $LangOptions = 'ACFS';  # Options for setting programming languages
+  $LangOptions = 'ACFSN';  # Options for setting programming languages
   $SwOptions   = 'flinsx'; # Options that can change for each input 
-                          #   file
+                           #   file
   $RegOptions  = "$GlobOptions$LangOptions";
-                          # Scan for global options until first first
-                          #   file is processed.
+                           # Scan for global options until first first
+                           #   file is processed.
 
 # Scan for global options
 # -----------------------
@@ -263,6 +264,22 @@ ARG:
         $boe_string = '#BOE';
         $eoe_string = '#EOE';
 }#   end if
+
+     if ( $opt_N ) {            # NCL scripts
+        $comment_string = ';';  # -----------
+        $boi_string = ';BOI';
+        $eoi_string = ';EOI';
+        $bop_string = ';BOP';
+        $eop_string = ';EOP';
+        $bopi_string = ';BOPI'; 
+	$eopi_string = ';EOPI';
+        $boc_string = ';BOC';
+        $eoc_string = ';EOC';
+        $boe_string = ';BOE';
+        $eoe_string = ';EOE';
+}#   end if
+
+
 
 #    Set file name parameters
 #    ------------------------
@@ -483,7 +500,7 @@ LINE:
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #%%% Hack added by Bob Yantosca to suppress printing "Fortran" if we are 
 #%%% using the "!MODULE" tag for shell scripts or Makefiles. (bmy, 7/28/09)
-		if ( $opt_S ) {
+		if ( $opt_S || $opt_N ) {
 		  #----------------------------------------
 		  # Shell scripts: don't print "Fortran"
 		  #----------------------------------------
@@ -944,7 +961,7 @@ KEY:       foreach $key ( @keys ) {
         else {
 
            if ( index ($valid_options,$option) >= $[ ) {
-              if ( $option_sign eq "-" ) {${"opt_$option"} = 1;}
+  	      if ( $option_sign eq "-" ) {${"opt_$option"} = 1;};
               if ( $option_sign eq "+" ) {${"opt_$option"} = 0;};
 
 }#         end if
@@ -1022,6 +1039,7 @@ sub print_help {
     print "     -C   C++ code";
     print "     -F   F90 code";
     print "     -S   Shell script";
+    print "     -N   NCL (NCAR command language) script";
     print " ";
     print "  The options can appear in any order.  The options, -h and -b,";
     print "  affect the input from all files listed on command-line input.";
