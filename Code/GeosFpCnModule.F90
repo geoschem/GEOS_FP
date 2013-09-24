@@ -115,6 +115,7 @@ CONTAINS
 !  01 Feb 2012 - R. Yantosca - Make all global attribute names lowercase
 !  19 Sep 2013 - R. Yantosca - Change and/or add attributes for COARDS standard
 !  23 Sep 2013 - R. Yantosca - Add calendar attribute to time
+!  24 Sep 2013 - R. Yantosca - Now write dims in order: time, lat, lon
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -248,31 +249,13 @@ CONTAINS
     !-------------------------------------------------------------------------
 
     ! netCDF dimension variables
-    CALL NcDef_Dimension( fOut, 'lon',  X, idLon  )
-    CALL NcDef_Dimension( fOut, 'lat',  Y, idLat  )
     CALL NcDef_Dimension( fOut, 'time', 1, idTime )
-
-    ! Longitude index array
-    vId     = 0
-    var1    = (/ idLon /)
-    lName   = 'longitude'
-    units   = 'degrees_east'
-    CALL NcDef_Variable      ( fOut, 'lon', NF_FLOAT, 1, var1, vId           )
-    CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName )    )
-    CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units )    )
-  
-    ! Latitude index array
-    var1    = (/ idLat /)
-    vId     = vId + 1
-    lName   = 'latitude'
-    units   = 'degrees_north'
-    CALL NcDef_Variable      ( fOut, 'lat', NF_FLOAT, 1, var1, vId           )
-    CALL NcDef_Var_attributes( fOut, vId, 'long_name',      TRIM( lName )    )
-    CALL NcDef_Var_attributes( fOut, vId, 'units',          TRIM( units )    ) 
+    CALL NcDef_Dimension( fOut, 'lat',  Y, idLat  )
+    CALL NcDef_Dimension( fOut, 'lon',  X, idLon  )
 
     ! Time index array (hardwire date to 2011/01/01)
     var1    = (/ idTime /)
-    vId     = vId + 1
+    vId     = 0
     cal     = 'gregorian'
     lName   = 'time'
     units   = UnitsForTime( 20110101 )
@@ -289,6 +272,24 @@ CONTAINS
     CALL NcDef_Var_Attributes( fOut, vId, 'begin_time',     TRIM( begin_t )  )
     CALL NcDef_Var_Attributes( fOut, vId, 'time_increment', TRIM( incr    )  )
 
+    ! Latitude index array
+    var1    = (/ idLat /)
+    vId     = vId + 1
+    lName   = 'latitude'
+    units   = 'degrees_north'
+    CALL NcDef_Variable      ( fOut, 'lat', NF_FLOAT, 1, var1, vId           )
+    CALL NcDef_Var_attributes( fOut, vId, 'long_name',      TRIM( lName )    )
+    CALL NcDef_Var_attributes( fOut, vId, 'units',          TRIM( units )    ) 
+
+    ! Longitude index array
+    var1    = (/ idLon /)
+    vId     = vId + 1
+    lName   = 'longitude'
+    units   = 'degrees_east'
+    CALL NcDef_Variable      ( fOut, 'lon', NF_FLOAT, 1, var1, vId           )
+    CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName )    )
+    CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units )    )
+  
     !-------------------------------------------------------------------------
     ! Define data arrays
     !-------------------------------------------------------------------------
