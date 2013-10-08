@@ -86,7 +86,7 @@ PS,PV,QV,T
 /as/priv/ftp/gmao/gmao/
 
 ==> Nested China output
-F
+T
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.CH.nc
 /as/tmp/all/tmp/bmy/GEOS_FP/
 /as/data/geos-rw/GEOS_0.25x0.3125_SEA4CRS.d/GEOS_FP/YYYY/MM/
@@ -107,7 +107,7 @@ GEOSFP.YYYYMMDD.%%%%%%.025x03125.NA.nc
   161 400 385 601
 
 ==> 2 x 2.5 output
-F
+T
 GEOSFP.YYYYMMDD.%%%%%%.2x25.nc
 /as/tmp/all/tmp/bmy/GEOS_FP/
 /as/data/geos-rw/GEOS_2x2.5.d/GEOS_FP/YYYY/MM/

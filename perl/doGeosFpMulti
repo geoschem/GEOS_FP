@@ -428,7 +428,7 @@ qx( ls $TEMP_DIRECTORY > /dev/null );
 qx( umask 022; cd $CODE_DIRECTORY; $exeFile < $DATE_FILE >> \$sLog );
 
 # Move files from the temp directory to the data directory
-#qx( ./moveGeosFp $DATE_STRING $fileTypes >> \$sLog );
+qx( ./moveGeosFp $DATE_STRING $fileTypes >> \$sLog );
 
 # Send an email that the job is finished
 if ( \$\? == 0 ) { qx( $mailCmd ); }
