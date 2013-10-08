@@ -1,0 +1,10 @@
+;------------------------------------------------------------------------------
+;          Harvard University Atmospheric Chemistry Modeling Group            !
+;------------------------------------------------------------------------------
+;BOI
+; !TITLE: NCL scripts for adjusting existing met files for COARDS compliance
+; !AUTHORS: GEOS-Chem Suport Team
+; !AFFILIATION: School of Engineering and Applied Sciences, Harvard University
+; !DATE: 08 Oct 2013
+;EOI
+;------------------------------------------------------------------------------
