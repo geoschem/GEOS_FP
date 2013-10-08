@@ -86,14 +86,18 @@ MODULE GeosFpInputsModule
   INTEGER                 :: I0_ch,    J0_ch          ! LL corner of CH grid
   INTEGER                 :: I1_ch,    J1_ch          ! UR corner of CH grid
   INTEGER                 :: I_NestCh, J_NestCh       ! NestCh dimensions   
-  LOGICAL                 :: doNestNa                 ! Save nested NA grid?
-  INTEGER                 :: I0_na,    J0_na          ! LL corner of NA grid
-  INTEGER                 :: I1_na,    J1_na          ! UR corner of NA grid
-  INTEGER                 :: I_NestNa, J_NestNa       ! NestNa dimensions   
   LOGICAL                 :: doNestEu                 ! Save nested EU grid?
   INTEGER                 :: I0_eu,    J0_eu          ! LL corner of EU grid
   INTEGER                 :: I1_eu,    J1_eu          ! UR corner of EU grid
   INTEGER                 :: I_NestEu, J_NestEu       ! NestNa dimensions   
+  LOGICAL                 :: doNestNa                 ! Save nested NA grid?
+  INTEGER                 :: I0_na,    J0_na          ! LL corner of NA grid
+  INTEGER                 :: I1_na,    J1_na          ! UR corner of NA grid
+  INTEGER                 :: I_NestNa, J_NestNa       ! NestNa dimensions   
+  LOGICAL                 :: doNestSe                 ! Save nested SE grid?
+  INTEGER                 :: I0_se,    J0_se          ! LL corner of SE grid
+  INTEGER                 :: I1_se,    J1_se          ! UR corner of SE grid
+  INTEGER                 :: I_NestSe, J_NestSe       ! NestSe dimensions   
   LOGICAL                 :: do2x25                   ! Save out 2 x 2.25
   LOGICAL                 :: do4x5                    ! Save out 4 x 5?
   LOGICAL                 :: doMakeCn
@@ -103,6 +107,7 @@ MODULE GeosFpInputsModule
   INTEGER                 :: fOutNestCh               ! NC fId; output CH grid
   INTEGER                 :: fOutNestEu               ! NC fId; output EU grid
   INTEGER                 :: fOutNestNa               ! NC fId; output NA grid
+  INTEGER                 :: fOutNestSe               ! NC fId; output SE grid
   INTEGER                 :: fOut2x25                 ! NC fId; output 2x25
   INTEGER                 :: fOut4x5                  ! NC fId; output 4x5
   REAL*4                  :: FILL_VALUE = 1e15        ! Fill value in HDF file
@@ -119,6 +124,9 @@ MODULE GeosFpInputsModule
   CHARACTER(LEN=MAX_CHAR) :: dataTmplNestEu           ! NstEu file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestEu        ! NstEu temporary dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestEu        ! NstEu data dir
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestSe           ! NstSe file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestSe        ! NstSe temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestSe        ! NstSe data dir
   CHARACTER(LEN=MAX_CHAR) :: dataTmpl2x25             ! 2x25  file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmpl2x25          ! 2x25  temp dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmpl2x25          ! 2x25  data dir
@@ -179,10 +187,11 @@ MODULE GeosFpInputsModule
 !  20 Jan 2012 - R. Yantosca - Now use lowercase "output" string for all grids
 !  15 Feb 2012 - R. Yantosca - Add variables for nested NA grid
 !  19 Sep 2013 - R. Yantosca - Renamed to GeosFpInputsModule
-!  19 Sep 2013 - R. Yantosca - Also added variables for nested Europe grid
+!  19 Sep 2013 - R. Yantosca - Added variables for nested Europe grid  (EU)
 !  19 Sep 2013 - R. Yantosca - Remove reference to tavg3_3d_rad_Nv collection
 !  19 Sep 2013 - R. Yantosca - Remove variables for collections that we don't
 !                              use any longer
+!   8 Oct 2013 - R. Yantosca - Added variables for nested SE Asia Grid (SE)
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -212,8 +221,9 @@ MODULE GeosFpInputsModule
 !                              netCDF output files.
 !  15 Feb 2012 - R. Yantosca - Read information about nested NA grid
 !  16 May 2013 - R. Yantosca - Bug fix: set doNative=T if doNestNa=T
-!  19 Sep 2013 - R. Yantosca - Added nested Europe grid
+!  19 Sep 2013 - R. Yantosca - Added nested Europe grid (EU)
 !  19 Sep 2013 - R. Yantosca - Adjust reading of data fields to GEOS-FP vars
+!  08 Oct 2013 - R. Yantosca - Added nested SE asia grid (SE)
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -264,7 +274,7 @@ MODULE GeosFpInputsModule
           CASE( '==> Local Raw Data Path' )
              READ( IU_TXT, '(a)',    ERR=999 ) inputDataDir
 
-          CASE( '==> Nested China output' )
+          CASE( '==> Nested CH output' )
              READ( IU_TXT,   *,      ERR=999 ) doNestCh
              READ( IU_TXT, '(a)',    ERR=999 ) dataTmplNestCh
              READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmplNestCh
@@ -272,6 +282,15 @@ MODULE GeosFpInputsModule
              READ( IU_TXT,   *,      ERR=999 ) I0_ch, J0_ch, I1_ch, J1_ch
              I_NestCh = I1_ch - I0_ch + 1
              J_NestCh = J1_ch - J0_ch + 1
+
+          CASE( '==> Nested EU output' )
+             READ( IU_TXT,   *,      ERR=999 ) doNestEu
+             READ( IU_TXT, '(a)',    ERR=999 ) dataTmplNestEu
+             READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmplNestEu
+             READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmplNestEu
+             READ( IU_TXT,   *,      ERR=999 ) I0_eu, J0_eu, I1_eu, J1_eu
+             I_NestEu = I1_eu - I0_eu + 1
+             J_NestEu = J1_eu - J0_eu + 1
 
           CASE( '==> Nested NA output' )
              READ( IU_TXT,   *,      ERR=999 ) doNestNa
@@ -282,14 +301,14 @@ MODULE GeosFpInputsModule
              I_NestNa = I1_na - I0_na + 1
              J_NestNa = J1_na - J0_na + 1
 
-          CASE( '==> Nested EU output' )
-             READ( IU_TXT,   *,      ERR=999 ) doNestEu
-             READ( IU_TXT, '(a)',    ERR=999 ) dataTmplNestEu
-             READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmplNestEu
-             READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmplNestEu
-             READ( IU_TXT,   *,      ERR=999 ) I0_eu, J0_eu, I1_eu, J1_eu
-             I_NestEu = I1_eu - I0_eu + 1
-             J_NestEu = J1_eu - J0_eu + 1
+          CASE( '==> Nested SE output' )
+             READ( IU_TXT,   *,      ERR=999 ) doNestSe
+             READ( IU_TXT, '(a)',    ERR=999 ) dataTmplNestSe
+             READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmplNestSe
+             READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmplNestSe
+             READ( IU_TXT,   *,      ERR=999 ) I0_se, J0_se, I1_se, J1_se
+             I_NestSe = I1_se - I0_se + 1
+             J_NestSe = J1_se - J0_se + 1
 
           CASE( '==> 2 x 2.5 output' )
              READ( IU_TXT,   *,      ERR=999 ) do2x25
@@ -368,7 +387,7 @@ MODULE GeosFpInputsModule
     CLOSE( IU_TXT )
 
     ! Define a convenience switch for the native grid
-    doNative = ( doNestCh .or. doNestNa .or. doNestEu )
+    doNative = ( doNestCh .or. doNestEu .or. doNestNa .or. doNestSe )
 
     ! Mapping weights: native grid (use as placeholder for routines below)
     IF ( doNative ) THEN
@@ -456,9 +475,15 @@ MODULE GeosFpInputsModule
        PRINT*, 'doNestCh        : ', doNestCh
        PRINT*, ' I0, J0, I1, J1 : ', I0_ch, J0_ch, I1_ch, J1_ch
        PRINT*, ' ICH, JCH       : ', I_NestCh, J_NestCh
+       PRINT*, 'doNestEu        : ', doNestEu
+       PRINT*, ' I0, J0, I1, J1 : ', I0_eu, J0_eu, I1_eu, J1_eu
+       PRINT*, ' INA, JNA       : ', I_NestEu, J_NestEu
        PRINT*, 'doNestNa        : ', doNestNa
        PRINT*, ' I0, J0, I1, J1 : ', I0_na, J0_na, I1_na, J1_na
        PRINT*, ' INA, JNA       : ', I_NestNa, J_NestNa
+       PRINT*, 'doNestSe        : ', doNestSe
+       PRINT*, ' I0, J0, I1, J1 : ', I0_se, J0_se, I1_se, J1_se
+       PRINT*, ' ISE, JSE       : ', I_NestSe, J_NestSe
        PRINT*, 'do2x25          : ', do2x25
        PRINT*, 'do4x5           : ', do4x5
        PRINT*, 'doMakeCn        : ', doMakeCn
@@ -466,10 +491,16 @@ MODULE GeosFpInputsModule
        PRINT*, 'dataTmplNestCh  : ', TRIM( dataTmplNestCh          )
        PRINT*, 'tempDirNestCh   : ', TRIM( tempDirTmplNestCh       )
        PRINT*, 'dataDirNestCh   : ', TRIM( dataDirTmplNestCh       )
+       PRINT*, 'dataTmplNestEu  : ', TRIM( dataTmplNestEu          )
+       PRINT*, 'tempDirNestEu   : ', TRIM( tempDirTmplNestEu       )
+       PRINT*, 'dataDirNestEu   : ', TRIM( dataDirTmplNestEu       )
        PRINT*, 'dataTmplNestNa  : ', TRIM( dataTmplNestNa          )
        PRINT*, 'tempDirNestNa   : ', TRIM( tempDirTmplNestNa       )
        PRINT*, 'dataDirNestNa   : ', TRIM( dataDirTmplNestNa       )
-       PRINT*, 'dataFile2x25    : ', TRIM( dataTmpl2x25            )
+       PRINT*, 'dataTmplNestSe  : ', TRIM( dataTmplNestSe          )
+       PRINT*, 'tempDirNestSe   : ', TRIM( tempDirTmplNestSe       )
+       PRINT*, 'dataDirNestSe   : ', TRIM( dataDirTmplNestSe       )
+       PRINT*, 'dataTmpl2x25    : ', TRIM( dataTmpl2x25            )
        PRINT*, 'tempDirTmpl2x25 : ', TRIM( tempDirTmpl2x25         )
        PRINT*, 'dataDirTmpl2x25 : ', TRIM( dataDirTmpl2x25         )
        PRINT*, 'dataFile4x5     : ', TRIM( dataTmpl4x5             )

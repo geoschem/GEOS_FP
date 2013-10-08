@@ -63,6 +63,7 @@ MODULE GeosFpCnModule
 !  04 Jan 2012 - R. Yantosca - Now reference GeosFpUtilityModule
 !  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !  19 Sep 2013 - R. Yantosca - Renamed to GeosFpCnModule; adjusted for COARDS
+!  08 Oct 2013 - R. Yantosca - Now save CH, EU, NA, SE nested grids in one pass
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -116,6 +117,7 @@ CONTAINS
 !  19 Sep 2013 - R. Yantosca - Change and/or add attributes for COARDS standard
 !  23 Sep 2013 - R. Yantosca - Add calendar attribute to time
 !  24 Sep 2013 - R. Yantosca - Now write dims in order: time, lat, lon
+!  08 Oct 2013 - R. Yantosca - Updated CASE statement for gridName
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -223,7 +225,7 @@ CONTAINS
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
-       CASE( 'native', 'SEAC4RS', 'nested China', 'nested NA' )
+       CASE( 'native', 'nested CH', 'nested EU', 'nested NA', 'nested SE' )
           DI = '0.3125'
           DJ = '0.25'
        CASE ( 'nested 0.5 x 0.625' )
@@ -429,6 +431,7 @@ CONTAINS
 !  23 Sep 2013 - R. Yantosca - Now define netCDF latitude such that the poles
 !                              are at -90/+90.  This facilitates the GIGC
 !                              using ESMF/MAPL.
+!  08 Oct 2013 - R. Yantosca - Now save output to the nested SE Asia grid (SE)
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -478,7 +481,7 @@ CONTAINS
     ! Hours in the day
     time = (/ 0 /)
     
-    ! Open nested China output file
+    ! Open nested CH output file
     IF ( doNestCh ) THEN
        fName = TRIM( tempDirTmplNestCh ) // TRIM( dataTmplNestCh )
        gName = 'nested CH'
@@ -492,7 +495,7 @@ CONTAINS
                           fOutNestCh                           )
     ENDIF
 
-    ! Open nested China output file
+    ! Open nested EU output file
     IF ( doNestEu ) THEN
        fName = TRIM( tempDirTmplNestEu ) // TRIM( dataTmplNestEu )
        gName = 'nested EU'
@@ -518,6 +521,20 @@ CONTAINS
                           yMid_025x03125(J0_na:J1_na),          &
                           time,      gName,        fName,       &
                           fOutNestNa                            )
+    ENDIF
+
+    ! Open nested SE output file
+    IF ( doNestSe ) THEN
+       fName = TRIM( tempDirTmplNestSe ) // TRIM( dataTmplNestSe )
+       gName = 'nested SE'
+       CALL ExpandDate  ( fName,     20110101,     000000      )      
+       CALL StrRepl     ( fName,     '%%%%%%',     'CN    '    )
+       CALL StrCompress ( fName, RemoveAll=.TRUE.              )
+       CALL NcOutFileDef( I_NestSe,  J_NestSe,  1,              &
+                          xMid_025x03125(I0_se:I1_se),          &
+                          yMid_025x03125(J0_se:J1_se),          &
+                          time,      gName,        fName,       &
+                          fOutNestSe                            )
     ENDIF
 
     ! Open 2 x 2.5 output file
@@ -563,6 +580,7 @@ CONTAINS
     IF ( doNestCh ) CALL NcCl( fOutNestCh )
     IF ( doNestEu ) CALL NcCl( fOutNestEu )
     IF ( doNestNa ) CALL NcCl( fOutNestNa )
+    IF ( doNestSe ) CALL NcCl( fOutNestSe )
     IF ( do2x25   ) CALL NcCl( fOut2x25   )
     IF ( do4x5    ) CALL NcCl( fOut4x5    )
 
@@ -599,6 +617,7 @@ CONTAINS
 !  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
 !  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !  21 Jun 2012 - R. Yantosca - Bug fix: remove 2nd instance of doNestCh
+!  08 Oct 2013 - R. Yantosca - Now save out to SE Asia nested grid
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -613,6 +632,7 @@ CONTAINS
     INTEGER                 :: XNestCh,  YNestCh,  TNestCh
     INTEGER                 :: XNestEu,  YNestEu,  TNestEu
     INTEGER                 :: XNestNa,  YNestNa,  TNestNa
+    INTEGER                 :: XNestSe,  YNestSe,  TNestSe
     INTEGER                 :: X2x25,    Y2x25,    T2x25
     INTEGER                 :: X4x5,     Y4x5,     T4x5
     INTEGER                 :: st2d(2),  st3d(3)
@@ -636,25 +656,32 @@ CONTAINS
     ! Get dimensions from output files
     !=======================================================================
 
-    ! Nested China grid
+    ! Nested CH grid
     IF ( doNestCh ) THEN
        CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
        CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
        CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
     ENDIF
 
-    ! Nested Europe grid
+    ! Nested EU grid
     IF ( doNestEu ) THEN
        CALL NcGet_DimLen( fOutNestEu, 'lon',  XNestEu )
        CALL NcGet_DimLen( fOutNestEu, 'lat',  YNestEu ) 
        CALL NcGet_DimLen( fOutNestEu, 'time', TNestEu )
     ENDIF
 
-    ! Nested North America grid
+    ! Nested NA grid
     IF ( doNestNa ) THEN
        CALL NcGet_DimLen( fOutNestNa, 'lon',  XNestNa )
        CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa ) 
        CALL NcGet_DimLen( fOutNestNa, 'time', TNestNa )
+    ENDIF
+
+    ! Nested SE grid
+    IF ( doNestSe ) THEN
+       CALL NcGet_DimLen( fOutNestSe, 'lon',  XNestSe )
+       CALL NcGet_DimLen( fOutNestSe, 'lat',  YNestSe ) 
+       CALL NcGet_DimLen( fOutNestSe, 'time', TNestSe )
     ENDIF
 
     ! 2 x 2.5 global grid       
@@ -758,7 +785,7 @@ CONTAINS
        ! Special handing
        IF ( TRIM( name ) == 'FRLANDICE' ) name ='FRLANDIC'
 
-       ! Nested China
+       ! Nested CH
        IF ( doNestCh ) THEN
           QNest => Q( I0_ch:I1_ch, J0_ch:J1_ch, 1 )  ! Point to proper slice
 
@@ -785,6 +812,16 @@ CONTAINS
           st3d  = (/ 1,       1,       1       /)
           ct3d  = (/ XNestNa, YNestNa, TNestNa /)
           CALL NcWr( QNest, fOutNestNa, TRIM( name ), st3d, ct3d )   
+          NULLIFY( QNest )
+       ENDIF
+
+       ! Nested SE
+       IF ( doNestSe ) THEN
+          QNest => Q( I0_se:I1_se, J0_se:J1_se, 1 )  ! Point to proper slice
+
+          st3d  = (/ 1,       1,       1       /)
+          ct3d  = (/ XNestSe, YNestSe, TNestSe /)
+          CALL NcWr( QNest, fOutNestSe, TRIM( name ), st3d, ct3d )   
           NULLIFY( QNest )
        ENDIF
 

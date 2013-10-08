@@ -57,6 +57,7 @@ MODULE GeosFpA3MstCModule
 !  12 Jan 2012 - R. Yantosca - Now just save out fields on level centers
 !  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !  20 Sep 2013 - R. Yantosca - Renamed to GeosFpA3MstCModule.F90
+!  08 Oct 2013 - R. Yantosca - Now save CH, EU, NA, SE nested grids in one pass
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -103,6 +104,7 @@ MODULE GeosFpA3MstCModule
 !  23 Sep 2013 - R. Yantosca - Add calendar attribute to time
 !  24 Sep 2013 - R. Yantosca - Bug fix: now use correct start & end dates
 !  24 Sep 2013 - R. Yantosca - Now save dims in order: time, lev, lat, lon
+!  08 Oct 2013 - R. Yantosca - Update CASE statement for gridName
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -211,7 +213,7 @@ MODULE GeosFpA3MstCModule
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
-       CASE( 'native', 'nested CH', 'nested NA', 'nested EU' )
+       CASE( 'native', 'nested CH', 'nested EU', 'nested NA', 'nested SE' )
           DI = '0.3125'
           DJ = '0.25'
        CASE ( 'nested 0.5 x 0.625' )
@@ -443,6 +445,7 @@ MODULE GeosFpA3MstCModule
 !  23 Sep 2013 - R. Yantosca - Now define netCDF latitude such that the poles
 !                              are at -90/+90.  This facilitates the GIGC
 !                              using ESMF/MAPL.
+!  08 Oct 2013 - R. Yantosca - Now save output to nested SE grid
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -490,10 +493,10 @@ MODULE GeosFpA3MstCModule
     ! Open files for output; define variables, attribute, index arrays
     !=======================================================================
 
-    ! Open nested China output file
+    ! Open nested CH output file
     IF ( doNestCh ) THEN
        fName = TRIM( tempDirTmplNestCh ) // TRIM( dataTmplNestCh )
-       gName = 'SEAC4RS'
+       gName = 'nested CH'
        CALL ExpandDate  ( fName,     yyyymmdd,     000000                )      
        CALL StrRepl     ( fName,     '%%%%%%',     'A3mstC'              )
        CALL NcOutFileDef( I_NestCh,  J_NestCh,     L025x03125, TIMES_A3,  &
@@ -503,7 +506,7 @@ MODULE GeosFpA3MstCModule
                           gName,     fName,        fOutNestCh            )
     ENDIF
 
-    ! Open nested Europe output file
+    ! Open nested EU output file
     IF ( doNestEu ) THEN
        fName = TRIM( tempDirTmplNestEu ) // TRIM( dataTmplNestEu )
        gName = 'nested EU'
@@ -516,7 +519,7 @@ MODULE GeosFpA3MstCModule
                           gName,     fName,        fOutNestEu            )
     ENDIF
 
-    ! Open nested North America output file
+    ! Open nested NA output file
     IF ( doNestNa ) THEN
        fName = TRIM( tempDirTmplNestNa ) // TRIM( dataTmplNestNa )
        gName = 'nested NA'
@@ -527,6 +530,19 @@ MODULE GeosFpA3MstCModule
                           yMid_025x03125(J0_na:J1_na),                    &
                           zMid_025x03125,                      a3Mins,    &
                           gName,     fName,        fOutNestNa            )
+    ENDIF
+
+    ! Open nested SE output file
+    IF ( doNestSe ) THEN
+       fName = TRIM( tempDirTmplNestSe ) // TRIM( dataTmplNestSe )
+       gName = 'nested SE'
+       CALL ExpandDate  ( fName,     yyyymmdd,     000000                )      
+       CALL StrRepl     ( fName,     '%%%%%%',     'A3mstC'              )
+       CALL NcOutFileDef( I_NestSe,  J_NestSe,     L025x03125, TIMES_A3,  &
+                          xMid_025x03125(I0_se:I1_se),                    &
+                          yMid_025x03125(J0_se:J1_se),                    &
+                          zMid_025x03125,                      a3Mins,    &
+                          gName,     fName,        fOutNestSe            )
     ENDIF
 
     ! Open 2 x 2.5 output file
@@ -568,6 +584,7 @@ MODULE GeosFpA3MstCModule
     IF ( doNestCh ) CALL NcCl( fOutNestCh )
     IF ( doNestEu ) CALL NcCl( fOutNestEu )
     IF ( doNestNa ) CALL NcCl( fOutNestNa )
+    IF ( doNestSe ) CALL NcCl( fOutNestSe )
     IF ( do2x25   ) CALL NcCl( fOut2x25   )
     IF ( do4x5    ) CALL NcCl( fOut4x5    )
 
@@ -605,8 +622,8 @@ MODULE GeosFpA3MstCModule
 !                              after reading.
 !  17 Jan 2012 - R. Yantosca - Nullify pointers after using them  
 !  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
-!  20 Sep 2013 - R. Yantosca - Now save output to nested Europe grid
-
+!  20 Sep 2013 - R. Yantosca - Now save output to nested Europe grid (EU)
+!  08 Oct 2013 - R. Yantosca - Now save output to nested SE Asia grid (SE)
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -622,6 +639,7 @@ MODULE GeosFpA3MstCModule
     INTEGER                 :: XNestCh, YNestCh, ZNestCh, TNestCh
     INTEGER                 :: XNestEu, YNestEu, ZNestEu, TNestEu
     INTEGER                 :: XNestNa, YNestNa, ZNestNa, TNestNa
+    INTEGER                 :: XNestSe, YNestSe, ZNestSe, TNestSe
     INTEGER                 :: X2x25,   Y2x25,   Z2x25,   T2x25
     INTEGER                 :: X4x5,    Y4x5,    Z4x5,    T4x5
     INTEGER                 :: st4d(4), ct4d(4)
@@ -650,7 +668,7 @@ MODULE GeosFpA3MstCModule
     WRITE( IU_LOG, '(a)' ) '%%%'
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
-    ! Nested China grid
+    ! Nested CH grid
     IF ( doNestCh ) THEN
        CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
        CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
@@ -658,7 +676,7 @@ MODULE GeosFpA3MstCModule
        CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
     ENDIF
 
-    ! Nested Europe grid
+    ! Nested EU grid
     IF ( doNestEu ) THEN
        CALL NcGet_DimLen( fOutNestEu, 'lon',  XNestEu )
        CALL NcGet_DimLen( fOutNestEu, 'lat',  YNestEu ) 
@@ -666,12 +684,20 @@ MODULE GeosFpA3MstCModule
        CALL NcGet_DimLen( fOutNestEu, 'time', TNestEu )
     ENDIF
 
-    ! Nested North America grid
+    ! Nested NA grid
     IF ( doNestNa ) THEN
        CALL NcGet_DimLen( fOutNestNa, 'lon',  XNestNa )
        CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa ) 
        CALL NcGet_DimLen( fOutNestNa, 'lev',  ZNestNa ) 
        CALL NcGet_DimLen( fOutNestNa, 'time', TNestNa )
+    ENDIF
+
+    ! Nested SE grid
+    IF ( doNestSe ) THEN
+       CALL NcGet_DimLen( fOutNestSe, 'lon',  XNestSe )
+       CALL NcGet_DimLen( fOutNestSe, 'lat',  YNestSe ) 
+       CALL NcGet_DimLen( fOutNestSe, 'lev',  ZNestSe ) 
+       CALL NcGet_DimLen( fOutNestSe, 'time', TNestSe )
     ENDIF
 
     ! 2 x 2.5 global grid       
@@ -791,8 +817,7 @@ MODULE GeosFpA3MstCModule
           msg = '%%% Archiving  ' // name8
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
           
-          ! Nested China (point to proper slice of global data)
-          ! Flip levels in the vertical
+          ! Nested CH (point to proper slice of global data)
           IF ( doNestCh ) THEN
              Ptr  => Qflip( I0_ch:I1_ch, J0_ch:J1_ch, : )
              st4d = (/ 1,       1,       1,       H /)
@@ -801,8 +826,7 @@ MODULE GeosFpA3MstCModule
              NULLIFY( Ptr )
           ENDIF
 
-          ! Nested Europe (point to proper slice of global data)
-          ! Flip levels in the vertical
+          ! Nested EU (point to proper slice of global data)
           IF ( doNestEu ) THEN
              Ptr  => Qflip( I0_eu:I1_eu, J0_eu:J1_eu, : )
              st4d = (/ 1,       1,       1,       H /)
@@ -811,13 +835,21 @@ MODULE GeosFpA3MstCModule
              NULLIFY( Ptr )
           ENDIF
 
-          ! Nested North America (point to proper slice of global data)
-          ! Flip levels in the vertical
+          ! Nested NA (point to proper slice of global data)
           IF ( doNestNa ) THEN
              Ptr  => Qflip( I0_na:I1_na, J0_na:J1_na, : )
              st4d = (/ 1,       1,       1,       H /)
              ct4d = (/ XNestNa, YNestNa, ZNestNa, 1 /)
              CALL NcWr( Ptr, fOutNestNa, TRIM( name8 ), st4d, ct4d )
+             NULLIFY( Ptr )
+          ENDIF
+
+          ! Nested SE (point to proper slice of global data)
+          IF ( doNestSe ) THEN
+             Ptr  => Qflip( I0_se:I1_se, J0_se:J1_se, : )
+             st4d = (/ 1,       1,       1,       H /)
+             ct4d = (/ XNestSe, YNestSe, ZNestSe, 1 /)
+             CALL NcWr( Ptr, fOutNestSe, TRIM( name8 ), st4d, ct4d )
              NULLIFY( Ptr )
           ENDIF
                 
