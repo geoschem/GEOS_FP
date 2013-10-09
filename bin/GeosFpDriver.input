@@ -112,7 +112,7 @@ F
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.SE.nc
 /as/tmp/all/tmp/bmy/GEOS_FP/
 /mnt/gcgrid-rw/GEOS_0.25x0.3125/GEOS_0.25x0.3125_SE.d/GEOS_FP/YYYY/MM/
-  161 400 385 601      # NOTE: Need correct indices
+  817 321 993 481      # NOTE: Need correct indices
 
 ==> 2 x 2.5 output
 T
