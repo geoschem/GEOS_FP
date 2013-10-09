@@ -35,6 +35,9 @@
 ;
 ; !REVISION HISTORY:
 ;  11 Sep 2013 - R. Yantosca - Initial version
+;  09 Oct 2013 - R. Yantosca - Rewrote to handle missing files 
+;  09 Oct 2013 - R. Yantosca - Need to redefine the "files" array with :=
+;                              because its size can change
 ;EOP
 ;------------------------------------------------------------------------------
 ;BOC
@@ -53,18 +56,24 @@ begin
   ;=========================================================================
 
   ; Find all GEOS572*A1 files in this directory
-  files     = systemfunc( "ls -1 " + dir + "GEOS572*A1*.nc" )
+  files := systemfunc( "ls -1 " + dir + "GEOS572*A1*.nc" )
   
-  ; Loop over each file
+  ; Loop over each A1 file
   do n = 0, dimsizes( files )-1 
 
-    ; Set file names
+    ; Set input file name
     inFile  = files(n)
-    outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
-    print( "Now processing: "+ notdir( outFile ) )
 
-    ; Readjust files
-    adjust_a1( inFile, outFile )
+    ; Make sure input file exists
+    if ( .not. ismissing( inFile ) ) then 
+
+      ; Set output file name
+      outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
+      print( "Now processing: "+ notdir( outFile ) )
+
+      ; Readjust files
+      adjust_a1( inFile, outFile )
+    end if
   end do
 
   ;=========================================================================
@@ -72,18 +81,24 @@ begin
   ;=========================================================================
 
   ; Find all GEOS572*A3cld files in this directory
-  files     = systemfunc( "ls -1 " + dir + "GEOS572*A3cld*.nc" )
-  
-  ; Loop over each A1 file
+  files := systemfunc( "ls -1 " + dir + "GEOS572*A3cld*.nc" )
+
+  ; Loop over each A3cld file
   do n = 0, dimsizes( files )-1 
     
-    ; Set file names
+    ; Set input file name
     inFile  = files(n)
-    outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
-    print( "Now processing: "+ notdir( outFile ) )
 
-    ; Readjust files
-    adjust_a3cld( inFile, outFile )
+    ; Make sure input file exists
+    if ( .not. ismissing( inFile ) ) then
+
+      ; Set output file name
+      outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
+      print( "Now processing: "+ notdir( outFile ) )
+
+      ; Readjust files
+      adjust_a3cld( inFile, outFile )
+    end if
   end do
 
   ;=========================================================================
@@ -91,18 +106,24 @@ begin
   ;=========================================================================
 
   ; Find all GEOS572*A3dyn files in this directory
-  files     = systemfunc( "ls -1 " + dir + "GEOS572*A3dyn*.nc" )
-  
-  ; Loop over each A1 file
-  do n = 0, dimsizes( files )-1 
-    
-    ; Set file names
-    inFile  = files(n)
-    outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
-    print( "Now processing: "+ notdir( outFile ) )
+  files := systemfunc( "ls -1 " + dir + "GEOS572*A3dyn*.nc" )
 
-    ; Readjust files
-    adjust_a3dyn( inFile, outFile )
+  ; Loop over each A3dyn file
+  do n = 0, dimsizes( files )-1
+    
+    ; Set input file name
+    inFile  = files(n)
+
+    ; Make sure input file exists
+    if ( .not. ismissing( inFile ) ) 
+
+      ; Set output file name
+      outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
+      print( "Now processing: "+ notdir( outFile ) )
+
+      ; Readjust files
+      adjust_a3dyn( inFile, outFile )
+    end if
   end do
 
   ;=========================================================================
@@ -110,18 +131,24 @@ begin
   ;=========================================================================
 
   ; Find all GEOS572*A3mstC files in this directory
-  files     = systemfunc( "ls -1 " + dir + "GEOS572*A3mstC*.nc" )
-  
-  ; Loop over each A1 file
-  do n = 0, dimsizes( files )-1 
-    
-    ; Set file names
-    inFile  = files(n)
-    outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
-    print( "Now processing: "+ notdir( outFile ) )
+  files := systemfunc( "ls -1 " + dir + "GEOS572*A3mstC*.nc" )
 
-    ; Readjust files
-    adjust_a3mstc( inFile, outFile )
+  ; Loop over each A3mstC file
+  do n = 0, dimsizes( files )-1
+    
+    ; Set input file name
+    inFile  = files(n)
+
+    ; Make sure input file exists
+    if ( .not. ismissing( inFile ) ) then
+
+      ; Set output file name
+      outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
+      print( "Now processing: "+ notdir( outFile ) )
+
+      ; Readjust files
+      adjust_a3mstc( inFile, outFile )
+    end if
   end do
 
   ;=========================================================================
@@ -129,37 +156,49 @@ begin
   ;=========================================================================
 
   ; Find all GEOS572*A3mstE files in this directory
-  files     = systemfunc( "ls -1 " + dir + "GEOS572*A3mstE*.nc" )
-  
-  ; Loop over each A1 file
+  files := systemfunc( "ls -1 " + dir + "GEOS572*A3mstE*.nc" )
+
+  ; Loop over each CN file
   do n = 0, dimsizes( files )-1 
     
     ; Set file names
-    inFile  = files(n)
-    outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
-    print( "Now processing: "+ notdir( outFile ) )
+    inFile = files(n)
 
-    ; Readjust files
-    adjust_a3mste( inFile, outFile )
+    ; Make sure input file exists
+    if ( .not. ismissing( inFile ) ) then 
+
+      ; Set output file name
+      outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
+      print( "Now processing: "+ notdir( outFile ) )
+
+      ; Readjust files
+      adjust_a3mste( inFile, outFile )
+    end if
   end do
 
   ;=========================================================================
   ; Adjust the CN files
   ;=========================================================================
-
-  ; Find all GEOS572*CN files in this directory
-  files     = systemfunc( "ls -1 " + dir + "GEOS572*CN*.nc" )
   
-  ; Loop over each A1 file
+  ; Find all GEOS572*CN files in this directory
+  files := systemfunc( "ls -1 " + dir + "GEOS572*CN*.nc" )
+
+  ; Loop over each CN file
   do n = 0, dimsizes( files )-1 
     
-    ; Set file names
+    ; Set input file name
     inFile  = files(n)
-    outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
-    print( "Now processing: "+ notdir( outFile ) )
+    
+    ; Make sure input file exists
+    if ( .not. ismissing( inFile ) ) then
 
-    ; Readjust files
-    adjust_cn( inFile, outFile )
+      ; Set output file name
+      outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
+      print( "Now processing: "+ notdir( outFile ) )
+
+      ; Readjust files
+      adjust_cn( inFile, outFile )
+    end if
   end do
 
   ;=========================================================================
@@ -167,18 +206,24 @@ begin
   ;=========================================================================
 
   ; Find all GEOS572*I3 files in this directory
-  files     = systemfunc( "ls -1 " + dir + "GEOS572*I3*.nc" )
-  
-  ; Loop over each A1 file
-  do n = 0, dimsizes( files )-1 
+  files := systemfunc( "ls -1 " + dir + "GEOS572*I3*.nc" )
+
+  ; Loop over each I3 file
+  do n = 0, dimsizes( files )-1   
     
     ; Set file names
     inFile  = files(n)
-    outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
-    print( "Now processing: "+ notdir( outFile ) )
 
-    ; Readjust the A3cld files
-    adjust_i3( inFile, outFile )
+    ; Make sure input file exists
+    if ( .not. ismissing( inFile ) ) then 
+
+      ; Set output file name
+      outFile = str_sub_str( inFile, "GEOS572", "GEOSFP" )
+      print( "Now processing: "+ notdir( outFile ) )
+
+      ; Readjust the A3cld files
+      adjust_i3( inFile, outFile )
+    end if
   end do
 
 end
