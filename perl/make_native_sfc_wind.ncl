@@ -33,6 +33,7 @@
 ;
 ; !REVISION HISTORY:
 ;  09 Oct 2013 - R. Yantosca - Initial version
+;  10 Oct 2013 - R. Yantosca - Exit if we can't find any valid input files
 ;EOP
 ;------------------------------------------------------------------------------
 ;BOC
@@ -69,6 +70,12 @@ begin
 
   ; Find all GEOS572*A1 files in this directory
   files = systemfunc( "ls -1 " + inDir + "GEOS.fp.*slv_Nx." + date + "*.nc4" )
+
+  ; Add error check
+  if ( any( ismissing( files ) ) ) then
+    print( "make_scalar_wind_speed.ncl: ERROR: No GEOS.fp*slv_Nx* files found!" )
+    exit
+  end if 
 
   ; Loop over files
   do n = 0, dimsizes( files )-1 
