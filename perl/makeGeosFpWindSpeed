@@ -1,0 +1,338 @@
+#!/usr/bin/perl -w
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: makeGeosFpWindSpeed
+#
+# !DESCRIPTION: This Perl script is used to create netCDF files for the
+#  scalar wind speed at native resolution (0.25 x 0.3125).  This data file
+#  is needed for the new dust emissions module. 
+#  
+#\\
+#\\
+# !USES:
+#
+require 5.003;                  # need this version of Perl or newer
+use strict;                     # IMPLICIT NONE syntax
+use Dates qw( addDate );        # Use functions from Dates.pm
+#
+# !PUBLIC MEMBER FUNCTIONS:
+#  main()
+#
+# !PRIVATE MEMBER FUNCTIONS:
+#  getDefaults($$)
+#  checkDir($)
+#  makeWindSpeed($$)
+#
+# !PUBLIC DATA MEMBERS:
+#				
+our $DO_WIND_SPEED  = "";       # Toggles 
+our $FILE_TEMPLATE  = "";       # Filename template
+our $LOG_DIR        = "";       # Log file dir
+our $RAW_DATA_DIR   = "";       # Dir where GEOS-FP raw data is found
+our $TEMPORARY_DIR  = "";       # Dir where wind speed file will be created 
+our $OUTPUT_DIR     = "";       # Dir where wind speed file will be moved
+#
+# !CALLING SEQUENCE:
+#  makeGeosFpWindSpeed YYYYMMDD [nDays]
+#    - YYYYMMDD is the starting date
+#    - nDays (optional) is the # of days to process (default=1)
+#
+#
+# !REMARKS:
+#  We wrote this as a standalone script so that you can process a number
+#  of days simultaneously, or just one day at a time.
+#
+# !REVISION HISTORY: 
+#  09 Oct 2013 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: getDefaults
+#
+# !DESCRIPTION:  Routine getDefaults reads the default values for 
+#  input quantities.
+#\\
+#\\
+# !INTERFACE:
+#
+sub getDefaults($) {
+#
+# !INPUT PARAMETERS:
+#
+  # $fileName : File containing default settings to be read
+  my ( $fileName ) = @_;
+#
+# !CALLING SEQUENCE:
+# &getDefaults( FILENAME, DATE );
+#
+# !REVISION HISTORY:
+#  10 Oct 2013 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  # Local variables
+  my $line         = "";   
+  my @file         = "";
+  my @result       = "";
+
+  #--------------------------------------
+  # Read variable settings from the file
+  #--------------------------------------
+
+  # Read defaults file into an array (remove newlines)
+  open( I, "<$fileName" ) or die "Cannot open $fileName!\n";
+  chomp( @file = <I> );
+  close( I );
+
+  # Loop thru each line in the file
+  for ( my $i = 0; $i < scalar( @file ); $i++ ) {
+
+    if ( $file[$i] =~ "==> Local Raw Data Path" ) {
+      $RAW_DATA_DIR      = $file[++$i];
+
+    } elsif (  $file[$i] =~ "==> Log Dir") {
+      $LOG_DIR           = $file[++$i];
+
+    } elsif ( $file[$i] =~ "==> Native-resolution wind speed output" ) {
+      $DO_WIND_SPEED     = $file[++$i];
+      $FILE_TEMPLATE     = $file[++$i];
+      $TEMPORARY_DIR     = $file[++$i];
+      $OUTPUT_DIR        = $file[++$i];
+    }
+  }
+
+  # Return normally
+  return( $? );
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: checkDir
+#
+# !DESCRIPTION: Subroutine checkDir checks to see if a directory exists.
+#\\
+#\\
+# !INTERFACE:
+#
+sub checkDir($) {
+#
+# !INPUT PARAMETERS:
+#
+  # $dir : Directory to be checked
+  my ( $dir ) = @_;
+#
+# !CALLING SEQUENCE:
+#  &checkDir( $dir );
+#
+# !REVISION HISTORY:
+#  10 Oct 2013 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+  # Stop with error if directory doesn't exist
+  if ( !( -d $dir ) ) { 
+    print "makeGeosFpWindSpeed ERROR: Directory does not exist: $dir\n";
+    exit(3);
+  }
+  
+  # Otherwise return normally
+  return( $? );
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: makeWindSpeed
+#
+# !DESCRIPTION: Subroutine makeWindSpeed loops through the requested number
+#  of days and calls the NCL script "make_native_sfc_wind.ncl" to create
+#  a netCDF file with the surface 10m wind speed.  This is computed simply
+#  as SPEED = SQRT( U10M**2 + V10M**2 ).
+#\\
+#\\
+# !INTERFACE:
+#
+sub makeWindSpeed($$) {
+#
+# !INPUT PARAMETERS:
+#
+  # $dir : Directory to be checked
+  my ( $date, $nDays ) = @_;
+#
+# !CALLING SEQUENCE:
+#  &makeWindSpeed( $date, $nDays );
+#
+# !REVISION HISTORY:
+#  10 Oct 2013 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  my $today    = 0;
+  my $yearStr  = "";
+  my $monStr   = "";
+  my $dayStr   = "";
+  my $fileTmpl = "";
+  my $tempDir  = "";
+  my $outDir   = "";
+  my $cmd      = "";
+  my $result   = "";
+  my $logFile  = "";
+  
+  # Loop over the # of days
+  for ( my $i = 0; $i < $nDays; $i++ ) {
+
+    #-------------------------------------------
+    # Construct file & dir names for each day
+    #-------------------------------------------
+
+    # Add the # of days from today
+    $today    = &addDate( $date, $i );
+
+    # Split date in to Y/M/D strings 
+    $yearStr  = substr( "$today", 0, 4 );
+    $monStr   = substr( "$today", 4, 2 );
+    $dayStr   = substr( "$today", 6, 2 );
+
+    # Replace tokens in file template
+    $fileTmpl =  $FILE_TEMPLATE;
+    $fileTmpl =~ s/YYYY/$yearStr/g;
+    $fileTmpl =~ s/MM/$monStr/g;
+    $fileTmpl =~ s/DD/$dayStr/g;
+    
+    # Replace tokens in temporary dir
+    $tempDir  =  $TEMPORARY_DIR;
+    $tempDir  =~ s/YYYY/$yearStr/g;
+    $tempDir  =~ s/MM/$monStr/g;
+    $tempDir  =~ s/DD/$dayStr/g;
+
+    # Replace tokens in output dir
+    $outDir   =  $OUTPUT_DIR;
+    $outDir   =~ s/YYYY/$yearStr/g;
+    $outDir   =~ s/MM/$monStr/g;
+    $outDir   =~ s/DD/$dayStr/g;
+
+    # Make sure directories exist
+    &checkDir( $tempDir );
+    &checkDir( $outDir  );
+
+    #-------------------------------------------
+    # Create the wind speed file via NCL
+    #-------------------------------------------
+
+    # Make log file name
+    $logFile = "$LOG_DIR/log.doGeosFpMulti.$today-$$-3";
+   
+    # Open log file
+    open( O, ">$logFile" ) or die "Cannot open $logFile!\n";
+
+    #-------------------------------------------
+    # Create the wind speed file via NCL
+    #-------------------------------------------
+
+    # Echo info
+    print O "Now creating wind speed file for $today\n\n";
+
+    # Create NCL command
+    $cmd = qq( ncl 'date="$today"' inDir='"$RAW_DATA_DIR"' 'outDir="$tempDir"' make_native_sfc_wind.ncl );
+    print O "$cmd\n\n";
+
+    # Invoke NCL script
+    $result = qx( $cmd );
+    print O "$result\n\n";
+
+    #-------------------------------------------
+    # Move the file to the proper directory
+    #-------------------------------------------
+    if ( -f "$tempDir$fileTmpl" ) { 
+
+      # Create command
+      $cmd = "mv $tempDir$fileTmpl $outDir$fileTmpl\n\n";
+      print O "$cmd\n";
+
+      # Execute command
+      $result = qx( $cmd );
+      print O "$result\n";
+    }
+
+    # Close log file
+    close( O )
+  }
+
+  # Otherwise return normally
+  return( $? );
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: main
+#
+# !DESCRIPTION: Driver routine for the makeGeosFpWindSpeed script.  It gets
+#  arguments from the command line and calls other module routines.#  
+#\\
+#\\
+# !INTERFACE:
+#
+sub main() { 
+#
+# !CALLING SEQUENCE:
+#  makeGeosFpWindSpeed YYYYMMDD [nDays]
+#    - YYYYMMDD is the starting date
+#    - nDays (optional) is the # of days to process (default=1)
+#
+# !REVISION HISTORY:
+#  10 Oct 2013 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#
+# !LOCAL VARIABLES
+#
+  my $date   = 0;
+  my $nDays  = 0;
+  my $errMsg = "Usage: moveGeosFp YYYYMMDD [nDays]\n";
+
+  # Error check arguments
+  if    ( scalar( @ARGV ) == 2 ) { $date = $ARGV[0];  $nDays = $ARGV[1]; }
+  elsif ( scalar( @ARGV ) == 1 ) { $date = $ARGV[0];  $nDays = 1;        }
+  else                           { print "$errMsg\n"; exit(1);           }
+
+  # Get default values from input files
+  &getDefaults( "../bin/GeosFpDriver.input" );
+  &getDefaults( "./doGeosFp.input"          );
+
+  # Create the file with the scalar wind speed
+  if ( $DO_WIND_SPEED =~ "T" ) { &makeWindSpeed( $date, $nDays ); } 
+
+  # Return normally
+  return(0);
+}
+#EOC
+
+#------------------------------------------------------------------------------
+
+# Start main program
+main();
+
+# Exit w/ return status
+exit( $? );

@@ -30,34 +30,38 @@
 #
 				
 # General variables
-our $DAY_STRING        = "UNDEFINED";
-our $DEFAULTS_FOR_EXE  = "UNDEFINED";
-our $HOME_DIRECTORY    = "UNDEFINED";
-our $MONTH_STRING      = "UNDEFINED";
-our $USER_ID           = "UNDEFINED";
-our $YEAR_STRING       = "UNDEFINED";
+our $DAY_STRING        = "";
+our $DEFAULTS_FOR_EXE  = "";
+our $HOME_DIRECTORY    = "";
+our $MONTH_STRING      = "";
+our $USER_ID           = "";
+our $YEAR_STRING       = "";
 
 # Data file names and directories
-our $DO_NEST_CH        = "UNDEFINED";
-our $DATA_FILE_NEST_CH = "UNDEFINED";
-our $TEMP_DIR_NEST_CH  = "UNDEFINED";
-our $DATA_DIR_NEST_CH  = "UNDEFINED";
-our $DO_NEST_EU        = "UNDEFINED";
-our $DATA_FILE_NEST_EU = "UNDEFINED";
-our $TEMP_DIR_NEST_EU  = "UNDEFINED";
-our $DATA_DIR_NEST_EU  = "UNDEFINED";
-our $DO_NEST_NA        = "UNDEFINED";
-our $DATA_FILE_NEST_NA = "UNDEFINED";
-our $TEMP_DIR_NEST_NA  = "UNDEFINED";
-our $DATA_DIR_NEST_NA  = "UNDEFINED";
-our $DO_2x25           = "UNDEFINED";
-our $DATA_FILE_2x25    = "UNDEFINED";
-our $TEMP_DIR_2x25     = "UNDEFINED";
-our $DATA_DIR_2x25     = "UNDEFINED";
-our $DO_4x5            = "UNDEFINED";
-our $DATA_FILE_4x5     = "UNDEFINED";
-our $TEMP_DIR_4x5      = "UNDEFINED";
-our $DATA_DIR_4x5      = "UNDEFINED";
+our $DO_NEST_CH        = "";
+our $DATA_FILE_NEST_CH = "";
+our $TEMP_DIR_NEST_CH  = "";
+our $DATA_DIR_NEST_CH  = "";
+our $DO_NEST_EU        = "";
+our $DATA_FILE_NEST_EU = "";
+our $TEMP_DIR_NEST_EU  = "";
+our $DATA_DIR_NEST_EU  = "";
+our $DO_NEST_NA        = "";
+our $DATA_FILE_NEST_NA = "";
+our $TEMP_DIR_NEST_NA  = "";
+our $DATA_DIR_NEST_NA  = "";
+our $DO_NEST_SE        = "";
+our $DATA_FILE_NEST_SE = "";
+our $TEMP_DIR_NEST_SE  = "";
+our $DATA_DIR_NEST_SE  = "";
+our $DO_2x25           = "";
+our $DATA_FILE_2x25    = "";
+our $TEMP_DIR_2x25     = "";
+our $DATA_DIR_2x25     = "";
+our $DO_4x5            = "";
+our $DATA_FILE_4x5     = "";
+our $TEMP_DIR_4x5      = "";
+our $DATA_DIR_4x5      = "";
 #
 # !CALLING SEQUENCE:
 # moveGeosFp YYYYMMDD
@@ -68,6 +72,7 @@ our $DATA_DIR_4x5      = "UNDEFINED";
 #  24 May 2013 - R. Yantosca - Now read logicals from GeosFpDriver.input that
 #                              can be used to shut off file moves
 #  20 Sep 2013 - R. Yantosca - Renamed to moveGeosFp
+#  10 Oct 2013 - R. Yantosca - Now move data from SE Asia nested grid (SE)
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -160,6 +165,8 @@ sub getDirectories($) {
 #  23 Jan 2012 - R. Yantosca - Initial version
 #  16 Feb 2012 - R. Yantosca - Updated for NA nested grid
 #  24 May 2013 - R. Yantosca - Now read logicals from GeosFpDriver.input
+#  10 Oct 2013 - R. Yantosca - Now 
+
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -181,11 +188,17 @@ sub getDirectories($) {
   # Loop thru each line in the file
   for ( my $i = 0; $i < scalar( @file ); $i++ ) {
 
-    if ( $file[$i] =~ "==> Nested China output" ) {
+    if ( $file[$i] =~ "==> Nested CH output" ) {
       $DO_NEST_CH        = $file[++$i];
       $DATA_FILE_NEST_CH = $file[++$i];
       $TEMP_DIR_NEST_CH  = $file[++$i];
       $DATA_DIR_NEST_CH  = $file[++$i];
+
+    } elsif ( $file[$i] =~ "==> Nested EU output" ) {
+      $DO_NEST_EU        = $file[++$i];
+      $DATA_FILE_NEST_EU = $file[++$i];
+      $TEMP_DIR_NEST_EU  = $file[++$i];
+      $DATA_DIR_NEST_EU  = $file[++$i];
 
     } elsif ( $file[$i] =~ "==> Nested NA output" ) {
       $DO_NEST_NA        = $file[++$i];
@@ -193,11 +206,11 @@ sub getDirectories($) {
       $TEMP_DIR_NEST_NA  = $file[++$i];
       $DATA_DIR_NEST_NA  = $file[++$i];
 
-    } elsif ( $file[$i] =~ "==> Nested EU output" ) {
-      $skipLine          = $file[++$i];
-      $DATA_FILE_NEST_EU = $file[++$i];
-      $TEMP_DIR_NEST_EU  = $file[++$i];
-      $DATA_DIR_NEST_EU  = $file[++$i];
+    } elsif ( $file[$i] =~ "==> Nested SE output" ) {
+      $DO_NEST_SE        = $file[++$i];
+      $DATA_FILE_NEST_SE = $file[++$i];
+      $TEMP_DIR_NEST_SE  = $file[++$i];
+      $DATA_DIR_NEST_SE  = $file[++$i];
 
     } elsif ( $file[$i] =~ "==> 2 x 2.5 output" ) {
       $DO_2x25           = $file[++$i];
@@ -324,7 +337,7 @@ sub checkDir($) {
 
   # Stop with error if directory doesn't exist
   if ( !( -d $dir ) ) { 
-    print "doGeos5 ERROR: Directory does not exist: $dir\n";
+    print "moveGeosFp ERROR: Directory does not exist: $dir\n";
     exit(1)
   }
   

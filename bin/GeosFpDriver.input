@@ -36,6 +36,7 @@
 #  19 Sep 2013 - R. Yantosca - Removed reference to tavg3_3d_rad_Nv collection
 #  20 Sep 2013 - R. Yantosca - Removed CFCU from the list
 #  08 Oct 2013 - R. Yantosca - Added output for nested SE Asia grid (SE)
+#  09 Oct 2013 - R. Yantosca - Added output for native wind speed
 #
 
 ==> Turn on debug print output?
@@ -87,10 +88,10 @@ PS,PV,QV,T
 /as/priv/ftp/gmao/gmao/
 
 ==> Nested CH output
-T
+F
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.CH.nc
 /as/tmp/all/tmp/bmy/GEOS_FP/
-/as/data/geos-rw/GEOS_0.25x0.3125_SEA4CRS.d/GEOS_FP/YYYY/MM/
+/as/data/geos-rw/GEOS_0.25x0.3125_CH.d/GEOS_FP/YYYY/MM/
   801  421  1025 581   # China grid
 
 ==> Nested EU output
@@ -112,7 +113,7 @@ F
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.SE.nc
 /as/tmp/all/tmp/bmy/GEOS_FP/
 /mnt/gcgrid-rw/GEOS_0.25x0.3125/GEOS_0.25x0.3125_SE.d/GEOS_FP/YYYY/MM/
-  817 321 993 481      # NOTE: Need correct indices
+  817 321 993 481
 
 ==> 2 x 2.5 output
 T
@@ -125,6 +126,12 @@ T
 GEOSFP.YYYYMMDD.%%%%%%.4x5.nc
 /as/tmp/all/tmp/bmy/GEOS_FP/
 /mnt/gcgrid-rw/GEOS_4x5/GEOS_FP/YYYY/MM/
+
+==> Native-resolution wind speed output
+T
+GEOSFP.YYYYMMDD.SPEED.025x03125.nc
+/as/tmp/all/tmp/bmy/GEOS_FP/
+/mnt/gcgrid-rw/GEOS_0.25x0.3125.d/GEOS_FP/YYYY/MM/
 
 ==> Mapping Weight Files
 weights_025x03125_to_2x25.txt

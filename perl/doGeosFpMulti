@@ -47,7 +47,7 @@
   our $LOG_FILE          = "";
   our $MET_DIRECTORY     = "";
   our $MONTH_STRING      = "";
-  our $N_FILES           = 144;
+  our $N_FILES           = 136;
   our $SUBMIT            = "";
   our $TEMP_DIRECTORY    = "";
   our $USER_ID           = "";
@@ -68,6 +68,7 @@
 #  06 Aug 2013 - R. Yantosca - Now email users when the met fields are ready
 #  07 Aug 2013 - R. Yantosca - Add some basic error checking before starting
 #  20 Sep 2013 - R. Yantosca - Renamed to doGeosFpMulti
+#  10 Oct 2013 - R. Yantosca - Changed N_FILES to 136
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -157,13 +158,13 @@ sub getDefaults($$) {
   $DATE_FILE    = "$TEMP_DIRECTORY/$DATE_STRING.$$";
 
   # Log error file
-  $LOG_ERR      = "$LOG_DIRECTORY/log.doGeosFp.error-{THREAD}";
+  $LOG_ERR      = "$LOG_DIRECTORY/log.doGeosFpMulti.error-{THREAD}";
 
   # Log file
-  $LOG_FILE     = "$LOG_DIRECTORY/log.doGeosFp.{DSTR}.$$-{THREAD}";
+  $LOG_FILE     = "$LOG_DIRECTORY/log.doGeosFpMulti.{DSTR}.$$-{THREAD}";
 
   # Job script
-  $JOB_FILE     = "$JOB_DIRECTORY/job.doGeosFp.{DSTR}.$$-{THREAD}";  
+  $JOB_FILE     = "$JOB_DIRECTORY/job.doGeosFpMulti.{DSTR}.$$-{THREAD}";  
 
   # Return normally
   return(0);
@@ -524,6 +525,8 @@ sub main() {
 #                              met field job from starting if too few files
 #  13 Aug 2013 - R. Yantosca - Now add an informational message if all met
 #                              field files are present
+#  10 Oct 2013 - R. Yantosca - Now calls makeGeosFpWindSpeed script to create
+#                              the 0.25 x 0.3125 scalar wind speed files
 #EOP
 #------------------------------------------------------------------------------
 #
@@ -531,6 +534,7 @@ sub main() {
 #
   my $status  = 0;
   my $listCmd = "";
+  my $cmd     = "";
 
   # Error check arguments
   if ( scalar( @ARGV ) == 0 ) { 
@@ -566,6 +570,10 @@ sub main() {
 
   # Run jobs
   &runJobs();
+
+  # Also make the scalar wind speed file for dust emissions
+  $cmd    = "makeGeosFpWindSpeed $ARGV[0]";
+  $status = qx( $cmd );
 
   # Return normally
   return(0);
