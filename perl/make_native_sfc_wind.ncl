@@ -73,7 +73,7 @@ begin
 
   ; Add error check
   if ( any( ismissing( files ) ) ) then
-    print( "make_scalar_wind_speed.ncl: ERROR: No GEOS.fp*slv_Nx* files found!" )
+    print( "make_native_sfc_wind.ncl: ERROR: No *slv_Nx* files found!" )
     exit
   end if 
 
