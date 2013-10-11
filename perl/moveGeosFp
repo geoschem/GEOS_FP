@@ -64,7 +64,7 @@ our $TEMP_DIR_4x5      = "";
 our $DATA_DIR_4x5      = "";
 #
 # !CALLING SEQUENCE:
-# moveGeosFp YYYYMMDD
+# moveGeosFp YYYYMMDD FILETYPE
 #
 # !REVISION HISTORY: 
 #  23 Jan 2012 - R. Yantosca - Initial version
@@ -73,6 +73,8 @@ our $DATA_DIR_4x5      = "";
 #                              can be used to shut off file moves
 #  20 Sep 2013 - R. Yantosca - Renamed to moveGeosFp
 #  10 Oct 2013 - R. Yantosca - Now move data from SE Asia nested grid (SE)
+#  11 Oct 2013 - R. Yantosca - Now do not move files if the temporary dir 
+#                              matches the output dir
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -165,8 +167,9 @@ sub getDirectories($) {
 #  23 Jan 2012 - R. Yantosca - Initial version
 #  16 Feb 2012 - R. Yantosca - Updated for NA nested grid
 #  24 May 2013 - R. Yantosca - Now read logicals from GeosFpDriver.input
-#  10 Oct 2013 - R. Yantosca - Now 
-
+#  10 Oct 2013 - R. Yantosca - Do not move files if the temporary directory
+#                              is the same as the data directory as listed
+#                              in bin/GeosFpDriver.input.
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -226,6 +229,17 @@ sub getDirectories($) {
 
     }
   }
+
+  # Don't move files if the temporary directory string is the same as the 
+  # data directory string.  This allows us to skip using the temporary 
+  # directory.  You must edit bin/GeosFpDriver.input accordingly.
+  # is the same as the data directory string
+  if ( $TEMP_DIR_NEST_CH eq $DATA_DIR_NEST_CH ) { $DO_NEST_CH = "F"; }
+  if ( $TEMP_DIR_NEST_EU eq $DATA_DIR_NEST_EU ) { $DO_NEST_EU = "F"; }
+  if ( $TEMP_DIR_NEST_NA eq $DATA_DIR_NEST_NA ) { $DO_NEST_NA = "F"; }
+  if ( $TEMP_DIR_NEST_SE eq $DATA_DIR_NEST_SE ) { $DO_NEST_SE = "F"; }
+  if ( $TEMP_DIR_2x25    eq $DATA_DIR_2x25    ) { $DO_2x25    = "F"; }
+  if ( $TEMP_DIR_4x5     eq $DATA_DIR_4x5     ) { $DO_4x5     = "F"; }
 
   # Return normally
   return(0);
@@ -396,13 +410,21 @@ sub moveFiles(@) {
       $dir    = &replaceTokens( $dir, $fileType );
       &checkDir( $dir );
 
-      # Move command (list the directory first to force an automount)
-      $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+      if ( $TEMP_DIR_NEST_CH eq $DATA_DIR_NEST_CH ) {
+
+	# We don't have to move files
+	print "No move necessary, nested CH data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
     
-      # Move the files
-      print "$cmd\n";
-      $result = qx( $cmd );
-    } 
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
+    }
 
     #-------------------------------
     # Nested Europe grid
