@@ -934,7 +934,7 @@ MODULE GeosFpA1Module
        var3  = (/ idLon, idLat, idTime /)    
        vId   = vId + 1
        lName = 'Total column ozone' 
-       units = 'Dobson'
+       units = 'Dobsons'
        gamap = 'GMAO-2D'
        CALL NcDef_Variable      ( fOut, 'TO3', NF_FLOAT, 3, var3, vId     )
        CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
