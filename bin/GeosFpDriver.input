@@ -37,6 +37,7 @@
 #  20 Sep 2013 - R. Yantosca - Removed CFCU from the list
 #  08 Oct 2013 - R. Yantosca - Added output for nested SE Asia grid (SE)
 #  09 Oct 2013 - R. Yantosca - Added output for native wind speed
+#  16 Oct 2013 - R. Yantosca - Added TO3 as a field
 #
 
 ==> Turn on debug print output?
@@ -61,7 +62,7 @@ ALBEDO,CLDTOT,LWGNT,LWTUP,SWGDN
 
 ==> tavg1_2d_slv_Nx
 GEOS.fp.asm.tavg1_2d_slv_Nx.YYYYMMDD_hhmm.V01.nc4
-QV2M,SLP,TROPPT,TS,T2M,U10M,V10M,T10M,Q850
+QV2M,SLP,TROPPT,TS,T2M,U10M,V10M,T10M,Q850,TO3
 
 ==> tavg3_3d_asm_Nv
 GEOS.fp.asm.tavg3_3d_asm_Nv.YYYYMMDD_hhmm.V01.nc4
@@ -128,7 +129,7 @@ GEOSFP.YYYYMMDD.%%%%%%.4x5.nc
 /mnt/gcgrid-rw/GEOS_4x5/GEOS_FP/YYYY/MM/
 
 ==> Native-resolution wind speed output
-T
+F
 GEOSFP.YYYYMMDD.SPEED.025x03125.nc
 /as/tmp/all/tmp/bmy/GEOS_FP/
 /mnt/gcgrid-rw/GEOS_0.25x0.3125.d/GEOS_FP/YYYY/MM/

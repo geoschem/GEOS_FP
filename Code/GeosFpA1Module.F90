@@ -120,6 +120,7 @@ MODULE GeosFpA1Module
 !  24 Sep 2013 - R. Yantosca - Bug fix: now use correct start & end dates
 !  24 Sep 2013 - R. Yantosca - Now write dims in order: time, lat, lon
 !  08 Oct 2013 - R. Yantosca - Updated CASE statement for gridName
+!  16 Oct 2013 - R. Yantosca - Add TO3 (total column ozone) to list of fields
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -919,6 +920,23 @@ MODULE GeosFpA1Module
        units = 'W m-2'
        gamap = 'GMAO-2D'
        CALL NcDef_Variable      ( fOut, 'SWGNT', NF_FLOAT, 3, var3, vId      )
+       CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
+       CALL NcDef_Var_Attributes( fOut, vId, 'missing_value',  FILL_VALUE    )
+       CALL NcDef_Var_Attributes( fOut, vId, '_FillValue',     FILL_VALUE    )
+       CALL NcDef_Var_Attributes( fOut, vId, 'scale_factor',   1e0           )
+       CALL NcDef_Var_Attributes( fOut, vId, 'add_offset',     0e0           )
+    ENDIF
+
+    ! TO3
+    IF ( StrPos( 'TO3', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
+       var3  = (/ idLon, idLat, idTime /)    
+       vId   = vId + 1
+       lName = 'Total column ozone' 
+       units = 'Dobson'
+       gamap = 'GMAO-2D'
+       CALL NcDef_Variable      ( fOut, 'TO3', NF_FLOAT, 3, var3, vId     )
        CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units ) )
        CALL NcDef_Var_Attributes( fOut, vId, 'gamap_category', TRIM( gamap ) )
