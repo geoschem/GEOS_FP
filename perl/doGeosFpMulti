@@ -527,14 +527,21 @@ sub main() {
 #                              field files are present
 #  10 Oct 2013 - R. Yantosca - Now calls makeGeosFpWindSpeed script to create
 #                              the 0.25 x 0.3125 scalar wind speed files
+#  31 Oct 2013 - R. Yantosca - Bug fix: Implement better check for # of files
+#                              downloaded.  Skip counting the rad_Nv files.
 #EOP
 #------------------------------------------------------------------------------
 #
 # !LOCAL VARIABLES:
 #
+  # Scalars
   my $status  = 0;
   my $listCmd = "";
   my $cmd     = "";
+  my $file    = "";
+
+  # Arrays
+  my @files   = ();
 
   # Error check arguments
   if ( scalar( @ARGV ) == 0 ) { 
@@ -548,8 +555,15 @@ sub main() {
   # Quick & dirty test if all the files are present in the met dir
   # Not an exhaustive check but this should be good enough to prevent the
   # met field code from starting if there aren't enough files. (bmy, 8/7/13)
-  $listCmd = "ls -1 $MET_DIRECTORY/GEOS.fp* | wc -l";
-  chomp( $status  = qx( $listCmd ) );
+  $listCmd = "ls -1 $MET_DIRECTORY/GEOS.fp*";
+  chomp( @files = qx( $listCmd ) );
+
+  # Skip over the tavg3_3d_rad_Nv files
+  foreach $file ( @files ) {
+    if ( !( $file =~ m/tavg3_3d_rad_Nv/ ) ) { $status++; }
+  }
+
+  # Make sure we match the expected # of files
   if ( $status == $N_FILES ) { 
     print "doGeosFpMulti: All files present!  Now processing met for $ARGV[0]!\n"; 
   } else {
