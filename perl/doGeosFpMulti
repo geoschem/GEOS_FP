@@ -386,7 +386,7 @@ sub makeJobFile($) {
   my $jobFile   = $JOB_FILE;
   my $logFile   = $LOG_FILE;
   my $subject   = "GEOS-FP $fileTypes met fields for $DATE_STRING are ready!";
-  my $mailCmd   = qq( echo "$body" > X | mail -s "$subject" $email < X; rm X );
+  my $mailCmd   = qq( echo "$body" > X | mail -s "$subject" $email < X; rm -f X );
 
   #-----------------------------------------
   # Create a file with the date of the data
