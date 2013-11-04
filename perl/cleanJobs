@@ -99,6 +99,7 @@ sub main() {
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/cleanJobs
 #  29 Feb 2012 - R. Yantosca - Also remove date files in the jobs directory
 #  20 Sep 2013 - R. Yantosca - Now reads input file "doGeosFp.input"
+#  04 Nov 2013 - R. Yantosca - Minor fix to delete job files
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -119,7 +120,7 @@ sub main() {
   foreach $file ( @files ) {
 
     # Remove job files
-    if ( $file =~ m/job.doGeos5/ ) {
+    if ( $file =~ m/job.doGeosFpMulti/ ) {
       $cmd = "rm -f $jobDir/$file";
       print "$cmd\n";
       qx( $cmd );

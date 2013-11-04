@@ -117,7 +117,7 @@ sub main() {
 
   # Remove log files only
   foreach $file ( @files ) {
-    if ( $file =~ m/log.doGeos5/ ) {
+    if ( $file =~ m/log.doGeosFpMulti/ ) {
       $cmd = "rm -f $logDir/$file";
       print "$cmd\n";
       qx( $cmd );
