@@ -16,47 +16,78 @@
 #\\
 # !USES:
 #
-require 5.003;                           # Need this version of Perl or newer
-use English;                             # Use English language
-use Carp;                                # Get detailed error messages
-use strict;                              # IMPLICIT NONE syntax
+require 5.003;                      # Need this version of Perl or newer
+use English;                        # Use English language
+use Carp;                           # Get detailed error messages
+use strict;                         # IMPLICIT NONE syntax
 #
 # !PUBLIC DATA MEMBERS:
 #
 
 # Raw met field directory
-our $RAW_MET_DIR        = "";            # Dir where raw met fields are stored
-	
-# Nested grid met fields
-our $NESTED_MET_DIR     = "";		 # Nested met field directory
-our $FILE_NESTED_A1     = "";		 # Nested GEOS5-FP "A1"     file name
-our $SIZE_NESTED_A1     = "";		 # Nested GEOS5-FP "A1"     file size
-our $FILE_NESTED_A3cld  = "";		 # Nested GEOS5-FP "A3cld"  file name
-our $SIZE_NESTED_A3cld  = "";		 # Nested GEOS5-FP "A3cld"  file size
-our $FILE_NESTED_A3dyn  = "";		 # Nested GEOS5-FP "A3dyn"  file name
-our $SIZE_NESTED_A3dyn  = "";		 # Nested GEOS5-FP "A3dyn"  file size
-our $FILE_NESTED_A3mstC = "";		 # Nested GEOS5-FP "A3mstC" file name
-our $SIZE_NESTED_A3mstC = "";		 # Nested GEOS5-FP "A3mstC" file size
-our $FILE_NESTED_A3mstE = "";		 # Nested GEOS5-FP "A3mstE" file name
-our $SIZE_NESTED_A3mstE = "";		 # Nested GEOS5-FP "A3mstE" file size
-our $FILE_NESTED_I3     = "";		 # Nested GEOS5-FP "I3"     file name
-our $SIZE_NESTED_I3     = "";		 # Nested GEOS5-FP "I3"     file size
-	 
-# Global grid met fields		 
-our $GLOBAL_MET_DIR     = "";		 # Global met field directory
-our $FILE_GLOBAL_A1     = "";		 # Global GEOS5-FP "A1"     file name
-our $SIZE_GLOBAL_A1     = "";		 # Global GEOS5-FP "A1"     file size
-our $FILE_GLOBAL_A3cld  = "";		 # Global GEOS5-FP "A3cld"  file name
-our $SIZE_GLOBAL_A3cld  = "";		 # Global GEOS5-FP "A3cld"  file size
-our $FILE_GLOBAL_A3dyn  = "";		 # Global GEOS5-FP "A3dyn"  file name
-our $SIZE_GLOBAL_A3dyn  = "";		 # Global GEOS5-FP "A3dyn"  file size
-our $FILE_GLOBAL_A3mstC = "";		 # Global GEOS5-FP "A3mstC" file name
-our $SIZE_GLOBAL_A3mstC = "";		 # Global GEOS5-FP "A3mstC" file size
-our $FILE_GLOBAL_A3mstE = "";		 # Global GEOS5-FP "A3mstE" file name
-our $SIZE_GLOBAL_A3mstE = "";		 # Global GEOS5-FP "A3mstE" file size
-our $FILE_GLOBAL_I3     = "";		 # Global GEOS5-FP "I3"     file name
-our $SIZE_GLOBAL_I3     = "";		 # Global GEOS5-FP "I3"     file size
-#		
+our $RAW_MET_DIR           = "";    # Dir where raw met fields are stored
+ 
+# CH Nested grid met fields
+our $NESTED_C_MET_DIR     = "";     # Nested CH  met field directory
+our $FILE_NESTED_C_A1     = "";     # Nested CH  GEOS-FP "A1"     file name
+our $SIZE_NESTED_C_A1     = "";     # Nested CH  GEOS-FP "A1"     file size
+our $FILE_NESTED_C_A3cld  = "";     # Nested CH  GEOS-FP "A3cld"  file name
+our $SIZE_NESTED_C_A3cld  = "";     # Nested CH  GEOS-FP "A3cld"  file size
+our $FILE_NESTED_C_A3dyn  = "";     # Nested CH  GEOS-FP "A3dyn"  file name
+our $SIZE_NESTED_C_A3dyn  = "";     # Nested CH  GEOS-FP "A3dyn"  file size
+our $FILE_NESTED_C_A3mstC = "";     # Nested CH  GEOS-FP "A3mstC" file name
+our $SIZE_NESTED_C_A3mstC = "";     # Nested CH  GEOS-FP "A3mstC" file size
+our $FILE_NESTED_C_A3mstE = "";     # Nested CH  GEOS-FP "A3mstE" file name
+our $SIZE_NESTED_C_A3mstE = "";     # Nested CH  GEOS-FP "A3mstE" file size
+our $FILE_NESTED_C_I3     = "";     # Nested CH  GEOS-FP "I3"     file name
+our $SIZE_NESTED_C_I3     = "";     # Nested CH  GEOS-FP "I3"     file size
+
+# NA nested grid met fields
+our $NESTED_N_MET_DIR     = "";    # Nested NA   met field directory
+our $FILE_NESTED_N_A1     = "";    # Nested NA   GEOS-FP "A1"     file name
+our $SIZE_NESTED_N_A1     = "";    # Nested NA   GEOS-FP "A1"     file size
+our $FILE_NESTED_N_A3cld  = "";    # Nested NA   GEOS-FP "A3cld"  file name
+our $SIZE_NESTED_N_A3cld  = "";    # Nested NA   GEOS-FP "A3cld"  file size
+our $FILE_NESTED_N_A3dyn  = "";    # Nested NA   GEOS-FP "A3dyn"  file name
+our $SIZE_NESTED_N_A3dyn  = "";    # Nested NA   GEOS-FP "A3dyn"  file size
+our $FILE_NESTED_N_A3mstC = "";    # Nested NA   GEOS-FP "A3mstC" file name
+our $SIZE_NESTED_N_A3mstC = "";    # Nested NA   GEOS-FP "A3mstC" file size
+our $FILE_NESTED_N_A3mstE = "";    # Nested NA   GEOS-FP "A3mstE" file name
+our $SIZE_NESTED_N_A3mstE = "";    # Nested NA   GEOS-FP "A3mstE" file size
+our $FILE_NESTED_N_I3     = "";    # Nested NA   GEOS-FP "I3"     file name
+our $SIZE_NESTED_N_I3     = "";    # Nested NA   GEOS-FP "I3"     file size
+  
+# Global grid met fields    
+our $GLOBAL_4_MET_DIR     = "";    # Global 4x5  met field directory
+our $FILE_GLOBAL_4_A1     = "";    # Global 4x5  GEOS-FP "A1"     file name
+our $SIZE_GLOBAL_4_A1     = "";    # Global 4x5  GEOS-FP "A1"     file size
+our $FILE_GLOBAL_4_A3cld  = "";    # Global 4x5  GEOS-FP "A3cld"  file name
+our $SIZE_GLOBAL_4_A3cld  = "";    # Global 4x5  GEOS-FP "A3cld"  file size
+our $FILE_GLOBAL_4_A3dyn  = "";    # Global 4x5  GEOS-FP "A3dyn"  file name
+our $SIZE_GLOBAL_4_A3dyn  = "";    # Global 4x5  GEOS-FP "A3dyn"  file size
+our $FILE_GLOBAL_4_A3mstC = "";    # Global 4x5  GEOS-FP "A3mstC" file name
+our $SIZE_GLOBAL_4_A3mstC = "";    # Global 4x5  GEOS-FP "A3mstC" file size
+our $FILE_GLOBAL_4_A3mstE = "";    # Global 4x5  GEOS-FP "A3mstE" file name
+our $SIZE_GLOBAL_4_A3mstE = "";    # Global 4x5  GEOS-FP "A3mstE" file size
+our $FILE_GLOBAL_4_I3     = "";    # Global 4x5  GEOS-FP "I3"     file name
+our $SIZE_GLOBAL_4_I3     = "";    # Global 4x5  GEOS-FP "I3"     file size
+
+
+# Global grid met fields    
+our $GLOBAL_2_MET_DIR     = "";    # Global 2x25 met field directory
+our $FILE_GLOBAL_2_A1     = "";    # Global 2x25 GEOS-FP "A1"     file name
+our $SIZE_GLOBAL_2_A1     = "";    # Global 2x25 GEOS-FP "A1"     file size
+our $FILE_GLOBAL_2_A3cld  = "";    # Global 2x25 GEOS-FP "A3cld"  file name
+our $SIZE_GLOBAL_2_A3cld  = "";    # Global 2x25 GEOS-FP "A3cld"  file size
+our $FILE_GLOBAL_2_A3dyn  = "";    # Global 2x25 GEOS-FP "A3dyn"  file name
+our $SIZE_GLOBAL_2_A3dyn  = "";    # Global 2x25 GEOS-FP "A3dyn"  file size
+our $FILE_GLOBAL_2_A3mstC = "";    # Global 2x25 GEOS-FP "A3mstC" file name
+our $SIZE_GLOBAL_2_A3mstC = "";    # Global 2x25 GEOS-FP "A3mstC" file size
+our $FILE_GLOBAL_2_A3mstE = "";    # Global 2x25 GEOS-FP "A3mstE" file name
+our $SIZE_GLOBAL_2_A3mstE = "";    # Global 2x25 GEOS-FP "A3mstE" file size
+our $FILE_GLOBAL_2_I3     = "";    # Global 2x25 GEOS-FP "I3"     file name
+our $SIZE_GLOBAL_2_I3     = "";    # Global 2x25 GEOS-FP "I3"     file size
+#  
 # !PUBLIC MEMBER FUNCTIONS:
 #  &main()
 #
@@ -75,6 +106,7 @@ our $SIZE_GLOBAL_I3     = "";		 # Global GEOS5-FP "I3"     file size
 #
 # !REVISION HISTORY: 
 #  08 Aug 2013 - R. Yantosca - Initial version, based on sleepNRT (SEAC4RS)
+#  25 Sep 2013 - R. Yantosca - Renamed global vars for CH, NA, 4x5, 2x25
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -110,38 +142,56 @@ sub getDefaults($) {
 # !LOCAL VARIABLES:
 #
   my $line   = "";
-  my @file   = "";
+  my @f   = "";
   my @result = "";
 
   # Read defaults file into an array (remove newlines)
   open( I, "<$fileName" ) or die "Cannot open $fileName!\n";
-  chomp( @file = <I> );
+  chomp( @f = <I> );
   close( I );
 
   # Loop thru each line in the file; parse information into global variables
   for ( my $i = 0; $i < scalar( @file ); $i++ ) {
 
-    if ( $file[$i] =~ "==> Raw Met Data Directory" ) {
-      $RAW_MET_DIR = $file[++$i]; 
+    if ( $f[$i] =~ "==> Raw Met Data Directory" ) {
+      $RAW_MET_DIR = $[++$i]
 
-    } elsif ( $file[$i] =~ "==> Nested-Grid Met Fields" ) {
-      $NESTED_MET_DIR                              =             $file[++$i]  ;
-      ( $SIZE_NESTED_A1,     $FILE_NESTED_A1     ) = split( ' ', $file[++$i] );
-      ( $SIZE_NESTED_A3cld,  $FILE_NESTED_A3cld  ) = split( ' ', $file[++$i] );
-      ( $SIZE_NESTED_A3dyn,  $FILE_NESTED_A3dyn  ) = split( ' ', $file[++$i] );
-      ( $SIZE_NESTED_A3mstC, $FILE_NESTED_A3mstC ) = split( ' ', $file[++$i] );
-      ( $SIZE_NESTED_A3mstE, $FILE_NESTED_A3mstE ) = split( ' ', $file[++$i] );
-      ( $SIZE_NESTED_I3,     $FILE_NESTED_I3     ) = split( ' ', $file[++$i] );
+    elsif ( $file[$i] =~ "==> CH Nested" ) {
+      $NESTED_C_MET_DIR                                =           $f[++$i] ;
+      ( $SIZE_NESTED_C_A1,     $FILE_NESTED_C_A1     ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_C_A3cld,  $FILE_NESTED_C_A3cld  ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_C_A3dyn,  $FILE_NESTED_C_A3dyn  ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_C_A3mstC, $FILE_NESTED_C_A3mstC ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_C_A3mstE, $FILE_NESTED_C_A3mstE ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_C_I3,     $FILE_NESTED_C_I3     ) = split(' ',$f[++$i]);
 
-    } elsif ( $file[$i] =~ "==> Global-Grid Met Fields" ) {
-      $GLOBAL_MET_DIR                              =             $file[++$i]  ;
-      ( $SIZE_GLOBAL_A1,     $FILE_GLOBAL_A1     ) = split( ' ', $file[++$i] );
-      ( $SIZE_GLOBAL_A3cld,  $FILE_GLOBAL_A3cld  ) = split( ' ', $file[++$i] );
-      ( $SIZE_GLOBAL_A3dyn,  $FILE_GLOBAL_A3dyn  ) = split( ' ', $file[++$i] );
-      ( $SIZE_GLOBAL_A3mstC, $FILE_GLOBAL_A3mstC ) = split( ' ', $file[++$i] );
-      ( $SIZE_GLOBAL_A3mstE, $FILE_GLOBAL_A3mstE ) = split( ' ', $file[++$i] );
-      ( $SIZE_GLOBAL_I3,     $FILE_GLOBAL_I3     ) = split( ' ', $file[++$i] );
-    
+    elsif ( $file[$i] =~ "==> NA Nested" ) {
+      $NESTED_N_MET_DIR                                =           $f[++$i] ;
+      ( $SIZE_NESTED_N_A1,     $FILE_NESTED_N_A1     ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_N_A3cld,  $FILE_NESTED_N_A3cld  ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_N_A3dyn,  $FILE_NESTED_N_A3dyn  ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_N_A3mstC, $FILE_NESTED_N_A3mstC ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_N_A3mstE, $FILE_NESTED_N_A3mstE ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_N_I3,     $FILE_NESTED_N_I3     ) = split(' ',$f[++$i]);
+
+    } elsif ( $f[$i] =~ "==> 4x5 Global" ) {
+      $GLOBAL_4_MET_DIR                                =           $f[++$i] ;
+      ( $SIZE_GLOBAL_4_A1,     $FILE_GLOBAL_4_A1     ) = split(' ',$f[++$i]);
+      ( $SIZE_GLOBAL_4_A3cld,  $FILE_GLOBAL_4_A3cld  ) = split(' ',$f[++$i]);
+      ( $SIZE_GLOBAL_4_A3dyn,  $FILE_GLOBAL_4_A3dyn  ) = split(' ',$f[++$i]);
+      ( $SIZE_GLOBAL_4_A3mstC, $FILE_GLOBAL_4_A3mstC ) = split(' ',$f[++$i]);
+      ( $SIZE_GLOBAL_4_A3mstE, $FILE_GLOBAL_4_A3mstE ) = split(' ',$f[++$i]);
+      ( $SIZE_GLOBAL_4_I3,     $FILE_GLOBAL_4_I3     ) = split(' ',$f[++$i]);
+ 
+    } elsif ( $f[$i] =~ "==> 2x25 Global" ) {
+      $GLOBAL_2_MET_DIR                                =           $f[++$i] ;
+      ( $SIZE_GLOBAL_2_A1,     $FILE_GLOBAL_2_A1     ) = split(' ',$f[++$i]);
+      ( $SIZE_GLOBAL_2_A3cld,  $FILE_GLOBAL_2_A3cld  ) = split(' ',$f[++$i]);
+      ( $SIZE_GLOBAL_2_A3dyn,  $FILE_GLOBAL_2_A3dyn  ) = split(' ',$f[++$i]);
+      ( $SIZE_GLOBAL_2_A3mstC, $FILE_GLOBAL_2_A3mstC ) = split(' ',$f[++$i]);
+      ( $SIZE_GLOBAL_2_A3mstE, $FILE_GLOBAL_2_A3mstE ) = split(' ',$f[++$i]);
+      ( $SIZE_GLOBAL_2_I3,     $FILE_GLOBAL_2_I3     ) = split(' ',$f[++$i])
+   
     }
   }
 
@@ -282,7 +332,7 @@ sub getRawMetFieldDates() {
   # Scalars
   my $cmd       = "";
   my $file      = "";
-		
+  
   # Arrays
   my @files     = ();
   my @subString = ();
@@ -322,7 +372,7 @@ sub processedMetExists($) {
 #
 # !INPUT PARAMETERS:
 #
-  my ( $date ) = @_;	    # Today's date in YYYYMMDD format
+  my ( $date ) = @_;     # Today's date in YYYYMMDD format
 #
 # !RETURN VALUE:
 #
@@ -339,37 +389,69 @@ sub processedMetExists($) {
 #
 # !LOCAL VARIABLES:
 #
-  # For global grid
-  my $g_a1     = "$GLOBAL_MET_DIR/$FILE_GLOBAL_A1";     # A1     met, today
-  my $g_a3Cld  = "$GLOBAL_MET_DIR/$FILE_GLOBAL_A3cld";  # A3cld  met, today
-  my $g_a3Dyn  = "$GLOBAL_MET_DIR/$FILE_GLOBAL_A3dyn";  # A3dyn  met, today
-  my $g_a3MstC = "$GLOBAL_MET_DIR/$FILE_GLOBAL_A3mstC"; # A3mstC met, today
-  my $g_a3MstE = "$GLOBAL_MET_DIR/$FILE_GLOBAL_A3mstE"; # A3mstE met, today
-  my $g_i3     = "$GLOBAL_MET_DIR/$FILE_GLOBAL_I3";     # I3     met, today
+  # For CH nested grid
+  my $ch_a1     = "$NESTED_C_MET_DIR/$FILE_NESTED_C_A1";     # A1     met
+  my $ch_a3Cld  = "$NESTED_C_MET_DIR/$FILE_NESTED_C_A3cld";  # A3cld  met
+  my $ch_a3Dyn  = "$NESTED_C_MET_DIR/$FILE_NESTED_C_A3dyn";  # A3dyn  met
+  my $ch_a3MstC = "$NESTED_C_MET_DIR/$FILE_NESTED_C_A3mstC"; # A3mstC met
+  my $ch_a3MstE = "$NESTED_C_MET_DIR/$FILE_NESTED_C_A3mstE"; # A3mstE met
+  my $ch_i3     = "$NESTED_C_MET_DIR/$FILE_NESTED_C_I3";     # I3     met
+ 
+  # For NA nested grid
+  my $na_a1     = "$NESTED_N_MET_DIR/$FILE_NESTED_N_A1";     # A1     met
+  my $na_a3Cld  = "$NESTED_N_MET_DIR/$FILE_NESTED_N_A3cld";  # A3cld  met
+  my $na_a3Dyn  = "$NESTED_N_MET_DIR/$FILE_NESTED_N_A3dyn";  # A3dyn  met
+  my $na_a3MstC = "$NESTED_N_MET_DIR/$FILE_NESTED_N_A3mstC"; # A3mstC met
+  my $na_a3MstE = "$NESTED_N_MET_DIR/$FILE_NESTED_N_A3mstE"; # A3mstE met
+  my $na_i3     = "$NESTED_N_MET_DIR/$FILE_NESTED_N_I3";     # I3     met
 
-  # For nested grid
-  my $n_a1     = "$NESTED_MET_DIR/$FILE_NESTED_A1";     # A1     met, today
-  my $n_a3Cld  = "$NESTED_MET_DIR/$FILE_NESTED_A3cld";  # A3cld  met, today
-  my $n_a3Dyn  = "$NESTED_MET_DIR/$FILE_NESTED_A3dyn";  # A3dyn  met, today
-  my $n_a3MstC = "$NESTED_MET_DIR/$FILE_NESTED_A3mstC"; # A3mstC met, today
-  my $n_a3MstE = "$NESTED_MET_DIR/$FILE_NESTED_A3mstE"; # A3mstE met, today
-  my $n_i3     = "$NESTED_MET_DIR/$FILE_NESTED_I3";	# I3     met, today
+  # For 2x25 global grid
+  my $g2_a1     = "$GLOBAL_2_MET_DIR/$FILE_GLOBAL_2_A1";     # A1     met
+  my $g2_a3Cld  = "$GLOBAL_2_MET_DIR/$FILE_GLOBAL_2_A3cld";  # A3cld  met
+  my $g2_a3Dyn  = "$GLOBAL_2_MET_DIR/$FILE_GLOBAL_2_A3dyn";  # A3dyn  met
+  my $g2_a3MstC = "$GLOBAL_2_MET_DIR/$FILE_GLOBAL_2_A3mstC"; # A3mstC met
+  my $g2_a3MstE = "$GLOBAL_2_MET_DIR/$FILE_GLOBAL_2_A3mstE"; # A3mstE met
+  my $g2_i3     = "$GLOBAL_2_MET_DIR/$FILE_GLOBAL_2_I3";     # I3     met
+
+  # For 4x5 global grid
+  my $g4_a1     = "$GLOBAL_4_MET_DIR/$FILE_GLOBAL_4_A1";     # A1     met
+  my $g4_a3Cld  = "$GLOBAL_4_MET_DIR/$FILE_GLOBAL_4_A3cld";  # A3cld  met
+  my $g4_a3Dyn  = "$GLOBAL_4_MET_DIR/$FILE_GLOBAL_4_A3dyn";  # A3dyn  met
+  my $g4_a3MstC = "$GLOBAL_4_MET_DIR/$FILE_GLOBAL_4_A3mstC"; # A3mstC met
+  my $g4_a3MstE = "$GLOBAL_4_MET_DIR/$FILE_GLOBAL_4_A3mstE"; # A3mstE met
+  my $g4_i3     = "$GLOBAL_4_MET_DIR/$FILE_GLOBAL_4_I3";     # I3     met
 
   #========================================================================
   # Replace tokens in file names & directory paths
   #========================================================================
-  $g_a1     = &replaceDate( $g_a1,     $date );
-  $g_a3Cld  = &replaceDate( $g_a3Cld,  $date );
-  $g_a3Dyn  = &replaceDate( $g_a3Dyn,  $date );
-  $g_a3MstC = &replaceDate( $g_a3MstC, $date );
-  $g_a3MstE = &replaceDate( $g_a3MstE, $date );
-  $g_i3     = &replaceDate( $g_i3,     $date );
-  $n_a1     = &replaceDate( $n_a1,     $date );
-  $n_a3Cld  = &replaceDate( $n_a3Cld,  $date );
-  $n_a3Dyn  = &replaceDate( $n_a3Dyn,  $date );
-  $n_a3MstC = &replaceDate( $n_a3MstC, $date );
-  $n_a3MstE = &replaceDate( $n_a3MstE, $date );
-  $n_i3     = &replaceDate( $n_i3,     $date );
+
+  $ch_a1     = &replaceDate( $ch_a1,     $date );
+  $ch_a3Cld  = &replaceDate( $ch_a3Cld,  $date );
+  $ch_a3Dyn  = &replaceDate( $ch_a3Dyn,  $date );
+  $ch_a3MstC = &replaceDate( $ch_a3MstC, $date );
+  $ch_a3MstE = &replaceDate( $ch_a3MstE, $date );
+  $ch_i3     = &replaceDate( $ch_i3,     $date );
+
+  $na_a1     = &replaceDate( $na_a1,     $date );
+  $na_a3Cld  = &replaceDate( $na_a3Cld,  $date );
+  $na_a3Dyn  = &replaceDate( $na_a3Dyn,  $date );
+  $na_a3MstC = &replaceDate( $na_a3MstC, $date );
+  $na_a3MstE = &replaceDate( $na_a3MstE, $date );
+  $na_i3     = &replaceDate( $na_i3,     $date );
+
+  $g2_a1     = &replaceDate( $g2_a1,     $date );
+  $g2_a3Cld  = &replaceDate( $g2_a3Cld,  $date );
+  $g2_a3Dyn  = &replaceDate( $g2_a3Dyn,  $date );
+  $g2_a3MstC = &replaceDate( $g2_a3MstC, $date );
+  $g2_a3MstE = &replaceDate( $g2_a3MstE, $date );
+  $g2_i3     = &replaceDate( $g2_i3,     $date );
+
+  $g4_a1     = &replaceDate( $g4_a1,     $date );
+  $g4_a3Cld  = &replaceDate( $g4_a3Cld,  $date );
+  $g4_a3Dyn  = &replaceDate( $g4_a3Dyn,  $date );
+  $g4_a3MstC = &replaceDate( $g4_a3MstC, $date );
+  $g4_a3MstE = &replaceDate( $g4_a3MstE, $date );
+  $g4_i3     = &replaceDate( $g4_i3,     $date )
 
   #========================================================================
   # Check if processed met field files are fully-sized
@@ -413,7 +495,7 @@ sub purgeRawMetFiles($) {
 #
 # !INPUT PARAMETERS:
 #
-  my ( $date ) = @_;	    # Today's date in YYYYMMDD format
+  my ( $date ) = @_;     # Today's date in YYYYMMDD format
 #
 # !RETURN VALUE:
 #
@@ -507,11 +589,11 @@ sub main() {
       # created properly and are of the expeced file size
       if ( &processedMetExists( $date ) == 12 ) { 
 
-	# If so, then delete the raw data files for those dates
-	# so that we do not run out of space in the download directory
-	print "purgeGeosFp: Removing raw met files for $date\n";
+        # If so, then delete the raw data files for those dates
+        # so that we do not run out of space in the download directory
+        print "purgeGeosFp: Removing raw met files for $date\n";
         &purgeRawMetFiles( $date );
-      }	
+      } 
     }
   }
 
