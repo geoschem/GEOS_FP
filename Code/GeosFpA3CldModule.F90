@@ -1012,7 +1012,7 @@ MODULE GeosFpA3CldModule
                    Ptr  => Qflip( I0_eu:I1_eu, J0_eu:J1_eu, : )
                    st4d = (/ 1,       1,       1,       H /)
                    ct4d = (/ XNestEu, YNestEu, ZNestEu, 1 /)
-                   CALL NcWr( Ptr, fOutNestNa, TRIM( name ), st4d, ct4d )
+                   CALL NcWr( Ptr, fOutNestEu, TRIM( name ), st4d, ct4d )
                 ENDIF
 
                 ! Nested NA (point to proper slice of global data)
