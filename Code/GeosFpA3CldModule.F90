@@ -776,6 +776,7 @@ MODULE GeosFpA3CldModule
 !                              separately in routine ProcessOptDep
 !  19 Sep 2013 - R. Yantosca - Add output for nested EU grid
 !  08 Oct 2013 - R. Yantosca - Add output for nested SE grid
+!  08 Nov 2013 - R. Yantosca - Bug fix: use proper indices for nested EU grid
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1010,7 +1011,7 @@ MODULE GeosFpA3CldModule
                 IF ( doNestEu ) THEN
                    Ptr  => Qflip( I0_eu:I1_eu, J0_eu:J1_eu, : )
                    st4d = (/ 1,       1,       1,       H /)
-                   ct4d = (/ XNestNa, YNestNa, ZNestNa, 1 /)
+                   ct4d = (/ XNestEu, YNestEu, ZNestEu, 1 /)
                    CALL NcWr( Ptr, fOutNestNa, TRIM( name ), st4d, ct4d )
                 ENDIF
 
