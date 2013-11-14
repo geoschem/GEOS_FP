@@ -429,6 +429,7 @@ sub main() {
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/getGeos5
 #  05 Aug 2013 - R. Yantosca - Modified for GEOS-FP data (w/ Sajeev Philip)
 #  18 Oct 2013 - R. Yantosca - Use $N_FILES instead of the hardcoded 144
+#  14 Nov 2013 - R. Yantosca - Bug fix: now read doGeosFp.input
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -449,7 +450,7 @@ sub main() {
   else                           { print "$errMsg\n"; exit(1);               }
  
   # Get info from the defautls file, also set default date
-  &getDefaults( "doGeos57.input" );
+  &getDefaults( "doGeosFp.input" );
 
   # We expect $N_FILES files for a normal day's worth of GEOS-FP met data
   while ( scalar( @fileList = &getFileList() ) != $N_FILES ) { 
