@@ -5,7 +5,7 @@
 #------------------------------------------------------------------------------
 #BOP
 #
-# !MODULE: doGeosFpMulti
+# !MODULE: doGeosFpFixA3Cld
 #
 # !DESCRIPTION: This Perl script is the driver script for Geos5Driver, the
 #  Fortran code for processing GEOS-FP met field data.  This script
@@ -25,7 +25,6 @@
 # checkInputs()
 # replaceTokens($)
 # checkDir($)
-# runJob($)
 # main()
 #
 # !PUBLIC DATA MEMBERS:
@@ -47,30 +46,19 @@
   our $LOG_FILE          = "";
   our $MET_DIRECTORY     = "";
   our $MONTH_STRING      = "";
-  our $N_FILES           = 144;
+  our $N_FILES           = 16;
   our $SUBMIT            = "";
   our $TEMP_DIRECTORY    = "";
   our $USER_ID           = "";
   our $YEAR_STRING       = "";
 #
 # !CALLING SEQUENCE:
-#  doGeosFpNulti YYYYMMDD
+#  doGeosFpFixA3Cld YYYYMMDD
 #
 # !REMARKS:
-#  Also used for GEOS-FP data.
 #
-# !REVISION HISTORY: 
-#  20 Jan 2012 - R. Yantosca - Initial version
-#  23 Jan 2012 - R. Yantosca - Modified to submit processes on 3 threads
-#                              simultaneously
-#  16 Feb 2012 - R. Yantosca - Removed routine getDirectories and related
-#                              variables; these are now in moveGeosFp
-#  06 Aug 2013 - R. Yantosca - Now email users when the met fields are ready
-#  07 Aug 2013 - R. Yantosca - Add some basic error checking before starting
-#  20 Sep 2013 - R. Yantosca - Renamed to doGeosFpMulti
-#  10 Oct 2013 - R. Yantosca - Changed N_FILES to 136
-#  05 Dec 2013 - R. Yantosca - Need to restore the tavg3_3d_rad_Nv collection;
-#                              change N_FILES back to 136
+# !REVISION HISTORY:
+#  05 Dec 2013 - R. Yantosca - Initial version, based on doGeosFpMulti
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -160,13 +148,13 @@ sub getDefaults($$) {
   $DATE_FILE    = "$TEMP_DIRECTORY/$DATE_STRING.$$";
 
   # Log error file
-  $LOG_ERR      = "$LOG_DIRECTORY/log.doGeosFpMulti.error-{THREAD}";
+  $LOG_ERR      = "$LOG_DIRECTORY/log.doGeosFpFixA3Cld.error";
 
   # Log file
-  $LOG_FILE     = "$LOG_DIRECTORY/log.doGeosFpMulti.{DSTR}.$$-{THREAD}";
+  $LOG_FILE     = "$LOG_DIRECTORY/log.doGeosFpFixA3Cld.{DSTR}.$$";
 
   # Job script
-  $JOB_FILE     = "$JOB_DIRECTORY/job.doGeosFpMulti.{DSTR}.$$-{THREAD}";  
+  $JOB_FILE     = "$JOB_DIRECTORY/job.doGeosFpFixA3Cld.{DSTR}.$$";  
 
   # Return normally
   return(0);
@@ -190,7 +178,7 @@ sub getSysVars() {
 # &getSysVars();
 #
 # !REVISION HISTORY:
-#  20 Jan 2012 - R. Yantosca - Initial version
+#  05 Dec 2013 - R. Yantosca - Initial version, based on doGeosFpMulti
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -228,8 +216,7 @@ sub checkInputs() {
 # &checkInputs();
 #
 # !REVISION HISTORY:
-#  20 Jan 2012 - R. Yantosca - Initial version
-#EOP
+#  05 Dec 2013 - R. Yantosca - Initial version, based on doGeosFpMulti
 #------------------------------------------------------------------------------
 #BOC
 
@@ -281,7 +268,7 @@ sub replaceTokens($) {
 #  $var = &replaceTokens( $var );
 #
 # !REVISION HISTORY:
-#  20 Jan 2012 - R. Yantosca - Initial version
+#  05 Dec 2013 - R. Yantosca - Initial version, based on doGeosFpMulti
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -323,7 +310,7 @@ sub checkDir($) {
 #  &checkDir( $dir );
 #
 # !REVISION HISTORY:
-#  20 Jan 2012 - R. Yantosca - Initial version
+#  05 Dec 2013 - R. Yantosca - Initial version, based on doGeosFpMulti
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -345,50 +332,33 @@ sub checkDir($) {
 #
 # !IROUTINE: makeJobFile
 #
-# !DESCRIPTION: Subroutine makeJobFile creates a job script for each 
-#  process.  The thread number (0,1,2) is appended to the script names and
-#  log files.
+# !DESCRIPTION: Subroutine makeJobFile creates a job script that calls
+#  the executable to reprocess the GEOS-FP A3cld data.
 #\\
 #\\
 # !INTERFACE:
 #
-sub makeJobFile($) {
-#
-#
-# !INPUT PARAMETERS:
-#
-  my ( $thread ) = @_;   # Thread number 
+sub makeJobFile {
 #
 # !CALLING SEQUENCE:
-#  &runJob( 0 );   # Runs executable GeosFpDriver0.x
-#  &runJob( 1 );   # Runs executable GeosFpDriver1.x, etc.
+#  &makeJobFile   # Runs executable GeosFpDriver0.x
 #
 # !REVISION HISTORY:
-#  20 Jan 2012 - R. Yantosca - Initial version
-#  28 Feb 2012 - R. Yantosca - Now force an automount with an ls command
-#  06 Aug 2013 - R. Yantosca - Now email user when met fields are ready
-#  05 Dec 2013 - R. Yantosca - Updated log file output
+#  05 Dec 2013 - R. Yantosca - Initial version, based on doGeosFpMulti
 #EOP
 #------------------------------------------------------------------------------
 #BOC
 #
 # !LOCAL VARIABLES:
 #
-  # Pick the proper file types
-  my $fileTypes = "";    
-  if    ( $thread == 0 ) { $fileTypes = "A1 I3";                      }
-  elsif ( $thread == 1 ) { $fileTypes = "A3cld A3dyn";                }
-  elsif ( $thread == 2 ) { $fileTypes = "A3mstC A3mstE";              }
-  else                   { print "Invalid thread number!\n"; exit(1); }
-
   # Create shadow variables
-  my $body      = "File types $fileTypes are now created for $DATE_STRING. ";
+  my $body      = "File types A3cld are now created for $DATE_STRING. ";
      $body     .= "Files shall be visible on /mnt/gcgrid within 15 minutes.";
   my $email     = $EMAIL_STRING;
-  my $exeFile   = $EXECUTABLE;
+  my $exeFile   = "GeosFpFixA3Cld.x";
   my $jobFile   = $JOB_FILE;
   my $logFile   = $LOG_FILE;
-  my $subject   = "GEOS-FP $fileTypes met fields for $DATE_STRING are ready!";
+  my $subject   = "GEOS-FP A3cld met fields for $DATE_STRING are ready!";
   my $mailCmd   = qq( echo "$body" > X | mail -s "$subject" $email < X; rm -f X );
 
   #-----------------------------------------
@@ -404,11 +374,6 @@ sub makeJobFile($) {
   # Define job script in a "here" document
   #-----------------------------------------
 
-  # Replace tokens for thread number in local shadow variables
-  $exeFile =~ s/{THREAD}/$thread/g;
-  $jobFile =~ s/{THREAD}/$thread/g;
-  $logFile =~ s/{THREAD}/$thread/g;
-
   # Create HERE document
   my $txt =<<EOF;
 #!/usr/bin/perl -w
@@ -420,10 +385,10 @@ my \$sLog  = qq($logFile);
 umask(022);
 
 # Echo starting time
-qx( echo "===========================================" >> \$sLog );
-qx( echo "doGeosFpMulti: Extracting GEOS-FP Met Data!" >> \$sLog );
-qx( echo "Started on `date`"                           >> \$sLog );
-qx( echo                                               >> \$sLog );
+qx( echo "==============================================" >> \$sLog );
+qx( echo "doGeosFpFixA3Cld: Extracting GEOS-FP Met Data!" >> \$sLog );
+qx( echo "Started on `date`"                              >> \$sLog );
+qx( echo                                                  >> \$sLog );
 
 # List the temp directory first to force a directory mount
 qx( ls $TEMP_DIRECTORY > /dev/null );
@@ -432,7 +397,7 @@ qx( ls $TEMP_DIRECTORY > /dev/null );
 qx( umask 022; cd $CODE_DIRECTORY; $exeFile < $DATE_FILE >> \$sLog );
 
 # Move files from the temp directory to the data directory
-qx( ./moveGeosFp $DATE_STRING $fileTypes >> \$sLog );
+qx( ./moveGeosFp $DATE_STRING A3cld >> \$sLog );
 
 # Send an email that the job is finished
 if ( \$\? == 0 ) { qx( $mailCmd ); }
@@ -479,7 +444,7 @@ sub runJobs() {
 #  &runJobs();     # Submits all job scripts simultaneously
 #
 # !REVISION HISTORY:
-#  20 Jan 2012 - R. Yantosca - Initial version
+#  05 Dec 2013 - R. Yantosca - Initial version, based on doGeosFpMulti
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -489,14 +454,9 @@ sub runJobs() {
   my @threads  = ( 0 .. 2 );
   my @job      = qw( a b c );
 
-  foreach ( my $i=0; $i<=2; $i++ ) {
-    $job[$i] = $JOB_FILE;
-    $job[$i] =~ s/{THREAD}/$threads[$i]/g; 
-  }
-
   # Command to run all jobs in the background
   # NOTE: We need to use a TCSH script to get jobs to submit in parallel
-  my $cmd = "./runMet $job[0] $job[1] $job[2]";
+  my $cmd = "./runMet job";
 
   # Submit all jobs in multiple threads
   qx( $cmd );
@@ -523,17 +483,7 @@ sub main() {
 #  &main();
 #
 # !REVISION HISTORY:
-#  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/doGeos5
-#  07 Aug 2013 - R. Yantosca - Add some basic error checking to prevent the
-#                              met field job from starting if too few files
-#  13 Aug 2013 - R. Yantosca - Now add an informational message if all met
-#                              field files are present
-#  10 Oct 2013 - R. Yantosca - Now calls makeGeosFpWindSpeed script to create
-#                              the 0.25 x 0.3125 scalar wind speed files
-#  31 Oct 2013 - R. Yantosca - Bug fix: Implement better check for # of files
-#                              downloaded.  Skip counting the rad_Nv files.
-#  18 Nov 2013 - R. Yantosca - Further bug fix: only check the if the proper
-#                              # of files for the given date are present
+#  05 Dec 2013 - R. Yantosca - Initial version, based on doGeosFpMulti
 #EOP
 #------------------------------------------------------------------------------
 #
@@ -550,7 +500,7 @@ sub main() {
 
   # Error check arguments
   if ( scalar( @ARGV ) == 0 ) { 
-    print "Usage: doGeosFpMulti YYYYMMDD\n"; 
+    print "Usage: doGeosFpFixA3Cld YYYYMMDD\n"; 
     exit(1);
   }
 
@@ -563,15 +513,11 @@ sub main() {
   $listCmd = "ls -1 $MET_DIRECTORY/GEOS.fp*"."@ARGV"."*";
   chomp( @files = qx( $listCmd ) );
 
-#------------------------------------------------------------------------------
-# Prior to 12/5/13:
-#  # Skip over the tavg3_3d_rad_Nv files
-#  foreach $file ( @files ) {
-#    if ( !( $file =~ m/tavg3_3d_rad_Nv/ ) ) { $status++; }
-#  }
-#------------------------------------------------------------------------------
-  # Check if files have been downloaded properly
-  foreach $file ( @files ) { if ( -f  $file ) { $status++; } }
+  # Check for 16 tavg3_3d_cld_Nv + tavg3_3d_rad_Nv files
+  foreach $file ( @files ) {
+    if ( ( $file =~ m/tavg3_3d_cld_Nv/ ) || 
+         ( $file =~ m/tavg3_3d_rad_Nv/ )    ) { $status++; }
+  }
 
   # Make sure we match the expected # of files
   if ( $status == $N_FILES ) { 
@@ -588,16 +534,10 @@ sub main() {
   &checkInputs();
 
   # Write the job file and submit it to the queue
-  &makeJobFile( 0 );   # Creates A1, I3, (and CN if necessary) files
-  &makeJobFile( 1 );   # Creates A3cld and A3dyn files
-  &makeJobFile( 2 );   # Creates A3mstC and A3mstE files
+  &makeJobFile();
 
-  # Run jobs
-  &runJobs();
-
-  # Also make the scalar wind speed file for dust emissions
-  $cmd    = "makeGeosFpWindSpeed $ARGV[0]";
-  $status = qx( $cmd );
+  # run the job
+  qx( $JOB_FILE );
 
   # Return normally
   return(0);

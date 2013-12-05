@@ -146,6 +146,8 @@ MODULE GeosFpInputsModule
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_mst_Nv_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_mst_Ne_file     ! tavg3_3d_mst_Ne file
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_mst_Ne_data     !  and list of data flds
+  CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_rad_Nv_file     ! tavg3_3d_rad_Nv file
+  CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_rad_Nv_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_flx_Nx_file     ! tavg1_2d_flx_Nx 
   CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_flx_Nx_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_lnd_Nx_file     ! tavg1_2d_lnd_Nx 
@@ -191,7 +193,8 @@ MODULE GeosFpInputsModule
 !  19 Sep 2013 - R. Yantosca - Remove reference to tavg3_3d_rad_Nv collection
 !  19 Sep 2013 - R. Yantosca - Remove variables for collections that we don't
 !                              use any longer
-!   8 Oct 2013 - R. Yantosca - Added variables for nested SE Asia Grid (SE)
+!  08 Oct 2013 - R. Yantosca - Added variables for nested SE Asia Grid (SE)
+!  05 Dec 2013 - R. Yantosca - Add back the tavg3_3d_rad_Nv variables
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -359,6 +362,10 @@ MODULE GeosFpInputsModule
           CASE( '==> tavg3_3d_mst_Nv' )
              READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_mst_Nv_file
              READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_mst_Nv_data
+
+          CASE( '==> tavg3_3d_rad_Nv' )
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_rad_Nv_file
+             READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_rad_Nv_data
 
           CASE( '==> inst3_3d_asm_Nv' )
              READ( IU_TXT, '(a)',    ERR=999 ) inst3_3d_asm_Nv_file

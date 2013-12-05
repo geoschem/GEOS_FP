@@ -32,22 +32,10 @@ our @COLLECTIONS = ( "tavg1_2d_flx_Nx", "tavg1_2d_lnd_Nx",
 		     "tavg1_2d_rad_Nx", "tavg1_2d_slv_Nx", 
 		     "inst3_3d_asm_Nv", "tavg3_3d_asm_Nv",
 		     "tavg3_3d_cld_Nv", "tavg3_3d_mst_Ne", 
-#----------------------------------------------------------------------------
-# Prior to 10/18/13:
-# We don't need the tavg3_3d_rad_Nv collection (bmy, 10/18/13)
-#		     "tavg3_3d_mst_Nv", "tavg3_3d_rad_Nv"  );
-#----------------------------------------------------------------------------
-		     "tavg3_3d_mst_Nv" );
-
+		     "tavg3_3d_mst_Nv", "tavg3_3d_rad_Nv"  );
 
 # Number of expected files
-#------------------------------------------------------------------------------
-# Prior to 10/18/13:
-# We don't need the tavg3_3d_rad_Nv collection, so we end up transferring
-# 8 less files per day: 136 instead of 144. (bmy, 10/18/13)
-#our $N_FILES     = 144;
-#------------------------------------------------------------------------------
-our $N_FILES     = 136;
+our $N_FILES     = 144;
 
 # Today's date
 our $DATE        = "";
@@ -82,6 +70,7 @@ our $LISTING     = "";
 #  05 Aug 2013 - R. Yantosca - Added &waitForData routine
 #  07 Aug 2013 - R. Yantosca - Now check if all files are downloaded
 #  18 Oct 2013 - R. Yantosca - Don't use the tavg3_3d_rad_Nv collection
+#  05 Dec 2013 - R. Yantosca - Restore the tavg3_3d_rad_Nv collection
 #------------------------------------------------------------------------------
 #EOP
 #------------------------------------------------------------------------------

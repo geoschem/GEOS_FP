@@ -395,7 +395,12 @@ MODULE GeosFpA3CldModule
        use_CfLs = .FALSE.
     ENDIF
 
-    IF ( StrPos( 'CLOUD', tavg3_3d_cld_Nv_Data_c ) >= 0 ) THEN
+    !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    !%%% Prior to 12/5/13:
+    !%%% Now go back to reading CLOUD from tavg3_3d_rad_Nv (bmy, 12/5/13)
+    !%%%IF ( StrPos( 'CLOUD', tavg3_3d_cld_Nv_Data_c ) >= 0 ) THEN
+    IF ( StrPos( 'CLOUD', tavg3_3d_rad_Nv_data ) >= 0 ) THEN
+    !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
        var4  = (/ idLon, idLat, idLev, idTime /)    
        vId   = vId + 1
        lName = 'Total cloud fraction in grid box'
@@ -580,6 +585,8 @@ MODULE GeosFpA3CldModule
 !                              are at -90/+90.  This facilitates the GIGC
 !                              using ESMF/MAPL.
 !   8 Oct 2013 - R. Yantosca - Now save out EU and SE nested grids
+!   5 Dec 2013 - R. Yantosca - Now
+
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -588,6 +595,7 @@ MODULE GeosFpA3CldModule
 !
     ! Scalars
     INTEGER                 :: nFields_3dCldNv
+    INTEGER                 :: nFields_3dRadNv
     INTEGER                 :: nAllFields
     CHARACTER(LEN=MAX_CHAR) :: allFieldsList
     CHARACTER(LEN=MAX_CHAR) :: msg
@@ -597,6 +605,7 @@ MODULE GeosFpA3CldModule
     ! Arrays
     CHARACTER(LEN=MAX_CHAR) :: allFields     (MAX_FLDS)
     CHARACTER(LEN=MAX_CHAR) :: fields_3dCldNv(MAX_FLDS)
+    CHARACTER(LEN=MAX_CHAR) :: fields_3dRadNv(MAX_FLDS)
 
     !=======================================================================
     ! Initialization
@@ -608,11 +617,13 @@ MODULE GeosFpA3CldModule
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
     ! List of all the A-3 fields combined
-    allFieldsList = TRIM( tavg3_3d_cld_Nv_data_c )
+    allFieldsList = TRIM( tavg3_3d_cld_Nv_data_c ) // ',' // &
+                    TRIM( tavg3_3d_rad_Nv_data   )
 
     ! Return the list of fields and number of fields to process
     ! from each of the GeosFp raw met data files
     CALL GetNFields( tavg3_3d_cld_Nv_data_c, nFields_3dCldNv, fields_3dCldNv )
+    CALL GetNFields( tavg3_3d_rad_Nv_data,   nFields_3dRadNv, fields_3dRadNv )
     CALL GetNFields( allFieldsList,          nAllFields,      allFields      )
     
     ! Echo info
@@ -1378,6 +1389,43 @@ MODULE GeosFpA3CldModule
        hhmmss    = ( ( a3mins(H) / 60 ) * 10000 ) + 3000
 
        !==================================================================
+       ! Read CLOUD data from tavg3_3d_rad_Nv
+       !==================================================================
+
+       ! Create input filename from the template
+       fNameInput = TRIM( inputDataDir ) // TRIM( tavg3_3d_rad_Nv_file )
+       CALL expandDate( fNameInput, yyyymmdd, hhmmss )
+
+       ! Echo info
+       msg = '%%% Opening ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+
+       ! Open the netCDF4 file for input
+       CALL NcOp_Rd( fIn, TRIM( fNameInput ) )
+       
+       ! Get the dimensions from the netCDF file
+       CALL NcGet_DimLen( fIn, 'lon',  X )
+       CALL NcGet_DimLen( fIn, 'lat',  Y ) 
+       CALL NcGet_DimLen( fIn, 'lev',  Z ) 
+       CALL NcGet_DimLen( fIn, 'time', T )
+
+       ! Start and count index arrays for netCDF
+       ! (There is only one data block per file)
+       st4d = (/ 1, 1, 1, 1 /)
+       ct4d = (/ X, Y, Z, 1 /)
+
+       ! CLOUD
+       msg = '%%% Reading    CLOUD' 
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+       CALL NcRd( Cld, fIn, 'CLOUD', st4d, ct4d )
+       WHERE( Cld == FILL_VALUE ) Cld = 0e0    
+       
+       ! Close input netCDF file
+       msg = '%%% Closing ' // TRIM( fNameInput )
+       WRITE( IU_LOG, '(a)' ) TRIM( msg )
+       CALL NcCl( fIn )
+
+       !==================================================================
        ! Read TAUCLI, TAUCLW, CFAN, CFCU, CFLS from tavg3_3d_cld_Nv
        !==================================================================
 
@@ -1442,9 +1490,13 @@ MODULE GeosFpA3CldModule
           WHERE( CfLs == FILL_VALUE ) CfLs = 0e0
        ENDIF
 
-       ! Create CLOUD as min( CFAN + CFLS, 1e0 )
-       Cld = CfAn + CfLs 
-       WHERE( Cld > 1e0 ) Cld = 1e0 
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%% Prior to 12/5/13:
+!%%% Go back to reading CLOUD from tavg3_3d_rad_Nv collection (bmy, 12/5/13)
+!%%%       ! Create CLOUD as min( CFAN + CFLS, 1e0 )
+!%%%       Cld = CfAn + CfLs 
+!%%%       WHERE( Cld > 1e0 ) Cld = 1e0 
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
        
        ! Close input netCDF file
        msg = '%%% Closing ' // TRIM( fNameInput )

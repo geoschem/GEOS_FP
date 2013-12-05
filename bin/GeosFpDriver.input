@@ -38,6 +38,9 @@
 #  08 Oct 2013 - R. Yantosca - Added output for nested SE Asia grid (SE)
 #  09 Oct 2013 - R. Yantosca - Added output for native wind speed
 #  16 Oct 2013 - R. Yantosca - Added TO3 as a field
+#  05 Dec 2013 - R. Yantosca - Now read CLOUD from tavg3_3d_rad_Nv collection
+#  05 Dec 2013 - R. Yantosca - Remove CLOUD from the tavg3_3d_cld_Nv data
+#                              line.  Also take out CFAN+CFLS.
 #
 
 ==> Turn on debug print output?
@@ -70,7 +73,7 @@ OMEGA,U,V
 
 ==> tavg3_3d_cld_Nv
 GEOS.fp.asm.tavg3_3d_cld_Nv.YYYYMMDD_hhmm.V01.nc4
-A3cld: CFAN,CFLS,CLOUD,QCCU,QIAN,QILS,QI,QLAN,QLLS,QL,TAUCLI,TAUCLW,OPTDEPTH
+A3cld: QCCU,QIAN,QILS,QI,QLAN,QLLS,QL,TAUCLI,TAUCLW,OPTDEPTH
 A3dyn: DTRAIN,RH
 
 ==> tavg3_3d_mst_Ne
@@ -80,6 +83,10 @@ CMFMC,PFICU,PFILSAN,PFLCU,PFLLSAN
 ==> tavg3_3d_mst_Nv
 GEOS.fp.asm.tavg3_3d_mst_Nv.YYYYMMDD_hhmm.V01.nc4
 DQRCU,DQRLSAN,REEVAPCN,REEVAPLSAN
+
+==> tavg3_3d_rad_Nv
+GEOS.fp.asm.tavg3_3d_rad_Nv.YYYYMMDD_hhmm.V01.nc4
+CLOUD
 
 ==> inst3_3d_asm_Nv
 GEOS.fp.asm.inst3_3d_asm_Nv.YYYYMMDD_hhmm.V01.nc4
