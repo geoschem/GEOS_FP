@@ -191,7 +191,7 @@ sub checkFiles($$) {
 #  13 Jan 2012 - R. Yantosca - Test for 144 files (skip D57T3NVODT, D57T3NVQDT)
 #  20 Sep 2013 - R. Yantosca - Updated for GEOS-FP, we no longer need to check
 #                              for the tavg3_3d_rad_Nv files.  Now 136 total.
-#  05 Dec 2013 - R. Yantosca - Now restore the tavg3_3d_read_Nv files
+#  05 Dec 2013 - R. Yantosca - Now restore the tavg3_3d_rad_Nv files
 #EOP
 #------------------------------------------------------------------------------
 #BOC
