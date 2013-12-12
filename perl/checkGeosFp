@@ -191,6 +191,7 @@ sub checkFiles($$) {
 #  13 Jan 2012 - R. Yantosca - Test for 144 files (skip D57T3NVODT, D57T3NVQDT)
 #  20 Sep 2013 - R. Yantosca - Updated for GEOS-FP, we no longer need to check
 #                              for the tavg3_3d_rad_Nv files.  Now 136 total.
+#  05 Dec 2013 - R. Yantosca - Now restore the tavg3_3d_read_Nv files
 #EOP
 #------------------------------------------------------------------------------
 #BOC
@@ -214,8 +215,9 @@ sub checkFiles($$) {
   my $ins_v = "$d/GEOS.fp.asm.inst3_3d_asm_Nv.YYYYMMDD_hhmm.V01.nc4";
   my $asm_v = "$d/GEOS.fp.asm.tavg3_3d_asm_Nv.YYYYMMDD_hhmm.V01.nc4";
   my $cld_v = "$d/GEOS.fp.asm.tavg3_3d_cld_Nv.YYYYMMDD_hhmm.V01.nc4";
-  my $mst_v = "$d/GEOS.fp.asm.tavg3_3d_mst_Nv.YYYYMMDD_hhmm.V01.nc4";
+  my $mst_v = "$d/GEOS.fp.asm.tavg3_3d_mst_Nv.YYYYMMDD_hhmm.V01.nc4"; 
   my $mst_e = "$d/GEOS.fp.asm.tavg3_3d_mst_Ne.YYYYMMDD_hhmm.V01.nc4";
+  my $rad_v = "$d/GEOS.fp.asm.tavg3_3d_rad_Nv.YYYYMMDD_hhmm.V01.nc4";
  
   # Times of day at which files are produced
   my @GMT3i = qw( 0000 0300 0600 0900 1200 1500 1800 2100 );
@@ -236,9 +238,10 @@ sub checkFiles($$) {
   foreach $GMT ( @GMT3  ) { $found += &verifyFile( $cld_v, $date, $GMT ); }
   foreach $GMT ( @GMT3  ) { $found += &verifyFile( $mst_v, $date, $GMT ); }
   foreach $GMT ( @GMT3  ) { $found += &verifyFile( $mst_e, $date, $GMT ); }
+  foreach $GMT ( @GMT3  ) { $found += &verifyFile( $rad_v, $date, $GMT ); }
 
   # Compute the # of missing files and print it to stdout.
-  $missing = 136 - $found;
+  $missing = 144 - $found;
 
   # If QUIET is set, just print the missing # of files
   # Otherwise, print a descriptive error message
