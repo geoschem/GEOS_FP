@@ -500,12 +500,12 @@ CONTAINS
        fName = TRIM( tempDirTmplNestEu ) // TRIM( dataTmplNestEu )
        gName = 'nested EU'
        CALL ExpandDate  ( fName,     yyyymmdd,     000000      )      
-       CALL StrRepl     ( fName,     '%%%%%%',     'A1    '    )
+       CALL StrRepl     ( fName,     '%%%%%%',     'CN    '    )
        CALL StrCompress ( fName,     RemoveAll=.TRUE.          )
-       CALL NcOutFileDef( I_NestEu,  J_NestEu,  TIMES_A1,       &
+       CALL NcOutFileDef( I_NestEu,  J_NestEu,     1,           &
                           xMid_025x03125(I0_eu:I1_eu),          &
                           yMid_025x03125(J0_eu:J1_eu),          &
-                          a1Mins,    gName,        fName,       &
+                          time,      gName,        fName,       &
                           fOutNestEu                           )
     ENDIF
 
@@ -515,7 +515,7 @@ CONTAINS
        gName = 'nested NA'
        CALL ExpandDate  ( fName,     20110101,     000000      )      
        CALL StrRepl     ( fName,     '%%%%%%',     'CN    '    )
-       CALL StrCompress ( fName, RemoveAll=.TRUE.              )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.          )
        CALL NcOutFileDef( I_NestNa,  J_NestNa,  1,              &
                           xMid_025x03125(I0_na:I1_na),          &
                           yMid_025x03125(J0_na:J1_na),          &
@@ -529,7 +529,7 @@ CONTAINS
        gName = 'nested SE'
        CALL ExpandDate  ( fName,     20110101,     000000      )      
        CALL StrRepl     ( fName,     '%%%%%%',     'CN    '    )
-       CALL StrCompress ( fName, RemoveAll=.TRUE.              )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.          )
        CALL NcOutFileDef( I_NestSe,  J_NestSe,  1,              &
                           xMid_025x03125(I0_se:I1_se),          &
                           yMid_025x03125(J0_se:J1_se),          &
@@ -543,7 +543,7 @@ CONTAINS
        gName = '2 x 2.5 global'
        CALL ExpandDate  ( fName,     20110101,     000000      )      
        CALL StrRepl     ( fName,     '%%%%%%',     'CN    '    )
-       CALL StrCompress ( fName, RemoveAll=.TRUE.           )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.          )
        CALL NcOutFileDef( I2x25,     J2x25,        1,           &
                           xMid_2x25, nc_yMid_2x25, time,        &
                           gName,     fName,        fOut2x25    )
@@ -555,7 +555,7 @@ CONTAINS
        gName = '4 x 5 global'
        CALL ExpandDate  ( fName,     20110101,  000000         )      
        CALL StrRepl     ( fName,     '%%%%%%',  'CN    '       )
-       CALL StrCompress ( fName, RemoveAll=.TRUE.              )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.          )
        CALL NcOutFileDef( I4x5,      J4x5,      1,              &
                           xMid_4x5,  nc_yMid_4x5,  time,        &
                           gName,     fName,     fOut4x5        )

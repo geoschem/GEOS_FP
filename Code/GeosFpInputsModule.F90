@@ -484,7 +484,7 @@ MODULE GeosFpInputsModule
        PRINT*, ' ICH, JCH       : ', I_NestCh, J_NestCh
        PRINT*, 'doNestEu        : ', doNestEu
        PRINT*, ' I0, J0, I1, J1 : ', I0_eu, J0_eu, I1_eu, J1_eu
-       PRINT*, ' INA, JNA       : ', I_NestEu, J_NestEu
+       PRINT*, ' IEU, JEU       : ', I_NestEu, J_NestEu
        PRINT*, 'doNestNa        : ', doNestNa
        PRINT*, ' I0, J0, I1, J1 : ', I0_na, J0_na, I1_na, J1_na
        PRINT*, ' INA, JNA       : ', I_NestNa, J_NestNa
