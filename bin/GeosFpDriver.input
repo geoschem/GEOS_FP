@@ -107,7 +107,7 @@ F
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.EU.nc
 /as/tmp/all/tmp/bmy/GEOS_FP/
 /mnt/gcgrid-rw/GEOS_0.25x0.3125/GEOS_0.25x0.3125_EU.d/GEOS_FP/YYYY/MM/
-  161 400 385 601      # NOTE: Need correct indices
+  529 492 705 606
 
 ==> Nested NA output
 T
