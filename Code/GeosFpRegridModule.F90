@@ -117,66 +117,75 @@ MODULE GeosFpRegridModule
   !--------------------------
   ! 0.25 x 0.3125 resolution
   !--------------------------
-  REAL*4, PUBLIC :: xedge_025x03125( I025x03125 + 1 )  ! Lon edges
-  REAL*4, PUBLIC :: yedge_025x03125( J025x03125 + 1 )  ! Lat edges
-  REAL*4, PUBLIC :: zedge_025x03125( L025x03125 + 1 )  ! Vertical edges
-  REAL*4, PUBLIC :: sine_025x03125 ( J025x03125 + 1 )  ! SIN( lat edges ) 
-  REAL*4, PUBLIC :: xmid_025x03125 ( I025x03125     )  ! Lon centers
-  REAL*4, PUBLIC :: ymid_025x03125 ( J025x03125     )  ! Lat centers
-  REAL*4, PUBLIC :: zmid_025x03125 ( L025x03125     )  ! Vertical levels
+  REAL*4,  PUBLIC :: xedge_025x03125( I025x03125 + 1 )  ! Lon edges
+  REAL*4,  PUBLIC :: yedge_025x03125( J025x03125 + 1 )  ! Lat edges
+  REAL*4,  PUBLIC :: zedge_025x03125( L025x03125 + 1 )  ! Vertical edges
+  REAL*4,  PUBLIC :: sine_025x03125 ( J025x03125 + 1 )  ! SIN( lat edges ) 
+  REAL*4,  PUBLIC :: xmid_025x03125 ( I025x03125     )  ! Lon centers
+  REAL*4,  PUBLIC :: ymid_025x03125 ( J025x03125     )  ! Lat centers
+  REAL*4,  PUBLIC :: zmid_025x03125 ( L025x03125     )  ! Vertical levels
 
   !--------------------------
   ! 0.5 x 0.666 resolution
   !--------------------------
-  REAL*4, PUBLIC :: xedge_05x0666( I05x0666 + 1 )      ! Lon edges
-  REAL*4, PUBLIC :: yedge_05x0666( J05x0666 + 1 )      ! Lat edges
-  REAL*4, PUBLIC :: zedge_05x0666( L05x0666 + 1 )      ! Vertical edges
-  REAL*4, PUBLIC :: sine_05x0666 ( J05x0666 + 1 )      ! SIN( lat edges ) 
-  REAL*4, PUBLIC :: xmid_05x0666 ( I05x0666     )      ! Lon centers
-  REAL*4, PUBLIC :: ymid_05x0666 ( J05x0666     )      ! Lat centers
-  REAL*4, PUBLIC :: zmid_05x0666 ( L05x0666     )      ! Vertical levels
+  REAL*4,  PUBLIC :: xedge_05x0666( I05x0666 + 1 )      ! Lon edges
+  REAL*4,  PUBLIC :: yedge_05x0666( J05x0666 + 1 )      ! Lat edges
+  REAL*4,  PUBLIC :: zedge_05x0666( L05x0666 + 1 )      ! Vertical edges
+  REAL*4,  PUBLIC :: sine_05x0666 ( J05x0666 + 1 )      ! SIN( lat edges ) 
+  REAL*4,  PUBLIC :: xmid_05x0666 ( I05x0666     )      ! Lon centers
+  REAL*4,  PUBLIC :: ymid_05x0666 ( J05x0666     )      ! Lat centers
+  REAL*4,  PUBLIC :: zmid_05x0666 ( L05x0666     )      ! Vertical levels
 
   !--------------------------
   ! 1 x 1.25 resolution
   !--------------------------
-  REAL*4, PUBLIC :: xedge_1x125( I1x125 + 1 )          ! Lon edges
-  REAL*4, PUBLIC :: yedge_1x125( J1x125 + 1 )          ! Lat edges
-  REAL*4, PUBLIC :: zedge_1x125( L1x125 + 1 )          ! Vertical edges
-  REAL*4, PUBLIC :: sine_1x125 ( J1x125 + 1 )          ! SIN( lat edges )
-  REAL*4, PUBLIC :: xmid_1x125 ( I1x125     )          ! Lon centers
-  REAL*4, PUBLIC :: ymid_1x125 ( J1x125     )          ! Lat centers
-  REAL*4, PUBLIC :: zmid_1x125 ( L1x125     )          ! Vertical levels
-
+  REAL*4,  PUBLIC :: xedge_1x125( I1x125 + 1 )          ! Lon edges
+  REAL*4,  PUBLIC :: yedge_1x125( J1x125 + 1 )          ! Lat edges
+  REAL*4,  PUBLIC :: zedge_1x125( L1x125 + 1 )          ! Vertical edges
+  REAL*4,  PUBLIC :: sine_1x125 ( J1x125 + 1 )          ! SIN( lat edges )
+  REAL*4,  PUBLIC :: xmid_1x125 ( I1x125     )          ! Lon centers
+  REAL*4,  PUBLIC :: ymid_1x125 ( J1x125     )          ! Lat centers
+  REAL*4,  PUBLIC :: zmid_1x125 ( L1x125     )          ! Vertical levels
 
   !--------------------------
   ! 2 x 2.5 resolution 
   !--------------------------
-  REAL*4, PUBLIC :: xedge_2x25( I2x25 + 1 )            ! Lon edges
-  REAL*4, PUBLIC :: yedge_2x25( J2x25 + 1 )            ! Lat edges
-  REAL*4, PUBLIC :: zedge_2x25( L2x25 + 1 )            ! Vertical levels
-  REAL*4, PUBLIC :: sine_2x25 ( J2x25 + 1 )            ! SIN( lat edges )
-  REAL*4, PUBLIC :: xmid_2x25 ( I2x25     )            ! Lon centers
-  REAL*4, PUBLIC :: ymid_2x25 ( J2x25     )            ! Lat centers
-  REAL*4, PUBLIC :: zmid_2x25 ( L2x25     )            ! Vertical levels
+  REAL*4,  PUBLIC :: xedge_2x25( I2x25 + 1 )            ! Lon edges
+  REAL*4,  PUBLIC :: yedge_2x25( J2x25 + 1 )            ! Lat edges
+  REAL*4,  PUBLIC :: zedge_2x25( L2x25 + 1 )            ! Vertical levels
+  REAL*4,  PUBLIC :: sine_2x25 ( J2x25 + 1 )            ! SIN( lat edges )
+  REAL*4,  PUBLIC :: xmid_2x25 ( I2x25     )            ! Lon centers
+  REAL*4,  PUBLIC :: ymid_2x25 ( J2x25     )            ! Lat centers
+  REAL*4,  PUBLIC :: zmid_2x25 ( L2x25     )            ! Vertical levels
 
   !--------------------------
   ! 4 x 5 resolution
   !--------------------------
-  REAL*4, PUBLIC :: xedge_4x5( I4x5 + 1 )              ! Lon edges  
-  REAL*4, PUBLIC :: yedge_4x5( J4x5 + 1 )              ! Lat edges
-  REAL*4, PUBLIC :: zedge_4x5( L4x5 + 1 )
-  REAL*4, PUBLIC :: sine_4x5 ( J4x5 + 1 )              ! SIN( lat edges )
-  REAL*4, PUBLIC :: xmid_4x5 ( I4x5     )              ! Lon centers
-  REAL*4, PUBLIC :: ymid_4x5 ( J4x5     )              ! Lat centers
-  REAL*4, PUBLIC :: zmid_4x5 ( L4x5     )              ! Vertical levels
+  REAL*4,  PUBLIC :: xedge_4x5( I4x5 + 1 )              ! Lon edges  
+  REAL*4,  PUBLIC :: yedge_4x5( J4x5 + 1 )              ! Lat edges
+  REAL*4,  PUBLIC :: zedge_4x5( L4x5 + 1 )
+  REAL*4,  PUBLIC :: sine_4x5 ( J4x5 + 1 )              ! SIN( lat edges )
+  REAL*4,  PUBLIC :: xmid_4x5 ( I4x5     )              ! Lon centers
+  REAL*4,  PUBLIC :: ymid_4x5 ( J4x5     )              ! Lat centers
+  REAL*4,  PUBLIC :: zmid_4x5 ( L4x5     )              ! Vertical levels
 
   !--------------------------
   ! For netCDF: force poles 
   ! to be -90/+90 for MAPL
   !--------------------------
-  REAL*4, PUBLIC :: nc_ymid_1x125( J1x125 )
-  REAL*4, PUBLIC :: nc_ymid_2x25 ( J2x25  )
-  REAL*4, PUBLIC :: nc_ymid_4x5  ( J4x5   )
+  REAL*4,  PUBLIC :: nc_ymid_1x125( J1x125 )
+  REAL*4,  PUBLIC :: nc_ymid_2x25 ( J2x25  )
+  REAL*4,  PUBLIC :: nc_ymid_4x5  ( J4x5   )
+
+  !--------------------------
+  ! Indices for computing
+  ! variance of OMEGA
+  !--------------------------
+  INTEGER, PUBLIC :: ind_X2(I025x03125)
+  INTEGER, PUBLIC :: ind_Y2(J025x03125)
+  INTEGER, PUBLIC :: ind_X4(I025x03125)
+  INTEGER, PUBLIC :: ind_Y4(J025x03125)
+
 !
 ! !AUTHOR:
 ! Original MAP_A2A code from S-J Lin
@@ -196,6 +205,7 @@ MODULE GeosFpRegridModule
 !  23 Sep 2013 - R. Yantosca - Define adjusted polar arrays for netCDF files
 !                              since ESMF/MAPL expects the poles to always
 !                              be at -90 and +90 degrees
+!  10 Jan 2014 - R. Yantosca - Add indices for computing Variance of OMEGA
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1393,8 +1403,12 @@ MODULE GeosFpRegridModule
 !
 ! !LOCAL VARIABLES:
 !
+    ! Scalars
     INTEGER :: I, J, L
     REAL*8  :: DI, DJ
+
+    ! Arrays
+    REAL*8  :: xmid(I025x03125)
 
     !======================================================================
     ! GEOS-5.7.x NATIVE GRID
@@ -1662,6 +1676,74 @@ MODULE GeosFpRegridModule
     nc_ymid_1x125(J1x125)        = +90e0
     nc_ymid_2x25 (J2x25 )        = +90e0
     nc_ymid_4x5  (J4x5  )        = +90e0
+
+    !======================================================================
+    ! Indices IND_X2 and IND_Y2 specify the 2 x 2.5 grid box indices that
+    ! each 0.25 x 0.3125 grid box falls into.  This is needed for the
+    ! computation of the variance of OMEGA on the 2 x 2.5 grid.
+    !======================================================================
+
+    ! Because the 2 x 2.5 grid is centered on -180 degrees, we need to 
+    ! make sure that all of the 0.25 x 0.3125 longitude grid boxes are 
+    ! monotonically increasing before we feed them to the binning algorithm.  
+    ! Circular shift the last 4 longitudes to the front of the list and
+    ! put them in the range of -181.25 to -180 degrees.
+    xmid      = CSHIFT( xmid_025x03125, -4 )
+    xmid(1:4) = xmid(1:4) - 360d0
+
+    ! IND_X2 determines the longitude index of the 2 x 2.5 grid box
+    ! into which each 0.25 x 0.3125 grid box fits into.
+    DO I = 1, I025x03125
+       ind_X2(I) = ( ( xmid(I)           + 181.25d0 ) / 2.5d0 ) + 1
+    ENDDO
+
+    ! IND_Y2 determines the latitude index of the 2 x 2.5 grid box
+    ! into which each 0.25 x 0.3125 grid box fits into.
+    DO J = 1, J025x03125
+       ind_Y2(J) = ( ( ymid_025x03125(J) +  91.00d0 ) / 2.0d0 ) + 1
+    ENDDO
+
+    !======================================================================
+    ! Indices IND_Y4 and IND_Y4 specify the 4 x5 grid box indices that
+    ! each 0.25 x 0.3125 grid box falls into.  This is needed for the
+    ! computation of the variance of OMEGA on the 4 x 5 grid.
+    !======================================================================
+
+    ! Because the 4 x 5 grid is centered on -180 degrees, we need to 
+    ! make sure that all of the 0.25 x 0.3125 longitude grid boxes are 
+    ! monotonically increasing before we feed them to the binning algorithm.  
+    ! Circular shift the last 8 longitudes to the front of the list and
+    ! put them in the range of -182.5 to -180 degrees.
+    xmid      = CSHIFT( xmid_025x03125, -8 )
+    xmid(1:8) = xmid(1:8) - 360d0
+
+    ! IND_X2 determines the longitude index of the 4 x 5 grid box
+    ! into which each 0.25 x 0.3125 grid box fits into.
+    DO I = 1, I025x03125
+       ind_X4(I) = ( ( xmid(I)           + 182.5d0 ) / 5.0d0 ) + 1
+    ENDDO
+
+    ! IND_Y2 determines the latitude index of the 4 x 5 grid box
+    ! into which each 0.25 x 0.3125 grid box fits into.
+    DO J = 1, J025x03125
+       ind_Y4(J) = ( ( ymid_025x03125(J) +  92.0d0 ) / 4.0d0 ) + 1
+    ENDDO
+
+!#####################
+! Debug output
+!   DO J = 1, J025x03125
+!      WRITE( 700, '(f13.6,1x,i4)' ) ymid_025x03125(J), ind_y4(J)
+!   enddo
+!
+!   WRITE( 700, '(a)'    ) '-----'
+!
+!   DO J = 1, J025x03125
+!      WRITE( 700, '(f13.6,1x,i4)' ) ymid_025x03125(J), ind_y2(J)
+!   enddo
+!      
+!    WRITE( 700, '(18i4)' ) ind_x4
+!    WRITE( 700, '(a)'    ) '-----'
+!    WRITE( 700, '(18i4)' ) ind_y4
 
   END SUBROUTINE GeosFpRegridInit
 !EOC
