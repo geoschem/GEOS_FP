@@ -58,6 +58,7 @@ EXE0    = GeosFpDriver0.x
 EXE1    = GeosFpDriver1.x
 EXE2    = GeosFpDriver2.x
 EXE3    = GeosFpFixA3Cld.x
+EXE4    = GeosFpDriver3.x
 LIB     = ../lib
 MOD     = ../mod
 
@@ -83,6 +84,8 @@ SRC  := $(filter-out GeosFpDriver.F90  \
                      GeosFpDriver0.F90 \
                      GeosFpDriver1.F90 \
                      GeosFpDriver2.F90 \
+                     GeosFpDriver3.F90 \
+                     GeosFpA3VOmgModule.F90 \
                      CreateTemplateFile.F90,$(SRC))  # but skip these files
 TMP  := $(SRC:.F=.o)
 OBJ  := $(TMP:.F90=.o)
@@ -92,6 +95,7 @@ OBJx0 := $(EXE0:.x=.o)
 OBJx1 := $(EXE1:.x=.o)
 OBJx2 := $(EXE2:.x=.o)
 OBJx3 := $(EXE3:.x=.o)
+OBJx4 := $(EXE4:.x=.o)
 
 #-----------------------
 # Dependency listing
@@ -264,6 +268,10 @@ GeosFpDriver2.o          : GeosFpDriver2.F90            \
                            GeosFpA3MstCModule.o         \
                            GeosFpA3MstEModule.o
 
+GeosFpDriver3.o          : GeosFpDriver3.F90            \
+                           GeosFpInputsModule.o         \
+                           GeosFpRegridModule.o         \
+                           GeosFpA3VOmgModule.o
 
 GeosFpFixA3Cld.o         : GeosFpFixA3Cld.F90           \
                            GeosFpInputsModule.o         \
@@ -282,15 +290,17 @@ lib: $(OBJ)
 	$(AR) crs libGeosFp.a $(OBJ)
 	mv libGeosFp.a $(LIB)
 
-exe: $(OBJx) $(OBJx0) $(OBJx1) $(OBJx2)
+exe: $(OBJx) $(OBJx0) $(OBJx1) $(OBJx2) $(OBJx3)  $(OBJx4)
 	$(LD) $(OBJx0) -L$(LIB) -lGeosFp $(LINK_NC) -o $(EXE0)
 	$(LD) $(OBJx1) -L$(LIB) -lGeosFp $(LINK_NC) -o $(EXE1)
 	$(LD) $(OBJx2) -L$(LIB) -lGeosFp $(LINK_NC) -o $(EXE2)
 	$(LD) $(OBJx3) -L$(LIB) -lGeosFp $(LINK_NC) -o $(EXE3)
+	$(LD) $(OBJx4) -L$(LIB) -lGeosFp $(LINK_NC) -o $(EXE4)
 	cp -f $(EXE0) $(BIN)
 	cp -f $(EXE1) $(BIN)
 	cp -f $(EXE2) $(BIN)
 	cp -f $(EXE3) $(BIN)
+	cp -f $(EXE4) $(BIN)
 
 doc:
 	$(MAKE) -C $(DOC) doc

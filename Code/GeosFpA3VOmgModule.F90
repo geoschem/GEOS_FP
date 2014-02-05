@@ -325,16 +325,16 @@ MODULE GeosFpA3VOmgModule
 !------------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: GeosFpMakeA3Dyn
+! !IROUTINE: GeosFpMakeA3VOmg
 !
-! !DESCRIPTION: Routine GeosFpMakeA3Dyn is the the driver routine for 
+! !DESCRIPTION: Routine GeosFpMakeA3VOmg is the the driver routine for 
 ! \begin{enumerate}
 ! \item Extracting 3-hr time-averaged data fields (dynamical fields) from 
 !       the GEOS-FP raw data files (netCDF-4 format),
 ! \item Regridding the fields to GEOS-Chem data resolution, and 
 ! \item Saving the regridded data to netCDF format.
 ! \end{enumerate}
-! This routine is called directly from the main program GeosFpDriver.F90
+! This routine is called directly from the main program GeosFpDriver3.F90
 !\\
 !\\
 ! !INTERFACE:
@@ -569,9 +569,9 @@ MODULE GeosFpA3VOmgModule
           WRITE( IU_LOG, '(a)' ) TRIM( msg )
           
           !%%% Compute variance of OMEGA in each 2 x 2.5 box %%%
-          IF ( do2x25 ) THEN
-             CALL ComputeVarOmega2x25( Qflip, Q2x25, GRID='2x25' )
-          ENDIF
+          !IF ( do2x25 ) THEN
+          !   CALL ComputeVarOmega2x25( Qflip, Q2x25, GRID='2x25' )
+          !ENDIF
 
           !%%% Compute variance of OMEGA in each 4 x 5 box %%%
           IF ( do4x5 ) THEN
@@ -632,17 +632,15 @@ MODULE GeosFpA3VOmgModule
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE ComputeVarOmega2x25( Omega, VarOmega, Grid )
-!
-! !USES:
-!
-    
+  SUBROUTINE ComputeVarOmega2x25( Omega, VarOmega )
 !
 ! !INPUT PARAMETERS:
 !
+    REAL*4, INTENT(IN) :: Omega(I025x03125,J025x03125,L025x03125)
 !
-! !INPUT/OUTPUT PARAMETERS:
+! !OUTPUT PARAMETERS:
 !
+    REAL*4, INTENT(IN) :: VarOmega(I2x25,J2x25,L2x25)
 !
 ! !REMARKS:
 ! 
@@ -655,23 +653,52 @@ MODULE GeosFpA3VOmgModule
 ! !LOCAL VARIABLES:
 !
     
-    xmid      = xmid_025x03125
-    xmid      = CSHIFT( xmid, 4 )
-    xmid(0:3) = xmid(0:3) - 360d0
-    indx      = INT( ( xmid + 181.25d0 ) / DI_2x25 ) ) + 1
 
+  END SUBROUTINE ComputeVarOmega2x25
+!EOC
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: 
+!
+! !DESCRIPTION:
+!\\
+!\\
+! !INTERFACE:
+!
+  SUBROUTINE ComputeVarOmega4x5( Omega, VarOmega )
+!
+! !INPUT PARAMETERS:
+!
+    REAL*4, INTENT(IN) :: Omega(I025x03125,J025x03125,L025x03125)
+!
+! !OUTPUT PARAMETERS:
+!
+    REAL*4, INTENT(IN) :: VarOmega(I4x5,J4x5,L4x5)
+!
+! !REMARKS:
+! 
+! !REVISION HISTORY: 
+!  09 Jan 2014 - R. Yantosca - Initial version
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+!
+! !DEFINED PARAMETERS:
+!
+    INTEGER, PARAMETER :: X = ( I025x03125 / I4x5 ) * ( J025x03125 / J4x5 )
+!
+! !LOCAL VARIABLES:
+!
+    REAL*4             :: DataIn (X)
+    REAL*4             :: DataOut(X)
  
-    
-
-   ;%%% 2x2.5 algorithm %%%
-   xmid_q      = shift( xmid, 4 )
-   xmid_q(0:3) = xmid_q(0:3) - 360d0
-   indx2       = long( ( xmid_q + 181.25d0 ) / DI_2x25 )
-   indy2       = long( ( ymid   +  91.00d0 ) / DJ_2x25 )
+    PRINT*, X
 
 
-
-  END SUBROUTINE Compute_Olson_LandMap
+  END SUBROUTINE ComputeVarOmega4x5
 !EOC
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !
