@@ -42,51 +42,80 @@ our $SIZE_NESTED_C_A3mstE = "";     # Nested CH  GEOS-FP "A3mstE" file size
 our $FILE_NESTED_C_I3     = "";     # Nested CH  GEOS-FP "I3"     file name
 our $SIZE_NESTED_C_I3     = "";     # Nested CH  GEOS-FP "I3"     file size
 
+# EU Nested grid met fields
+our $NESTED_E_MET_DIR     = "";     # Nested EU  met field directory
+our $FILE_NESTED_E_A1     = "";     # Nested EU  GEOS-FP "A1"     file name
+our $SIZE_NESTED_E_A1     = "";     # Nested EU  GEOS-FP "A1"     file size
+our $FILE_NESTED_E_A3cld  = "";     # Nested EU  GEOS-FP "A3cld"  file name
+our $SIZE_NESTED_E_A3cld  = "";     # Nested EU  GEOS-FP "A3cld"  file size
+our $FILE_NESTED_E_A3dyn  = "";     # Nested EU  GEOS-FP "A3dyn"  file name
+our $SIZE_NESTED_E_A3dyn  = "";     # Nested EU  GEOS-FP "A3dyn"  file size
+our $FILE_NESTED_E_A3mstC = "";     # Nested EU  GEOS-FP "A3mstC" file name
+our $SIZE_NESTED_E_A3mstC = "";     # Nested EU  GEOS-FP "A3mstC" file size
+our $FILE_NESTED_E_A3mstE = "";     # Nested EU  GEOS-FP "A3mstE" file name
+our $SIZE_NESTED_E_A3mstE = "";     # Nested EU  GEOS-FP "A3mstE" file size
+our $FILE_NESTED_E_I3     = "";     # Nested EU  GEOS-FP "I3"     file name
+our $SIZE_NESTED_E_I3     = "";     # Nested EU  GEOS-FP "I3"     file size
+
 # NA nested grid met fields
-our $NESTED_N_MET_DIR     = "";    # Nested NA   met field directory
-our $FILE_NESTED_N_A1     = "";    # Nested NA   GEOS-FP "A1"     file name
-our $SIZE_NESTED_N_A1     = "";    # Nested NA   GEOS-FP "A1"     file size
-our $FILE_NESTED_N_A3cld  = "";    # Nested NA   GEOS-FP "A3cld"  file name
-our $SIZE_NESTED_N_A3cld  = "";    # Nested NA   GEOS-FP "A3cld"  file size
-our $FILE_NESTED_N_A3dyn  = "";    # Nested NA   GEOS-FP "A3dyn"  file name
-our $SIZE_NESTED_N_A3dyn  = "";    # Nested NA   GEOS-FP "A3dyn"  file size
-our $FILE_NESTED_N_A3mstC = "";    # Nested NA   GEOS-FP "A3mstC" file name
-our $SIZE_NESTED_N_A3mstC = "";    # Nested NA   GEOS-FP "A3mstC" file size
-our $FILE_NESTED_N_A3mstE = "";    # Nested NA   GEOS-FP "A3mstE" file name
-our $SIZE_NESTED_N_A3mstE = "";    # Nested NA   GEOS-FP "A3mstE" file size
-our $FILE_NESTED_N_I3     = "";    # Nested NA   GEOS-FP "I3"     file name
-our $SIZE_NESTED_N_I3     = "";    # Nested NA   GEOS-FP "I3"     file size
-  
-# Global grid met fields    
-our $GLOBAL_4_MET_DIR     = "";    # Global 4x5  met field directory
-our $FILE_GLOBAL_4_A1     = "";    # Global 4x5  GEOS-FP "A1"     file name
-our $SIZE_GLOBAL_4_A1     = "";    # Global 4x5  GEOS-FP "A1"     file size
-our $FILE_GLOBAL_4_A3cld  = "";    # Global 4x5  GEOS-FP "A3cld"  file name
-our $SIZE_GLOBAL_4_A3cld  = "";    # Global 4x5  GEOS-FP "A3cld"  file size
-our $FILE_GLOBAL_4_A3dyn  = "";    # Global 4x5  GEOS-FP "A3dyn"  file name
-our $SIZE_GLOBAL_4_A3dyn  = "";    # Global 4x5  GEOS-FP "A3dyn"  file size
-our $FILE_GLOBAL_4_A3mstC = "";    # Global 4x5  GEOS-FP "A3mstC" file name
-our $SIZE_GLOBAL_4_A3mstC = "";    # Global 4x5  GEOS-FP "A3mstC" file size
-our $FILE_GLOBAL_4_A3mstE = "";    # Global 4x5  GEOS-FP "A3mstE" file name
-our $SIZE_GLOBAL_4_A3mstE = "";    # Global 4x5  GEOS-FP "A3mstE" file size
-our $FILE_GLOBAL_4_I3     = "";    # Global 4x5  GEOS-FP "I3"     file name
-our $SIZE_GLOBAL_4_I3     = "";    # Global 4x5  GEOS-FP "I3"     file size
+our $NESTED_N_MET_DIR     = "";     # Nested NA   met field directory
+our $FILE_NESTED_N_A1     = "";     # Nested NA   GEOS-FP "A1"     file name
+our $SIZE_NESTED_N_A1     = "";     # Nested NA   GEOS-FP "A1"     file size
+our $FILE_NESTED_N_A3cld  = "";     # Nested NA   GEOS-FP "A3cld"  file name
+our $SIZE_NESTED_N_A3cld  = "";     # Nested NA   GEOS-FP "A3cld"  file size
+our $FILE_NESTED_N_A3dyn  = "";     # Nested NA   GEOS-FP "A3dyn"  file name
+our $SIZE_NESTED_N_A3dyn  = "";     # Nested NA   GEOS-FP "A3dyn"  file size
+our $FILE_NESTED_N_A3mstC = "";     # Nested NA   GEOS-FP "A3mstC" file name
+our $SIZE_NESTED_N_A3mstC = "";     # Nested NA   GEOS-FP "A3mstC" file size
+our $FILE_NESTED_N_A3mstE = "";     # Nested NA   GEOS-FP "A3mstE" file name
+our $SIZE_NESTED_N_A3mstE = "";     # Nested NA   GEOS-FP "A3mstE" file size
+our $FILE_NESTED_N_I3     = "";     # Nested NA   GEOS-FP "I3"     file name
+our $SIZE_NESTED_N_I3     = "";     # Nested NA   GEOS-FP "I3"     file size
 
+# SE Nested grid met fields
+our $NESTED_S_MET_DIR     = "";     # Nested SE  met field directory
+our $FILE_NESTED_S_A1     = "";     # Nested SE  GEOS-FP "A1"     file name
+our $SIZE_NESTED_S_A1     = "";     # Nested SE  GEOS-FP "A1"     file size
+our $FILE_NESTED_S_A3cld  = "";     # Nested SE  GEOS-FP "A3cld"  file name
+our $SIZE_NESTED_S_A3cld  = "";     # Nested SE  GEOS-FP "A3cld"  file size
+our $FILE_NESTED_S_A3dyn  = "";     # Nested SE  GEOS-FP "A3dyn"  file name
+our $SIZE_NESTED_S_A3dyn  = "";     # Nested SE  GEOS-FP "A3dyn"  file size
+our $FILE_NESTED_S_A3mstC = "";     # Nested SE  GEOS-FP "A3mstC" file name
+our $SIZE_NESTED_S_A3mstC = "";     # Nested SE  GEOS-FP "A3mstC" file size
+our $FILE_NESTED_S_A3mstE = "";     # Nested SE  GEOS-FP "A3mstE" file name
+our $SIZE_NESTED_S_A3mstE = "";     # Nested SE  GEOS-FP "A3mstE" file size
+our $FILE_NESTED_S_I3     = "";     # Nested SE  GEOS-FP "I3"     file name
+our $SIZE_NESTED_S_I3     = "";     # Nested SE  GEOS-FP "I3"     file size
 
 # Global grid met fields    
-our $GLOBAL_2_MET_DIR     = "";    # Global 2x25 met field directory
-our $FILE_GLOBAL_2_A1     = "";    # Global 2x25 GEOS-FP "A1"     file name
-our $SIZE_GLOBAL_2_A1     = "";    # Global 2x25 GEOS-FP "A1"     file size
-our $FILE_GLOBAL_2_A3cld  = "";    # Global 2x25 GEOS-FP "A3cld"  file name
-our $SIZE_GLOBAL_2_A3cld  = "";    # Global 2x25 GEOS-FP "A3cld"  file size
-our $FILE_GLOBAL_2_A3dyn  = "";    # Global 2x25 GEOS-FP "A3dyn"  file name
-our $SIZE_GLOBAL_2_A3dyn  = "";    # Global 2x25 GEOS-FP "A3dyn"  file size
-our $FILE_GLOBAL_2_A3mstC = "";    # Global 2x25 GEOS-FP "A3mstC" file name
-our $SIZE_GLOBAL_2_A3mstC = "";    # Global 2x25 GEOS-FP "A3mstC" file size
-our $FILE_GLOBAL_2_A3mstE = "";    # Global 2x25 GEOS-FP "A3mstE" file name
-our $SIZE_GLOBAL_2_A3mstE = "";    # Global 2x25 GEOS-FP "A3mstE" file size
-our $FILE_GLOBAL_2_I3     = "";    # Global 2x25 GEOS-FP "I3"     file name
-our $SIZE_GLOBAL_2_I3     = "";    # Global 2x25 GEOS-FP "I3"     file size
+our $GLOBAL_4_MET_DIR     = "";     # Global 4x5  met field directory
+our $FILE_GLOBAL_4_A1     = "";     # Global 4x5  GEOS-FP "A1"     file name
+our $SIZE_GLOBAL_4_A1     = "";     # Global 4x5  GEOS-FP "A1"     file size
+our $FILE_GLOBAL_4_A3cld  = "";     # Global 4x5  GEOS-FP "A3cld"  file name
+our $SIZE_GLOBAL_4_A3cld  = "";     # Global 4x5  GEOS-FP "A3cld"  file size
+our $FILE_GLOBAL_4_A3dyn  = "";     # Global 4x5  GEOS-FP "A3dyn"  file name
+our $SIZE_GLOBAL_4_A3dyn  = "";     # Global 4x5  GEOS-FP "A3dyn"  file size
+our $FILE_GLOBAL_4_A3mstC = "";     # Global 4x5  GEOS-FP "A3mstC" file name
+our $SIZE_GLOBAL_4_A3mstC = "";     # Global 4x5  GEOS-FP "A3mstC" file size
+our $FILE_GLOBAL_4_A3mstE = "";     # Global 4x5  GEOS-FP "A3mstE" file name
+our $SIZE_GLOBAL_4_A3mstE = "";     # Global 4x5  GEOS-FP "A3mstE" file size
+our $FILE_GLOBAL_4_I3     = "";     # Global 4x5  GEOS-FP "I3"     file name
+our $SIZE_GLOBAL_4_I3     = "";     # Global 4x5  GEOS-FP "I3"     file size
+				    
+# Global grid met fields    	    
+our $GLOBAL_2_MET_DIR     = "";     # Global 2x25 met field directory
+our $FILE_GLOBAL_2_A1     = "";     # Global 2x25 GEOS-FP "A1"     file name
+our $SIZE_GLOBAL_2_A1     = "";     # Global 2x25 GEOS-FP "A1"     file size
+our $FILE_GLOBAL_2_A3cld  = "";     # Global 2x25 GEOS-FP "A3cld"  file name
+our $SIZE_GLOBAL_2_A3cld  = "";     # Global 2x25 GEOS-FP "A3cld"  file size
+our $FILE_GLOBAL_2_A3dyn  = "";     # Global 2x25 GEOS-FP "A3dyn"  file name
+our $SIZE_GLOBAL_2_A3dyn  = "";     # Global 2x25 GEOS-FP "A3dyn"  file size
+our $FILE_GLOBAL_2_A3mstC = "";     # Global 2x25 GEOS-FP "A3mstC" file name
+our $SIZE_GLOBAL_2_A3mstC = "";     # Global 2x25 GEOS-FP "A3mstC" file size
+our $FILE_GLOBAL_2_A3mstE = "";     # Global 2x25 GEOS-FP "A3mstE" file name
+our $SIZE_GLOBAL_2_A3mstE = "";     # Global 2x25 GEOS-FP "A3mstE" file size
+our $FILE_GLOBAL_2_I3     = "";     # Global 2x25 GEOS-FP "I3"     file name
+our $SIZE_GLOBAL_2_I3     = "";     # Global 2x25 GEOS-FP "I3"     file size
 #  
 # !PUBLIC MEMBER FUNCTIONS:
 #  &main()
@@ -107,6 +136,7 @@ our $SIZE_GLOBAL_2_I3     = "";    # Global 2x25 GEOS-FP "I3"     file size
 # !REVISION HISTORY: 
 #  08 Aug 2013 - R. Yantosca - Initial version, based on sleepNRT (SEAC4RS)
 #  25 Sep 2013 - R. Yantosca - Renamed global vars for CH, NA, 4x5, 2x25
+#  11 Feb 2014 - R. Yantosca - Added global vars for EU and SE nested grids
 #EOP
 #------------------------------------------------------------------------------
 #          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -142,7 +172,7 @@ sub getDefaults($) {
 # !LOCAL VARIABLES:
 #
   my $line   = "";
-  my @f   = "";
+  my @f      = "";
   my @result = "";
 
   # Read defaults file into an array (remove newlines)
@@ -151,12 +181,12 @@ sub getDefaults($) {
   close( I );
 
   # Loop thru each line in the file; parse information into global variables
-  for ( my $i = 0; $i < scalar( @file ); $i++ ) {
+  for ( my $i = 0; $i < scalar( @f ); $i++ ) {
 
     if ( $f[$i] =~ "==> Raw Met Data Directory" ) {
-      $RAW_MET_DIR = $[++$i]
+      $RAW_MET_DIR = $f[++$i];
 
-    elsif ( $file[$i] =~ "==> CH Nested" ) {
+    } elsif ( $f[$i] =~ "==> CH Nested" ) {
       $NESTED_C_MET_DIR                                =           $f[++$i] ;
       ( $SIZE_NESTED_C_A1,     $FILE_NESTED_C_A1     ) = split(' ',$f[++$i]);
       ( $SIZE_NESTED_C_A3cld,  $FILE_NESTED_C_A3cld  ) = split(' ',$f[++$i]);
@@ -165,7 +195,16 @@ sub getDefaults($) {
       ( $SIZE_NESTED_C_A3mstE, $FILE_NESTED_C_A3mstE ) = split(' ',$f[++$i]);
       ( $SIZE_NESTED_C_I3,     $FILE_NESTED_C_I3     ) = split(' ',$f[++$i]);
 
-    elsif ( $file[$i] =~ "==> NA Nested" ) {
+    } elsif ( $f[$i] =~ "==> EU Nested" ) {
+      $NESTED_E_MET_DIR                                =           $f[++$i] ;
+      ( $SIZE_NESTED_E_A1,     $FILE_NESTED_E_A1     ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_E_A3cld,  $FILE_NESTED_E_A3cld  ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_E_A3dyn,  $FILE_NESTED_E_A3dyn  ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_E_A3mstC, $FILE_NESTED_E_A3mstC ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_E_A3mstE, $FILE_NESTED_E_A3mstE ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_E_I3,     $FILE_NESTED_E_I3     ) = split(' ',$f[++$i]);
+
+    } elsif ( $f[$i] =~ "==> NA Nested" ) {
       $NESTED_N_MET_DIR                                =           $f[++$i] ;
       ( $SIZE_NESTED_N_A1,     $FILE_NESTED_N_A1     ) = split(' ',$f[++$i]);
       ( $SIZE_NESTED_N_A3cld,  $FILE_NESTED_N_A3cld  ) = split(' ',$f[++$i]);
@@ -173,6 +212,15 @@ sub getDefaults($) {
       ( $SIZE_NESTED_N_A3mstC, $FILE_NESTED_N_A3mstC ) = split(' ',$f[++$i]);
       ( $SIZE_NESTED_N_A3mstE, $FILE_NESTED_N_A3mstE ) = split(' ',$f[++$i]);
       ( $SIZE_NESTED_N_I3,     $FILE_NESTED_N_I3     ) = split(' ',$f[++$i]);
+
+    } elsif ( $f[$i] =~ "==> SE Nested" ) {
+      $NESTED_S_MET_DIR                                =           $f[++$i] ;
+      ( $SIZE_NESTED_S_A1,     $FILE_NESTED_S_A1     ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_S_A3cld,  $FILE_NESTED_S_A3cld  ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_S_A3dyn,  $FILE_NESTED_S_A3dyn  ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_S_A3mstC, $FILE_NESTED_S_A3mstC ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_S_A3mstE, $FILE_NESTED_S_A3mstE ) = split(' ',$f[++$i]);
+      ( $SIZE_NESTED_S_I3,     $FILE_NESTED_S_I3     ) = split(' ',$f[++$i]);
 
     } elsif ( $f[$i] =~ "==> 4x5 Global" ) {
       $GLOBAL_4_MET_DIR                                =           $f[++$i] ;
@@ -397,6 +445,14 @@ sub processedMetExists($) {
   my $ch_a3MstE = "$NESTED_C_MET_DIR/$FILE_NESTED_C_A3mstE"; # A3mstE met
   my $ch_i3     = "$NESTED_C_MET_DIR/$FILE_NESTED_C_I3";     # I3     met
  
+  # For EU nested grid
+  my $eu_a1     = "$NESTED_E_MET_DIR/$FILE_NESTED_E_A1";     # A1     met
+  my $eu_a3Cld  = "$NESTED_E_MET_DIR/$FILE_NESTED_E_A3cld";  # A3cld  met
+  my $eu_a3Dyn  = "$NESTED_E_MET_DIR/$FILE_NESTED_E_A3dyn";  # A3dyn  met
+  my $eu_a3MstC = "$NESTED_E_MET_DIR/$FILE_NESTED_E_A3mstC"; # A3mstC met
+  my $eu_a3MstE = "$NESTED_E_MET_DIR/$FILE_NESTED_E_A3mstE"; # A3mstE met
+  my $eu_i3     = "$NESTED_E_MET_DIR/$FILE_NESTED_E_I3";     # I3     met
+
   # For NA nested grid
   my $na_a1     = "$NESTED_N_MET_DIR/$FILE_NESTED_N_A1";     # A1     met
   my $na_a3Cld  = "$NESTED_N_MET_DIR/$FILE_NESTED_N_A3cld";  # A3cld  met
@@ -404,6 +460,14 @@ sub processedMetExists($) {
   my $na_a3MstC = "$NESTED_N_MET_DIR/$FILE_NESTED_N_A3mstC"; # A3mstC met
   my $na_a3MstE = "$NESTED_N_MET_DIR/$FILE_NESTED_N_A3mstE"; # A3mstE met
   my $na_i3     = "$NESTED_N_MET_DIR/$FILE_NESTED_N_I3";     # I3     met
+
+  # For SE nested grid
+  my $se_a1     = "$NESTED_S_MET_DIR/$FILE_NESTED_S_A1";     # A1     met
+  my $se_a3Cld  = "$NESTED_S_MET_DIR/$FILE_NESTED_S_A3cld";  # A3cld  met
+  my $se_a3Dyn  = "$NESTED_S_MET_DIR/$FILE_NESTED_S_A3dyn";  # A3dyn  met
+  my $se_a3MstC = "$NESTED_S_MET_DIR/$FILE_NESTED_S_A3mstC"; # A3mstC met
+  my $se_a3MstE = "$NESTED_S_MET_DIR/$FILE_NESTED_S_A3mstE"; # A3mstE met
+  my $se_i3     = "$NESTED_S_MET_DIR/$FILE_NESTED_S_I3";     # I3     met
 
   # For 2x25 global grid
   my $g2_a1     = "$GLOBAL_2_MET_DIR/$FILE_GLOBAL_2_A1";     # A1     met
@@ -432,12 +496,26 @@ sub processedMetExists($) {
   $ch_a3MstE = &replaceDate( $ch_a3MstE, $date );
   $ch_i3     = &replaceDate( $ch_i3,     $date );
 
+  $eu_a1     = &replaceDate( $eu_a1,     $date );
+  $eu_a3Cld  = &replaceDate( $eu_a3Cld,  $date );
+  $eu_a3Dyn  = &replaceDate( $eu_a3Dyn,  $date );
+  $eu_a3MstC = &replaceDate( $eu_a3MstC, $date );
+  $eu_a3MstE = &replaceDate( $eu_a3MstE, $date );
+  $eu_i3     = &replaceDate( $eu_i3,     $date );
+
   $na_a1     = &replaceDate( $na_a1,     $date );
   $na_a3Cld  = &replaceDate( $na_a3Cld,  $date );
   $na_a3Dyn  = &replaceDate( $na_a3Dyn,  $date );
   $na_a3MstC = &replaceDate( $na_a3MstC, $date );
   $na_a3MstE = &replaceDate( $na_a3MstE, $date );
   $na_i3     = &replaceDate( $na_i3,     $date );
+
+  $se_a1     = &replaceDate( $se_a1,     $date );
+  $se_a3Cld  = &replaceDate( $se_a3Cld,  $date );
+  $se_a3Dyn  = &replaceDate( $se_a3Dyn,  $date );
+  $se_a3MstC = &replaceDate( $se_a3MstC, $date );
+  $se_a3MstE = &replaceDate( $se_a3MstE, $date );
+  $se_i3     = &replaceDate( $se_i3,     $date );
 
   $g2_a1     = &replaceDate( $g2_a1,     $date );
   $g2_a3Cld  = &replaceDate( $g2_a3Cld,  $date );
@@ -451,27 +529,59 @@ sub processedMetExists($) {
   $g4_a3Dyn  = &replaceDate( $g4_a3Dyn,  $date );
   $g4_a3MstC = &replaceDate( $g4_a3MstC, $date );
   $g4_a3MstE = &replaceDate( $g4_a3MstE, $date );
-  $g4_i3     = &replaceDate( $g4_i3,     $date )
+  $g4_i3     = &replaceDate( $g4_i3,     $date );
 
   #========================================================================
   # Check if processed met field files are fully-sized
   #========================================================================
 
-  # Global met files
-  if ( -f $g_a1     ) { $rc += ( -s $g_a1     eq $SIZE_GLOBAL_A1     ); }
-  if ( -f $g_a3Cld  ) { $rc += ( -s $g_a3Cld  eq $SIZE_GLOBAL_A3cld  ); }
-  if ( -f $g_a3Dyn  ) { $rc += ( -s $g_a3Dyn  eq $SIZE_GLOBAL_A3dyn  ); }
-  if ( -f $g_a3MstC ) { $rc += ( -s $g_a3MstC eq $SIZE_GLOBAL_A3mstC ); }
-  if ( -f $g_a3MstE ) { $rc += ( -s $g_a3MstE eq $SIZE_GLOBAL_A3mstE ); }
-  if ( -f $g_i3     ) { $rc += ( -s $g_i3     eq $SIZE_GLOBAL_I3     ); }
+  # CH nested grid met files
+  if ( -f $ch_a1     ) { $rc += ( -s $ch_a1     eq $SIZE_NESTED_C_A1     ); }
+  if ( -f $ch_a3Cld  ) { $rc += ( -s $ch_a3Cld  eq $SIZE_NESTED_C_A3cld  ); }
+  if ( -f $ch_a3Dyn  ) { $rc += ( -s $ch_a3Dyn  eq $SIZE_NESTED_C_A3dyn  ); }
+  if ( -f $ch_a3MstC ) { $rc += ( -s $ch_a3MstC eq $SIZE_NESTED_C_A3mstC ); }
+  if ( -f $ch_a3MstE ) { $rc += ( -s $ch_a3MstE eq $SIZE_NESTED_C_A3mstE ); }
+  if ( -f $ch_i3     ) { $rc += ( -s $ch_i3     eq $SIZE_NESTED_C_I3     ); }
 
-  # Nested met files
-  if ( -f $n_a1     ) { $rc += ( -s $n_a1     eq $SIZE_NESTED_A1     ); }
-  if ( -f $n_a3Cld  ) { $rc += ( -s $n_a3Cld  eq $SIZE_NESTED_A3cld  ); }
-  if ( -f $n_a3Dyn  ) { $rc += ( -s $n_a3Dyn  eq $SIZE_NESTED_A3dyn  ); }
-  if ( -f $n_a3MstC ) { $rc += ( -s $n_a3MstC eq $SIZE_NESTED_A3mstC ); }
-  if ( -f $n_a3MstE ) { $rc += ( -s $n_a3MstE eq $SIZE_NESTED_A3mstE ); }
-  if ( -f $n_i3     ) { $rc += ( -s $n_i3     eq $SIZE_NESTED_I3     ); }
+  # EU nested grid met files
+  if ( -f $eu_a1     ) { $rc += ( -s $eu_a1     eq $SIZE_NESTED_E_A1     ); }
+  if ( -f $eu_a3Cld  ) { $rc += ( -s $eu_a3Cld  eq $SIZE_NESTED_E_A3cld  ); }
+  if ( -f $eu_a3Dyn  ) { $rc += ( -s $eu_a3Dyn  eq $SIZE_NESTED_E_A3dyn  ); }
+  if ( -f $eu_a3MstC ) { $rc += ( -s $eu_a3MstC eq $SIZE_NESTED_E_A3mstC ); }
+  if ( -f $eu_a3MstE ) { $rc += ( -s $eu_a3MstE eq $SIZE_NESTED_E_A3mstE ); }
+  if ( -f $eu_i3     ) { $rc += ( -s $eu_i3     eq $SIZE_NESTED_E_I3     ); }
+
+  # NA nested grid met files
+  if ( -f $na_a1     ) { $rc += ( -s $na_a1     eq $SIZE_NESTED_N_A1     ); }
+  if ( -f $na_a3Cld  ) { $rc += ( -s $na_a3Cld  eq $SIZE_NESTED_N_A3cld  ); }
+  if ( -f $na_a3Dyn  ) { $rc += ( -s $na_a3Dyn  eq $SIZE_NESTED_N_A3dyn  ); }
+  if ( -f $na_a3MstC ) { $rc += ( -s $na_a3MstC eq $SIZE_NESTED_N_A3mstC ); }
+  if ( -f $na_a3MstE ) { $rc += ( -s $na_a3MstE eq $SIZE_NESTED_N_A3mstE ); }
+  if ( -f $na_i3     ) { $rc += ( -s $na_i3     eq $SIZE_NESTED_N_I3     ); }
+
+  # SE nested grid met files
+  if ( -f $se_a1     ) { $rc += ( -s $se_a1     eq $SIZE_NESTED_S_A1     ); }
+  if ( -f $se_a3Cld  ) { $rc += ( -s $se_a3Cld  eq $SIZE_NESTED_S_A3cld  ); }
+  if ( -f $se_a3Dyn  ) { $rc += ( -s $se_a3Dyn  eq $SIZE_NESTED_S_A3dyn  ); }
+  if ( -f $se_a3MstC ) { $rc += ( -s $se_a3MstC eq $SIZE_NESTED_S_A3mstC ); }
+  if ( -f $se_a3MstE ) { $rc += ( -s $se_a3MstE eq $SIZE_NESTED_S_A3mstE ); }
+  if ( -f $se_i3     ) { $rc += ( -s $se_i3     eq $SIZE_NESTED_S_I3     ); }
+
+  # Global 2 x 2.5 met files
+  if ( -f $g2_a1     ) { $rc += ( -s $g2_a1     eq $SIZE_GLOBAL_2_A1     ); }
+  if ( -f $g2_a3Cld  ) { $rc += ( -s $g2_a3Cld  eq $SIZE_GLOBAL_2_A3cld  ); }
+  if ( -f $g2_a3Dyn  ) { $rc += ( -s $g2_a3Dyn  eq $SIZE_GLOBAL_2_A3dyn  ); }
+  if ( -f $g2_a3MstC ) { $rc += ( -s $g2_a3MstC eq $SIZE_GLOBAL_2_A3mstC ); }
+  if ( -f $g2_a3MstE ) { $rc += ( -s $g2_a3MstE eq $SIZE_GLOBAL_2_A3mstE ); }
+  if ( -f $g2_i3     ) { $rc += ( -s $g2_i3     eq $SIZE_GLOBAL_2_I3     ); }
+
+  # Global 4 x 5 met files
+  if ( -f $g4_a1     ) { $rc += ( -s $g4_a1     eq $SIZE_GLOBAL_4_A1     ); }
+  if ( -f $g4_a3Cld  ) { $rc += ( -s $g4_a3Cld  eq $SIZE_GLOBAL_4_A3cld  ); }
+  if ( -f $g4_a3Dyn  ) { $rc += ( -s $g4_a3Dyn  eq $SIZE_GLOBAL_4_A3dyn  ); }
+  if ( -f $g4_a3MstC ) { $rc += ( -s $g4_a3MstC eq $SIZE_GLOBAL_4_A3mstC ); }
+  if ( -f $g4_a3MstE ) { $rc += ( -s $g4_a3MstE eq $SIZE_GLOBAL_4_A3mstE ); }
+  if ( -f $g4_i3     ) { $rc += ( -s $g4_i3     eq $SIZE_GLOBAL_4_I3     ); }
 
   # Return success or failure
   return( $rc );

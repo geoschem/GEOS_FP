@@ -66,7 +66,7 @@ sub scheduleJobs(@) {
   my $tomYear  = "";
   my $tomMonth = "";
   my $tomDay   = "";
-  my $when     = "";
+  my $when     = "7am"; # <===== You can change the start time here!
   
   # Loop over the # of days
   for ( my $i=0; $i<abs($nDays); $i++ ) {
@@ -82,9 +82,16 @@ sub scheduleJobs(@) {
     # Split tomorrow's date
     ( $tomYear, $tomMonth, $tomDay ) = &ymdExtract( $tomorrow );
 
-    # Start the job later on Mondays due to the maintenance window
-    if ( &getDayOfWeek( $tomorrow ) == 1 ) { $when = "10am"; }
-    else                                   { $when = "7am";  }
+#-----------------------------------------------------------------
+# NOTE: At Harvard, there is a weekly maintenance period 
+# every Monday. This code below allows you to start the data 
+# processing job a little bit later on Mondays.  &getDayOfWeek 
+# returns 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat. 
+# (bmy, 2/11/14)
+#    # Start the job later on Mondays due to the maintenance window
+#    if ( &getDayOfWeek( $tomorrow ) == 1 ) { $when = "10am"; }
+#    else                                   { $when = "7am";  }
+#-----------------------------------------------------------------
     
     # Command string for "at"
     # Schedule each job

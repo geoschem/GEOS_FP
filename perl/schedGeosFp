@@ -82,7 +82,11 @@ sub main() {
     else              { $date = &addDate( $start,  $i ); }
 
     # Add commands to the string
-    $cmd .= "./purgeGeosFp $date\n";
+#-----------------------------------------------------------------------------
+# Prior to 2/11/14:
+# For now, disable the call to "purgeGeosFp" script. (bmy, 2/11/14)
+#    $cmd .= "./purgeGeosFp $date\n";
+#-----------------------------------------------------------------------------
     $cmd .= "./getGeosFp $date\n";
     $cmd .= "./doGeosFpMulti $date\n";
   }
@@ -94,7 +98,7 @@ sub main() {
   print "$cmd\n";
 
   # Execute the command
-  qx( $cmd );
+  #qx( $cmd );
 
   # Exit normally
   return( $? );

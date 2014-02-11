@@ -32,10 +32,11 @@
 #  06 Aug 2013 - R. Yantosca - Now add sleep time between tries [s]
 #  20 Sep 2013 - R. Yantosca - Renamed to doGeosFp.input
 #  25 Sep 2013 - R. Yantosca - Updated file sizes for GEOSFP files
+#  11 Feb 2014 - R. Yantosca - Now added file sizes for EU, SE grids
 #
 
 ==> Raw Met Data Directory
-/as/priv/ftp/gmao/gmao
+/as/scratch/bmy/GEOS_FP
 
 ==> Code Directory
 ../bin
@@ -64,10 +65,11 @@ GeosFpDriver{THREAD}.x
 ==> Emails for Notification
 yantosca\@seas.harvard.edu
 
-#----------------------------------------------------------------------------
-# File sizes for processed GEOS-FP met data: 
-# Used by purgeGeosFp to remove old "raw" files before getting new files
-#----------------------------------------------------------------------------
+#-----------------------------------------------------
+# File sizes for processed GEOS-FP met data:
+# Used by purgeGeosFp to remove old "raw" files        
+# before getting new files
+#-----------------------------------------------------
 
 ==> CH Nested-Grid Met Fields
 /as/data/geos/GEOS_0.25x0.3125_NA/GEOS_FP/YYYY/MM
@@ -78,34 +80,50 @@ yantosca\@seas.harvard.edu
  423113044  GEOSFP.YYYYMMDD.A3mstE.025x03125.CH.nc
  251550928  GEOSFP.YYYYMMDD.I3.025x03125.CH.nc
 
+==> EU Nested-Grid Met Fields
+/as/data/geos/GEOS_0.25x0.3125_EU/GEOS_FP/YYYY/MM
+  91857936  GEOSFP.YYYYMMDD.A1.025x03125.EU.nc
+ 328290588  GEOSFP.YYYYMMDD.A3cld.025x03125.EU.nc
+ 234494100  GEOSFP.YYYYMMDD.A3dyn.025x03125.EU.nc
+ 187596040  GEOSFP.YYYYMMDD.A3mstC.025x03125.EU.nc
+ 237751068  GEOSFP.YYYYMMDD.A3mstE.025x03125.EU.nc
+ 141349284  GEOSFP.YYYYMMDD.I3.025x03125.EU.nc
+
 ==> NA Nested-Grid Met Fields
 /as/data/geos/GEOS_0.25x0.3125_NA/GEOS_FP/YYYY/MM
- 200723648  GEOSFP.YYYYMMDD.A1.025x03125.NA.nc
+ 205087116  GEOSFP.YYYYMMDD.A1.025x03125.NA.nc
  733023288  GEOSFP.YYYYMMDD.A3cld.025x03125.NA.nc
  523589040  GEOSFP.YYYYMMDD.A3dyn.025x03125.NA.nc
  418872100  GEOSFP.YYYYMMDD.A3mstC.025x03125.NA.nc
  530861208  GEOSFP.YYYYMMDD.A3mstE.025x03125.NA.nc
  315609504  GEOSFP.YYYYMMDD.I3.025x03125.NA.nc
 
-==> 4x5 Global Met Fields
-/as/data/geos/GEOS_4x5/GEOS_FP/YYYY/MM
-  14640992  GEOSFP.YYYYMMDD.A1.4x5.nc
-  53420372  GEOSFP.YYYYMMDD.A3cld.4x5.nc
-  38158028  GEOSFP.YYYYMMDD.A3dyn.4x5.nc
-  30527044  GEOSFP.YYYYMMDD.A3mstC.4x5.nc
-  38688120  GEOSFP.YYYYMMDD.A3mstE.4x5.nc
-  23001984  GEOSFP.YYYYMMDD.I3.4x5.nc
+==> SE Nested-Grid Met Fields
+/as/data/geos/GEOS_0.25x0.3125_SE/GEOS_FP/YYYY/MM
+ 128594824  GEOSFP.YYYYMMDD.A1.025x03125.SE.nc
+ 459604948  GEOSFP.YYYYMMDD.A3cld.025x03125.SE.nc
+ 328290124  GEOSFP.YYYYMMDD.A3dyn.025x03125.SE.nc
+ 262632896  GEOSFP.YYYYMMDD.A3mstC.025x03125.SE.nc
+ 332849812  GEOSFP.YYYYMMDD.A3mstE.025x03125.SE.nc
+ 197887516  GEOSFP.YYYYMMDD.I3.025x03125.SE.nc
 
 ==> 2x25 Global Met Fields
-/as/data/geos/GEOS_4x5/GEOS_FP/YYYY/MM
-  57882932  GEOSFP.YYYYMMDD.A1.2x25.nc
+/as/data/geos/GEOS_2x2.5/GEOS_FP/YYYY/MM
+  59141184  GEOSFP.YYYYMMDD.A1.2x25.nc
  211346220  GEOSFP.YYYYMMDD.A3cld.2x25.nc
  150962340  GEOSFP.YYYYMMDD.A3dyn.2x25.nc
  120770584  GEOSFP.YYYYMMDD.A3mstC.2x25.nc
  153059148  GEOSFP.YYYYMMDD.A3mstE.2x25.nc
   90998100  GEOSFP.YYYYMMDD.I3.2x25.nc
 
-
+==> 4x5 Global Met Fields
+/as/data/geos/GEOS_4x5/GEOS_FP/YYYY/MM
+  14959212  GEOSFP.YYYYMMDD.A1.4x5.nc
+  53420372  GEOSFP.YYYYMMDD.A3cld.4x5.nc
+  38158028  GEOSFP.YYYYMMDD.A3dyn.4x5.nc
+  30527044  GEOSFP.YYYYMMDD.A3mstC.4x5.nc
+  38688120  GEOSFP.YYYYMMDD.A3mstE.4x5.nc
+  23001984  GEOSFP.YYYYMMDD.I3.4x5.nc
 
 END OF FILE
 #EOP
