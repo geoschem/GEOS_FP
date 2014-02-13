@@ -595,9 +595,13 @@ sub main() {
   # Run jobs
   &runJobs();
 
-  # Also make the scalar wind speed file for dust emissions
-  $cmd    = "makeGeosFpWindSpeed $ARGV[0]";
-  $status = qx( $cmd );
+#-----------------------------------------------------------------------------
+# Prior to 2/13/14:
+# Comment out for now (bmy, 2/13/14)
+#  # Also make the scalar wind speed file for dust emissions
+#  $cmd    = "makeGeosFpWindSpeed $ARGV[0]";
+#  $status = qx( $cmd );
+#-----------------------------------------------------------------------------
 
   # Return normally
   return(0);
