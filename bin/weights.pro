@@ -10,6 +10,7 @@ pro weights, res
 
    ; Format string
    case ( Res[0] ) of
+      0.625  : fmtStr = '(3x,12f8.4)'
       2    : fmtStr = '(3x,12f8.4)'
       2.5  : fmtStr = '(3x,12f8.4)'
       4    : fmtStr = '(3x,12f7.3)'  
@@ -19,6 +20,7 @@ pro weights, res
 
    ; Filename
    case ( Res[0] ) of
+      0.625   : WeightFile = 'weights_025x03125_to_05x0625.txt'
       2    : WeightFile = 'weights_025x03125_to_2x25.txt'
       2.5  : WeightFile = 'weights_025x03125_to_2x25.txt'
       4    : WeightFile = 'weights_025x03125_to_4x5.txt'
