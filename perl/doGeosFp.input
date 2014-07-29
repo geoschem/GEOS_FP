@@ -72,7 +72,7 @@ yantosca\@seas.harvard.edu
 #-----------------------------------------------------
 
 ==> CH Nested-Grid Met Fields
-/as/data/geos/GEOS_0.25x0.3125_NA/GEOS_FP/YYYY/MM
+/as/data/geos/GEOS_0.25x0.3125_CH/GEOS_FP/YYYY/MM
  159985884  GEOSFP.YYYYMMDD.A1.025x03125.CH.nc
  584242324  GEOSFP.YYYYMMDD.A3cld.025x03125.CH.nc
  417317376  GEOSFP.YYYYMMDD.A3dyn.025x03125.CH.nc
