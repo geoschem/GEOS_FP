@@ -6,7 +6,7 @@
 #
 # !MODULE: Makefile (in Code subdirectory)
 #
-# !DESCRIPTION: Makefile for the GEOS-5.7.x data processing code.
+# !DESCRIPTION: Makefile for the GEOS-FP data processing code.
 #\\
 #\\
 # !REMARKS:

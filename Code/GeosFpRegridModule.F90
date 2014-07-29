@@ -90,7 +90,9 @@ MODULE GeosFpRegridModule
   USE GeosFpInputsModule, ONLY : I05x0666,   J05x0666,   L05x0666
   USE GeosFpInputsModule, ONLY : I1x125,     J1x125,     L1x125  
   USE GeosFpInputsModule, ONLY : I2x25,      J2x25,      L2x25   
-  USE GeosFpInputsModule, ONLY : I4x5,       J4x5,       L4x5    
+  USE GeosFpInputsModule, ONLY : I4x5,       J4x5,       L4x5   
+  ! (lzh,06/20/2014)
+  USE GeosFpInputsModule, ONLY : I05x0625,   J05x0625,   L05x0625   
 
   IMPLICIT NONE
   PRIVATE
@@ -111,6 +113,7 @@ MODULE GeosFpRegridModule
   PUBLIC         :: RegridGeosFpto2x25
   PUBLIC         :: RegridGeosFpto4x5
   PUBLIC         :: GeosFpRegridInit
+  PUBLIC         :: RegridGeosFpto05x0625    ! (lzh,06/20/2014)  
 !
 ! !PUBLIC DATA MEMBERS:
 ! 
@@ -135,6 +138,18 @@ MODULE GeosFpRegridModule
   REAL*4, PUBLIC :: xmid_05x0666 ( I05x0666     )      ! Lon centers
   REAL*4, PUBLIC :: ymid_05x0666 ( J05x0666     )      ! Lat centers
   REAL*4, PUBLIC :: zmid_05x0666 ( L05x0666     )      ! Vertical levels
+  
+  !--------------------------
+  ! 0.5 x 0.625 resolution
+  !--------------------------
+  ! (lzh, 06/20/2014)
+  REAL*4, PUBLIC :: xedge_05x0625( I05x0625 + 1 )      ! Lon edges
+  REAL*4, PUBLIC :: yedge_05x0625( J05x0625 + 1 )      ! Lat edges
+  REAL*4, PUBLIC :: zedge_05x0625( L05x0625 + 1 )      ! Vertical edges
+  REAL*4, PUBLIC :: sine_05x0625 ( J05x0625 + 1 )      ! SIN( lat edges ) 
+  REAL*4, PUBLIC :: xmid_05x0625 ( I05x0625     )      ! Lon centers
+  REAL*4, PUBLIC :: ymid_05x0625 ( J05x0625     )      ! Lat centers
+  REAL*4, PUBLIC :: zmid_05x0625 ( L05x0625     )      ! Vertical levels  
 
   !--------------------------
   ! 1 x 1.25 resolution
@@ -177,6 +192,8 @@ MODULE GeosFpRegridModule
   REAL*4, PUBLIC :: nc_ymid_1x125( J1x125 )
   REAL*4, PUBLIC :: nc_ymid_2x25 ( J2x25  )
   REAL*4, PUBLIC :: nc_ymid_4x5  ( J4x5   )
+  REAL*4, PUBLIC :: nc_ymid_05x0625( J05x0625 )   ! (lzh,06/20/2014)
+  
 !
 ! !AUTHOR:
 ! Original MAP_A2A code from S-J Lin
@@ -258,6 +275,61 @@ MODULE GeosFpRegridModule
 
   END SUBROUTINE RegridGeosFpto1x125
 !EOC
+
+!======= (lzh, 06/20/2014)============
+!------------------------------------------------------------------------------
+!          Harvard University Atmospheric Chemistry Modeling Group            !
+!------------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: RegridGeosFpto05x0625
+!
+! !DESCRIPTION: Subroutine RegridGeosFpto1x125 is a wrapper for MAP\_A2A.  
+!  It is called to regrid from the GEOS-5.7.x chemistry forcing ("F") 
+!  grid (1 x 1.25) to the GEOS-Chem 4 x 5 grid.
+!\\
+!\\
+! !INTERFACE:
+!
+  SUBROUTINE RegridGeosFpto05x0625( iv, q1, q2 )
+!
+! !INPUT PARAMETERS:
+!
+    ! IV = 0 is scalar field; IV = 1 is vector field
+    INTEGER, INTENT(IN)  :: iv
+
+    ! Input data on 0.25 x 0.3125 grid
+    REAL*4,  INTENT(IN)  :: q1(I025x03125,J025x03125)
+!
+! !OUTPUT PARAMETERS:
+!
+    ! Output data on 0.5 x 0.625 grid
+    REAL*4,  INTENT(OUT) :: q2(I05x0625,J05x0625)
+!
+! !REVISION HISTORY: 
+!  26 Jul 2010 - R. Yantosca - Initial version
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+
+    INTEGER :: T
+
+    ! If all elements of q1 are zero, then set q2=0 and return
+    IF ( ALL( q1 == 0e0 ) ) THEN
+       q2 = 0e0
+       RETURN
+    ENDIF
+
+    ! Call MAP_A2A to do the horizontal regridding
+    CALL map_a2a( I025x03125,     J025x03125,  xedge_025x03125,  &
+                  sine_025x03125, q1,          I05x0625,         &
+                  J05x0625,       xedge_05x0625, sine_05x0625,   &
+                  q2,             0,           iv               )
+
+  END SUBROUTINE RegridGeosFpto05x0625
+!EOC
+!======= (finish edit) ===============
+
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !
 !------------------------------------------------------------------------------
@@ -1494,6 +1566,58 @@ MODULE GeosFpRegridModule
     DO L = 1, L05x0666+1
        zedge_05x0666(L) = L
     ENDDO
+    
+!----- (lzh, 06/20/2014)--------
+    !======================================================================
+    ! 0.5 x 0.625 resolution; centered on (-180,-90)
+    !======================================================================
+
+    ! Size of box
+    DI = 5d0 / 8d0
+    DJ = 0.5d0
+
+    ! Lon edges
+    DO I = 0, I05x0625
+       xedge_05x0625(I+1)         = -180d0 - DI/2d0 + ( DI * I )
+    ENDDO
+
+    ! Lat edges
+    DO J = 0, J05x0625
+       yedge_05x0625(J+1)         =  -90d0 - DJ/2d0 + ( DJ * J )
+    ENDDO
+
+    ! Lon centers
+    DO I = 0, I05x0625-1
+       xmid_05x0625(I+1)          = -180d0          + ( DI * I )
+    ENDDO
+
+    ! Lat centers
+    DO J = 0, J05x0625-1
+       ymid_05x0625(J+1)          =  -90d0          + ( DJ * J )
+    ENDDO
+
+    ! Reset poles
+    yedge_05x0625(1         )     = -90e0
+    yedge_05x0625(J05x0625+1)     = +90e0
+    ymid_05x0625 (1         )     = -89.875d0
+    ymid_05x0625 (J05x0625  )     = +89.87500
+
+    ! Sine of latitude edges
+    DO J = 1, J05x0625+1
+       sine_05x0625(J)            = SIN( yedge_05x0625(J) * D2R )
+    ENDDO
+
+    ! Vertical levels
+    DO L = 1, L05x0625
+       zmid_05x0625(L) = L
+    ENDDO
+
+    ! Vertical edges
+    DO L = 1, L05x0625+1
+       zedge_05x0625(L) = L
+    ENDDO
+
+!----- (finish edit)------------    
 
     !======================================================================
     ! 1 x 1.25 resolution; centered on (-180,-90)
@@ -1652,16 +1776,19 @@ MODULE GeosFpRegridModule
     nc_ymid_1x125                = ymid_1x125
     nc_ymid_2x25                 = ymid_2x25
     nc_ymid_4x5                  = ymid_4x5
+    nc_ymid_05x0625              = ymid_05x0625    ! (lzh,06/20/2014)
 
     ! Overwrite the South pole
     nc_ymid_1x125(1     )        = -90e0
     nc_ymid_2x25 (1     )        = -90e0
     nc_ymid_4x5  (1     )        = -90e0
+    nc_ymid_05x0625(1   )        = -90e0    ! (lzh,06/20/2014)
 
     ! Overwrite the North pole
     nc_ymid_1x125(J1x125)        = +90e0
     nc_ymid_2x25 (J2x25 )        = +90e0
     nc_ymid_4x5  (J4x5  )        = +90e0
+    nc_ymid_05x0625(J05x0625)    = +90e0    ! (lzh,06/20/2014)
 
   END SUBROUTINE GeosFpRegridInit
 !EOC
