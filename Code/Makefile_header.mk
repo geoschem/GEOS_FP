@@ -60,26 +60,107 @@ ifndef COMPILER
 COMPILER := ifort
 endif
 
-# Library include path
-INC_NC    := -I$(INC_NETCDF)
+###############################################################################
+###                                                                         ###
+###  Set linker commands for local and external libraries (incl. netCDF)    ###
+###                                                                         ###
+###############################################################################
 
-# Library link path: first try to get the list of proper linking flags
-# for this build of netCDF with nf-config and nc-config. 
-LINK_NC   := $(shell $(BIN_NETCDF)/nf-config --flibs)
-LINK_NC   += $(shell $(BIN_NETCDF)/nc-config --libs)
-LINK_NC   := $(filter -l%,$(LINK_NC))
-
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#%%%% NOTE TO GEOS-5.7.x USERS: If you do not have netCDF-4.2 installed,
-#%%%% Then you can add/modify the linking sequence here.  (This sequence
-#%%%% is a guess, but is probably good enough for other netCDF builds.)
-ifeq ($(LINK_NC),) 
-LINK_NC   := -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lm -lz
+ifdef NETCDF_INCLUDE
+ NC_INC_CMD           := -I$(NETCDF_INCLUDE)
+else
+ NC_INC_CMD           := -I$(INC_NETCDF)
 endif
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# Prepend the library directory path to the linking sequence
-LINK_NC   := -L$(LIB_NETCDF) $(LINK_NC)
+ifdef NETCDF_FORTRAN_INCLUDE
+ NC_INC_CMD           += -I$(NETCDF_FORTRAN_INCLUDE)
+endif
+
+# Get the version number (e.g. "4130"=netCDF 4.1.3; "4200"=netCDF 4.2, etc.)
+NC_VERSION           :=$(shell nc-config --version)
+NC_VERSION           :=$(shell echo "$(NC_VERSION)" | sed 's|netCDF ||g')
+NC_VERSION           :=$(shell echo "$(NC_VERSION)" | sed 's|\.||g')
+NC_VERSION_LEN       :=$(shell perl -e "print length $(NC_VERSION)")
+ifeq ($(NC_VERSION_LEN),3)
+ NC_VERSION          :=$(NC_VERSION)0
+endif
+ifeq ($(NC_VERSION_LEN),2) 
+ NC_VERSION          :=$(NC_VERSION)00
+endif
+
+# Test if we have at least netCDF 4.2.0.0
+AT_LEAST_NC_4200     :=$(shell perl -e "print ($(NC_VERSION) ge 4200)")
+
+ifeq ($(AT_LEAST_NC_4200),1) 
+
+  #-------------------------------------------------------------------------
+  # netCDF 4.2 and higher:
+  # Use "nf-config --flibs" and "nc-config --libs"
+  # Test if a separate netcdf-fortran path is specified
+  #-------------------------------------------------------------------------
+  NC_LINK_CMD        := $(shell nf-config --flibs)
+  NC_LINK_CMD        += $(shell nc-config --libs)
+
+else
+
+  #-----------------------------------------------------------------------
+  # Prior to netCDF 4.2:
+  # Use "nc-config --flibs"
+  #-----------------------------------------------------------------------
+  NC_LINK_CMD        := $(shell nc-config --flibs)
+
+endif
+
+#=============================================================================
+#%%%%% FIX FOR USE WITH THE GEOS-Chem-Libraries (bmy, 1/13/15)
+#%%%%% 
+#%%%%% If your GEOS-Chem-Libraries netCDF/HDF5 package was built in one 
+#%%%%% directory and then moved somewhere else, then nf-config and nc-config 
+#%%%%% may not return the proper link directory path.  
+#%%%%% 
+#%%%%% To avoid this error, we shall test if the $GC_LIB environment variable 
+#%%%%% contains the text "GEOS-Chem-Libraries".  (Recall that $GC_LIB is 
+#%%%%% defined in either your .bashrc or .cshrc file depending on which Unix 
+#%%%%% shell you use.)  If we find the text "GEOS-Chem-Libraries" in $GC_LIB, 
+#%%%%% then we shall override the library path returned by nf-config and 
+#%%%%% nc-config with the path specified by $GC_LIB.  This will ensure that 
+#%%%%% we point to the location where the GEOS-Chem-Libraries are installed.
+#%%%%%
+#%%%%% NOTE: This fix should work for most users.  If it does not work, then
+#%%%%% contact the GEOS-Chem Support Team (geos-chem-support@as.harvard.edu).
+#%%%%%
+REGEXP               :="GEOS-Chem-Libraries"
+ifeq ($(shell [[ "$(LIB_NETCDF)" =~ $(REGEXP) ]] && echo true),true)
+  NC_LINK_CMD        := $(filter -l%,$(NC_LINK_CMD))
+  NC_LINK_CMD        :=-L$(LIB_NETCDF) $(NC_LINK_CMD)
+endif
+#=============================================================================
+
+# For backwards compatibility
+LINK_NC :=$(NC_LINK_CMD)
+INC_NC  :=$(NC_INC_CMD)
+
+###############################################################################
+###                                                                         ###
+###  Test if the netCDF library was built with compression enabled          ###
+###                                                                         ###
+###############################################################################
+
+# Test if the "nf_def_var_deflate" function is defined in netcdf.inc
+# Look for netcdf.inc where the netCDF-Fortran library is located
+ifdef NETCDF_FORTRAN_INCLUDE
+  GREP :=$(strip $(shell grep nf_def_var_deflate $(NETCDF_FORTRAN_INCLUDE)/netcdf.inc))
+else
+  GREP :=$(strip $(shell grep nf_def_var_deflate $(NETCDF_INCLUDE)/netcdf.inc))
+endif
+
+# Look for the second word of the combined search results
+WORD                 :=$(word 2,"$(GREP)")
+
+# If it matches "nf_def_var_deflate", then define Cpp flag NC_HAS_COMPRESSION 
+ifeq ($(WORD),nf_def_var_deflate)
+  USER_DEFS          += -DNC_HAS_COMPRESSION
+endif
 
 #==============================================================================
 # MPIF90 compilation options 
@@ -102,6 +183,9 @@ endif
 ifdef TRACEBACK
 FFLAGS   += -traceback
 endif
+
+# Add any extra definitions
+FFLAGS   += $(USER_DEFS)
 
 INCLUDE  := -module $(MOD) -I$(MOD) $(INC_NC)
 F90      := mpif90 $(FFLAGS) $(INCLUDE)
@@ -137,6 +221,9 @@ ifdef TRACEBACK
 FFLAGS   += -traceback
 endif
 
+# Add any extra definitions
+FFLAGS   += $(USER_DEFS)
+
 INCLUDE  := -module $(MOD) -I$(MOD) $(INC_NC)
 F90      := ifort $(FFLAGS) $(INCLUDE)
 LD       := ifort $(FFLAGS) $(INCLUDE)
@@ -165,6 +252,9 @@ endif
 ifdef BOUNDS
 FFLAGS   += -C
 endif
+
+# Add any extra definitions
+FFLAGS   += $(USER_DEFS)
 
 INCLUDE  := -module $(MOD) -I$(MOD) $(INC_NC)
 F90      := pgf90 $(FFLAGS) $(INCLUDE)
@@ -196,6 +286,9 @@ endif
 ifdef BOUNDS
 FFLAGS += -C
 endif
+
+# Add any extra definitions
+FFLAGS   += $(USER_DEFS)
 
 # Include options
 INCLUDE  := -module $(MOD) -I$(MOD) $(INC_NC)
@@ -235,6 +328,9 @@ ifdef BOUNDS
 FFLAGS += -C
 endif
 
+# Add any extra definitions
+FFLAGS   += $(USER_DEFS)
+
 F90      = xlf90_r $(FFLAGS) $(INC_NC)
 LD       = xlf90_r $(FFLAGS)
 FREEFORM = -qrealsize=8
@@ -271,4 +367,5 @@ export LINK_NC
 #	@echo "ld      : $(LD)"
 #	@echo "link_nc : $(LINK_NC)"
 #	@echo "cc      : $(CC)"
+#	@echo "NETCDF_INCLUDE : $(NETCDF_INCLUDE)"
 
