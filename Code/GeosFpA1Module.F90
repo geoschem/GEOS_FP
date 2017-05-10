@@ -286,15 +286,12 @@ MODULE GeosFpA1Module
     CALL NcDef_Var_attributes( fOut, vId, 'units',          TRIM( units )    ) 
 
     ! Longitude index array
-    vId     = vId + 1
     var1    = (/ idLon /)
     lName   = 'longitude'
     units   = 'degrees_east'
     CALL NcDef_Variable      ( fOut, 'lon', NF_FLOAT, 1, var1, vId           )
     CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName )    )
     CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units )    )
-    print*, '@@@ after longitude'
-    call flush(6)
 
     !-------------------------------------------------------------------------
     ! Define data arrays
@@ -303,7 +300,6 @@ MODULE GeosFpA1Module
     ! ALBEDO
     IF ( StrPos( 'ALBEDO', tavg1_2d_rad_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Surface albedo' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -316,8 +312,6 @@ MODULE GeosFpA1Module
        CALL NcDef_Var_Attributes( fOut, vId, 'scale_factor',   1e0           )
        CALL NcDef_Var_Attributes( fOut, vId, 'add_offset',     0e0           )
     ENDIF
-    print*, '@@@ after albedo'
-    call flush(6)
 
     ! CLDTOT
     IF ( StrPos( 'CLDTOT', tavg1_2d_rad_Nx_Data ) >= 0 ) THEN
@@ -334,8 +328,6 @@ MODULE GeosFpA1Module
        CALL NcDef_Var_Attributes( fOut, vId, 'scale_factor',   1e0           )
        CALL NcDef_Var_Attributes( fOut, vId, 'add_offset',     0e0           )
     ENDIF
-    print*, '@@@ after albedo'
-    call flush(6)
 
     ! EFLUX
     IF ( StrPos( 'EFLUX', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
@@ -352,8 +344,6 @@ MODULE GeosFpA1Module
        CALL NcDef_Var_Attributes( fOut, vId, 'scale_factor',   1e0           )
        CALL NcDef_Var_Attributes( fOut, vId, 'add_offset',     0e0           )
     ENDIF
-    print*, '@@@ after eflux'
-    call flush(6)
 
     ! EVAP
     IF ( StrPos( 'EVAP', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
@@ -374,7 +364,6 @@ MODULE GeosFpA1Module
     ! FRSEAICE
     IF ( StrPos( 'FRSEAICE', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of sea ice on surface' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -536,7 +525,6 @@ MODULE GeosFpA1Module
     ! PARDF
     IF ( StrPos( 'PARDF', tavg1_2d_lnd_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Surface downward PAR diffuse flux' 
        units = 'W m-2'
        gamap = 'GMAO-2D'
@@ -553,7 +541,6 @@ MODULE GeosFpA1Module
     ! PARDR
     IF ( StrPos( 'PARDR', tavg1_2d_lnd_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Surface downward PAR beam flux' 
        units = 'W m-2'
        gamap = 'GMAO-2D'
@@ -570,7 +557,6 @@ MODULE GeosFpA1Module
     ! PBLH
     IF ( StrPos( 'PBLH', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Planetary boundary layer height above surface' 
        units = 'm'
        gamap = 'GMAO-2D'
@@ -698,7 +684,6 @@ MODULE GeosFpA1Module
 
        ! SEAICE10
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of grid box that has 10-20% sea ice coverage' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -713,7 +698,6 @@ MODULE GeosFpA1Module
        
        ! SEAICE20
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of grid box that has 20-30% sea ice coverage' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -798,7 +782,6 @@ MODULE GeosFpA1Module
        
        ! SEAICE80
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of grid box that has 80-90% sea ice coverage' 
        units = '1'
        gamap = 'GMAO-2D'
