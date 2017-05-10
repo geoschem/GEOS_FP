@@ -248,7 +248,6 @@ MODULE GeosFpA3MstEModule
 
     ! Time index array
     var1    = (/ idTime /)
-    vId     = 0
     cal     = 'gregorian'
     lName   = 'time'
     units   = UnitsForTime( yyyymmdd )
@@ -267,7 +266,6 @@ MODULE GeosFpA3MstEModule
 
     ! Level index array
     var1    = (/ idLev /)
-    vId     = vId + 1
     lName   = 'levels'
     units   = '1'
     CALL NcDef_Variable      ( fOut, 'lev', NF_FLOAT, 1, var1, vId           )
@@ -276,7 +274,6 @@ MODULE GeosFpA3MstEModule
 
     ! Latitude index array
     var1    = (/ idLat /)
-    vId     = vId + 1
     lName   = 'latitude'
     units   = 'degrees_north'
     CALL NcDef_Variable      ( fOut, 'lat', NF_FLOAT, 1, var1, vId           )
@@ -285,7 +282,6 @@ MODULE GeosFpA3MstEModule
   
     ! Longitude index array
     var1    = (/ idLon /)
-    vId     = vId + 1
     lName   = 'longitude'
     units   = 'degrees_east'
     CALL NcDef_Variable      ( fOut, 'lon', NF_FLOAT, 1, var1, vId           )
@@ -298,7 +294,6 @@ MODULE GeosFpA3MstEModule
 
     IF ( StrPos( 'CMFMC', tavg3_3d_mst_Ne_data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Upward moist convective mass flux'
        units = 'kg m-2 s-2'
        gamap = 'GMAO-3D$'
@@ -315,7 +310,6 @@ MODULE GeosFpA3MstEModule
     ! PFICU
     IF ( StrPos( 'PFICU', tavg3_3d_mst_Ne_data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Downward flux of ice precipitation (convective)'
        units = 'kg m-2 s-1'
        gamap = 'GMAO-3D$'
@@ -332,7 +326,6 @@ MODULE GeosFpA3MstEModule
     ! PFILSAN
     IF ( StrPos( 'PFILSAN', tavg3_3d_mst_Ne_data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Downward flux of ice precipitation (large scale + anvil)'
        units = 'kg m-2 s-1'
        gamap = 'GMAO-3D$'
@@ -349,7 +342,6 @@ MODULE GeosFpA3MstEModule
     ! PFLCU
     IF ( StrPos( 'PFLCU', tavg3_3d_mst_Ne_data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Downward flux of liquid precipitation (convective)'
        units = 'kg m-2 s-1'
        gamap = 'GMAO-3D$'
@@ -366,7 +358,6 @@ MODULE GeosFpA3MstEModule
     ! PFLLSAN
     IF ( StrPos( 'PFLLSAN', tavg3_3d_mst_Ne_data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Downward flux of liquid precipitation (large scale + anvil)'
        units = 'kg m-2 s-1'
        gamap = 'GMAO-3D$'

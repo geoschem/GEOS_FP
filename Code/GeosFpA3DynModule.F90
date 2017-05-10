@@ -251,7 +251,6 @@ MODULE GeosFpA3DynModule
 
     ! Time index array
     var1    = (/ idTime /)
-    vId     = 0
     cal     = 'gregorian'
     lName   = 'time'
     units   = UnitsForTime( yyyymmdd )
@@ -270,7 +269,6 @@ MODULE GeosFpA3DynModule
 
     ! Level index array
     var1    = (/ idLev /)
-    vId     = vId + 1
     lName   = 'levels'
     units   = '1'
     CALL NcDef_Variable      ( fOut, 'lev', NF_FLOAT, 1, var1, vId           )
@@ -279,7 +277,6 @@ MODULE GeosFpA3DynModule
 
     ! Latitude index array
     var1    = (/ idLat /)
-    vId     = vId + 1
     lName   = 'latitude'
     units   = 'degrees_north'
     CALL NcDef_Variable      ( fOut, 'lat', NF_FLOAT, 1, var1, vId           )
@@ -287,7 +284,6 @@ MODULE GeosFpA3DynModule
     CALL NcDef_Var_attributes( fOut, vId, 'units',          TRIM( units )    ) 
 
     ! Longitude index array
-    vId     =  vId + 1
     var1    = (/ idLon /)
     lName   = 'longitude'
     units   = 'degrees_east'
@@ -302,7 +298,6 @@ MODULE GeosFpA3DynModule
     ! DTRAIN
     IF ( StrPos( 'DTRAIN', tavg3_3d_cld_Nv_data_d ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Detrainment cloud mass flux'
        units = 'kg m-2 s-2'
        gamap = 'GMAO-3D$'
@@ -319,7 +314,6 @@ MODULE GeosFpA3DynModule
     ! OMEGA
     IF ( StrPos( 'OMEGA', tavg3_3d_asm_Nv_data ) >= 0 ) THEN
        var4     = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Vertical pressure velocity'
        units = 'Pa s-1'
        gamap = 'GMAO-3D$'
@@ -336,7 +330,6 @@ MODULE GeosFpA3DynModule
     ! RH
     IF ( StrPos( 'RH', tavg3_3d_cld_Nv_data_d ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Relative humidity'
        units = '1'
        gamap = 'GMAO-3D$'
@@ -353,7 +346,6 @@ MODULE GeosFpA3DynModule
     ! U
     IF ( StrPos( 'U', tavg3_3d_asm_Nv_data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Eastward component of wind'
        units = 'm s-1'
        gamap = 'GMAO-3D$'
@@ -370,7 +362,6 @@ MODULE GeosFpA3DynModule
     ! V
     IF ( StrPos( 'V', tavg3_3d_asm_Nv_data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Northward component of wind'
        units = 'm s-1'
        gamap = 'GMAO-3D$'

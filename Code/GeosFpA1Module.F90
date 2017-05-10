@@ -261,7 +261,6 @@ MODULE GeosFpA1Module
 
     ! Time index array (hardwire date to 2011/01/01)
     var1    = (/ idTime /)
-    vId     = 0
     cal     = 'gregorian'
     lName   = 'time'
     units   = UnitsForTime( yyyymmdd )
@@ -280,7 +279,6 @@ MODULE GeosFpA1Module
 
     ! Latitude index array
     var1    = (/ idLat /)
-    vId     = vId + 1
     lName   = 'latitude'
     units   = 'degrees_north'
     CALL NcDef_Variable      ( fOut, 'lat', NF_FLOAT, 1, var1, vId           )
@@ -295,6 +293,8 @@ MODULE GeosFpA1Module
     CALL NcDef_Variable      ( fOut, 'lon', NF_FLOAT, 1, var1, vId           )
     CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName )    )
     CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units )    )
+    print*, '@@@ after longitude'
+    call flush(6)
 
     !-------------------------------------------------------------------------
     ! Define data arrays
@@ -316,11 +316,12 @@ MODULE GeosFpA1Module
        CALL NcDef_Var_Attributes( fOut, vId, 'scale_factor',   1e0           )
        CALL NcDef_Var_Attributes( fOut, vId, 'add_offset',     0e0           )
     ENDIF
+    print*, '@@@ after albedo'
+    call flush(6)
 
     ! CLDTOT
     IF ( StrPos( 'CLDTOT', tavg1_2d_rad_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Total cloud fraction' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -333,11 +334,12 @@ MODULE GeosFpA1Module
        CALL NcDef_Var_Attributes( fOut, vId, 'scale_factor',   1e0           )
        CALL NcDef_Var_Attributes( fOut, vId, 'add_offset',     0e0           )
     ENDIF
+    print*, '@@@ after albedo'
+    call flush(6)
 
     ! EFLUX
     IF ( StrPos( 'EFLUX', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Latent heat flux (positive upward)'
        units = 'W m-2'
        gamap = 'GMAO-2D'
@@ -350,11 +352,12 @@ MODULE GeosFpA1Module
        CALL NcDef_Var_Attributes( fOut, vId, 'scale_factor',   1e0           )
        CALL NcDef_Var_Attributes( fOut, vId, 'add_offset',     0e0           )
     ENDIF
+    print*, '@@@ after eflux'
+    call flush(6)
 
     ! EVAP
     IF ( StrPos( 'EVAP', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Surface evaporation' 
        units = 'kg m-2 s-2'
        gamap = 'GMAO-2D'
@@ -388,7 +391,6 @@ MODULE GeosFpA1Module
     ! FRSNO
     IF ( StrPos( 'FRSNO', tavg1_2d_lnd_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fractional snow-covered area' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -405,7 +407,6 @@ MODULE GeosFpA1Module
     ! GRN
     IF ( StrPos( 'GRN', tavg1_2d_lnd_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Vegetation greenness fraction' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -422,7 +423,6 @@ MODULE GeosFpA1Module
     ! GWETROOT
     IF ( StrPos( 'GWETROOT', tavg1_2d_lnd_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Root zone soil wetness' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -439,7 +439,6 @@ MODULE GeosFpA1Module
     ! GWETTOP
     IF ( StrPos( 'GWETTOP', tavg1_2d_lnd_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Top soil wetness' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -456,7 +455,6 @@ MODULE GeosFpA1Module
     ! HFLUX
     IF ( StrPos( 'HFLUX', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Sensible heat flux (positive upward)' 
        units = 'W m-2'
        gamap = 'GMAO-2D'
@@ -473,7 +471,6 @@ MODULE GeosFpA1Module
     ! LAI
     IF ( StrPos( 'LAI', tavg1_2d_lnd_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Leaf area index' 
        units = 'm2 m-2'
        gamap = 'GMAO-2D'
@@ -490,7 +487,6 @@ MODULE GeosFpA1Module
     ! LWI (derived from FRLANDICE + other fields)
     IF ( StrPos( 'FRSEAICE', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Land/water/ice flags' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -507,7 +503,6 @@ MODULE GeosFpA1Module
     ! LWGNT
     IF ( StrPos( 'LWGNT', tavg1_2d_rad_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Net longwave flux at the ground' 
        units = 'W m-2'
        gamap = 'GMAO-2D'
@@ -525,7 +520,6 @@ MODULE GeosFpA1Module
     ! LWTUP
     IF ( StrPos( 'LWTUP', tavg1_2d_rad_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Upward longwave flux at top of atmosphere (TOA)' 
        units = 'W m-2'
        gamap = 'GMAO-2D'
@@ -593,7 +587,6 @@ MODULE GeosFpA1Module
     ! PRECANV
     IF ( StrPos( 'PRECANV', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Surface precipitation flux from anvils' 
        units = 'kg m-2 s-2'
        gamap = 'GMAO-2D'
@@ -610,7 +603,6 @@ MODULE GeosFpA1Module
     ! PRECCON
     IF ( StrPos( 'PRECCON', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Surface precipitation flux from convection' 
        units = 'kg m-2 s-2'
        gamap = 'GMAO-2D'
@@ -627,7 +619,6 @@ MODULE GeosFpA1Module
     ! PRECLSC
     IF ( StrPos( 'PRECLSC', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Surface precipitation flux from large-scale' 
        units = 'kg m-2 s-2'
        gamap = 'GMAO-2D'
@@ -644,7 +635,6 @@ MODULE GeosFpA1Module
     ! PRECSNO
     IF ( StrPos( 'PRECLSC', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Surface precipitation flux from snow' 
        units = 'kg m-2 s-2'
        gamap = 'GMAO-2D'
@@ -661,7 +651,6 @@ MODULE GeosFpA1Module
     ! PRECTOT
     IF ( StrPos( 'PRECTOT', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Total surface precipitation flux' 
        units = 'kg m-2 s-2'
        gamap = 'GMAO-2D'
@@ -678,7 +667,6 @@ MODULE GeosFpA1Module
     ! QV2M
     IF ( StrPos( 'QV2M', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Specific humidity at 2m above the displacement height' 
        units = 'kg kg-1'
        gamap = 'GMAO-2D'
@@ -696,7 +684,6 @@ MODULE GeosFpA1Module
 
        ! SEAICE00
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of grid box that has 0-10% sea ice coverage' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -741,7 +728,6 @@ MODULE GeosFpA1Module
 
        ! SEAICE30
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of grid box that has 30-40% sea ice coverage' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -756,7 +742,6 @@ MODULE GeosFpA1Module
 
        ! SEAICE40
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of grid box that has 40-50% sea ice coverage' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -771,7 +756,6 @@ MODULE GeosFpA1Module
        
        ! SEAICE50
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of grid box that has 50-60% sea ice coverage' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -786,7 +770,6 @@ MODULE GeosFpA1Module
        
        ! SEAICE60
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of grid box that has 60-70% sea ice coverage' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -801,7 +784,6 @@ MODULE GeosFpA1Module
        
        ! SEAICE70
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of grid box that has 70-80% sea ice coverage' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -831,7 +813,6 @@ MODULE GeosFpA1Module
 
        ! SEAICE90
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of grid box that has 90-100% sea ice coverage' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -848,7 +829,6 @@ MODULE GeosFpA1Module
     ! SLP
     IF ( StrPos( 'SLP', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Sea level pressure' 
        units = 'hPa'
        gamap = 'GMAO-2D'
@@ -865,7 +845,6 @@ MODULE GeosFpA1Module
     ! SNODP
     IF ( StrPos( 'SNODP', tavg1_2d_lnd_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Snow depth' 
        units = 'm'
        gamap = 'GMAO-2D'
@@ -882,7 +861,6 @@ MODULE GeosFpA1Module
     ! SNOMAS
     IF ( StrPos( 'SNOMAS', tavg1_2d_lnd_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Snow mass' 
        units = 'kg m-2'
        gamap = 'GMAO-2D'
@@ -899,7 +877,6 @@ MODULE GeosFpA1Module
     ! SWGDN
     IF ( StrPos( 'SWGDN', tavg1_2d_rad_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Surface incident shortwave flux' 
        units = 'W m-2'
        gamap = 'GMAO-2D'
@@ -916,7 +893,6 @@ MODULE GeosFpA1Module
     ! SWGNT
     IF ( StrPos( 'SWGNT', tavg1_2d_rad_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Net surface downward shortwave flux' 
        units = 'W m-2'
        gamap = 'GMAO-2D'
@@ -933,7 +909,6 @@ MODULE GeosFpA1Module
     ! TO3
     IF ( StrPos( 'TO3', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Total column ozone' 
        units = 'Dobsons'
        gamap = 'GMAO-2D'
@@ -950,7 +925,6 @@ MODULE GeosFpA1Module
     ! TROPPT
     IF ( StrPos( 'TROPPT', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Temperature-based tropopause pressure' 
        units = 'hPa'
        gamap = 'GMAO-2D'
@@ -967,7 +941,6 @@ MODULE GeosFpA1Module
     ! TS
     IF ( StrPos( 'TS', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Surface skin temperature' 
        units = 'K'
        gamap = 'GMAO-2D'
@@ -984,7 +957,6 @@ MODULE GeosFpA1Module
     ! T2M
     IF ( StrPos( 'T2M', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Temperature 2m above displacement height' 
        units = 'K'
        gamap = 'GMAO-2D'
@@ -1001,7 +973,6 @@ MODULE GeosFpA1Module
     ! U10M
     IF ( StrPos( 'U10M', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Eastward wind 10m above displacement height' 
        units = 'm s-1'
        gamap = 'GMAO-2D'
@@ -1018,7 +989,6 @@ MODULE GeosFpA1Module
     ! USTAR
     IF ( StrPos( 'USTAR', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Friction velocity' 
        units = 'm s-1'
        gamap = 'GMAO-2D'
@@ -1035,7 +1005,6 @@ MODULE GeosFpA1Module
     ! V10M
     IF ( StrPos( 'V10M', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Northward wind 10m above displacement height' 
        units = 'm s-1'
        gamap = 'GMAO-2D'
@@ -1052,7 +1021,6 @@ MODULE GeosFpA1Module
     ! Z0M
     IF ( StrPos( 'Z0M', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Roughness length, momentum' 
        units = 'm'
        gamap = 'GMAO-2D'
@@ -1070,7 +1038,6 @@ MODULE GeosFpA1Module
     ! T10M 
     IF ( StrPos( 'T10M', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)
-       vId   = vId + 1
        lName = 'Temperature at 10 m above the displacement height'
        units = 'K'
        gamap = 'GMAO-2D'
@@ -1087,7 +1054,6 @@ MODULE GeosFpA1Module
    ! Q850
    IF ( StrPos( 'Q850', tavg1_2d_slv_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)
-       vId   = vId + 1
        lName = 'Specific humidity at 850 hPa'
        units = 'kg kg-1'
        gamap = 'GMAO-2D'

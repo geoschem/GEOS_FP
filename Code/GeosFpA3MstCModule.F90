@@ -248,7 +248,6 @@ MODULE GeosFpA3MstCModule
 
     ! Time index array
     var1    = (/ idTime /)
-    vId     = 0
     cal     = 'gregorian'
     lName   = 'time'
     units   = UnitsForTime( yyyymmdd )
@@ -267,7 +266,6 @@ MODULE GeosFpA3MstCModule
 
     ! Level index array
     var1    = (/ idLev /)
-    vId     = vId + 1
     lName   = 'levels'
     units   = '1'
     CALL NcDef_Variable      ( fOut, 'lev', NF_FLOAT, 1, var1, vId           )
@@ -276,7 +274,6 @@ MODULE GeosFpA3MstCModule
 
     ! Latitude index array
     var1    = (/ idLat /)
-    vId     = vId + 1
     lName   = 'latitude'
     units   = 'degrees_north'
     CALL NcDef_Variable      ( fOut, 'lat', NF_FLOAT, 1, var1, vId           )
@@ -284,7 +281,6 @@ MODULE GeosFpA3MstCModule
     CALL NcDef_Var_attributes( fOut, vId, 'units',          TRIM( units )    ) 
   
     ! Longitude index array
-    vId     = vId + 1
     var1    = (/ idLon /)
     lName   = 'longitude'
     units   = 'degrees_east'
@@ -299,7 +295,6 @@ MODULE GeosFpA3MstCModule
     ! DQRCU
     IF ( StrPos( 'DQRCU', tavg3_3d_mst_Nv_data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Precipitation production rate -- convective'
        units = 'kg kg-1 s-1'
        gamap = 'GMAO-3D$'
@@ -316,7 +311,6 @@ MODULE GeosFpA3MstCModule
     ! DQRLSAN
     IF ( StrPos( 'DQRLSAN', tavg3_3d_mst_Nv_Data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Precipitation production rate -- large scale + anvil'
        units = 'kg kg-1 s-1'
        gamap = 'GMAO-3D$'
@@ -333,7 +327,6 @@ MODULE GeosFpA3MstCModule
     ! FPCU
     IF ( StrPos( 'FPCU', tavg3_3d_mst_Nv_data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of box undergoing convective precipitation'
        units = 'fraction'
        gamap = 'GMAO-3D$'
@@ -350,7 +343,6 @@ MODULE GeosFpA3MstCModule
     ! FPLSAN
     IF ( StrPos( 'FPLSAN', tavg3_3d_mst_Nv_data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of box undergoing large scale + anvil precipitation'
        units = 'fraction'
        gamap = 'GMAO-3D$'
@@ -367,7 +359,6 @@ MODULE GeosFpA3MstCModule
     ! REEVAPCN
     IF ( StrPos( 'REEVAPCN', tavg3_3d_mst_Nv_data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Evaporation of precipitating convective condensate'
        units = 'kg kg-1 s-1'
        gamap = 'GMAO-3D$'
@@ -384,7 +375,6 @@ MODULE GeosFpA3MstCModule
     ! REEVAPLS(AN)
     IF ( StrPos( 'REEVAPLS', tavg3_3d_mst_Nv_data ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Evaporation of precipitating large-scale & anvil condensate'
        units = 'kg kg-1'
        gamap = 'GMAO-3D$'

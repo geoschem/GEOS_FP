@@ -265,7 +265,6 @@ MODULE GeosFpA3CldModule
 
     ! Time index array
     var1    = (/ idTime /)
-    vId     = 0
     cal     = 'gregorian'
     lName   = 'time'
     units   = UnitsForTime( yyyymmdd )
@@ -284,7 +283,6 @@ MODULE GeosFpA3CldModule
 
     ! Level index array
     var1    = (/ idLev /)
-    vId     = vId + 1
     lName   = 'levels'
     units   = '1'
     CALL NcDef_Variable      ( fOut, 'lev', NF_FLOAT, 1, var1, vId           )
@@ -293,7 +291,6 @@ MODULE GeosFpA3CldModule
 
     ! Latitude index array
     var1    = (/ idLat /)
-    vId     = vId + 1
     lName   = 'latitude'
     units   = 'degrees_north'
     CALL NcDef_Variable      ( fOut, 'lat', NF_FLOAT, 1, var1, vId           )
@@ -301,7 +298,6 @@ MODULE GeosFpA3CldModule
     CALL NcDef_Var_attributes( fOut, vId, 'units',          TRIM( units )    ) 
   
     ! Longitude index array
-    vId     = vId + 1
     var1    = (/ idLon /)
     lName   = 'longitude'
     units   = 'degrees_east'
@@ -326,7 +322,6 @@ MODULE GeosFpA3CldModule
        !%%% NETCDF FILE (bmy, 9/20/13)
        !
        !var4  = (/ idLon, idLat, idLev, idTime /)    
-       !vId   = vId + 1
        !lName = '3D cloud fraction, anvils'
        !units = '1'
        !gamap = 'GMAO-3D$'
@@ -348,7 +343,6 @@ MODULE GeosFpA3CldModule
     ! CFCU
     IF ( StrPos( 'CFCU', tavg3_3d_cld_Nv_Data_c ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = '3D cloud fraction, convective'
        units = '1'
        gamap = 'GMAO-3D$'
@@ -378,7 +372,6 @@ MODULE GeosFpA3CldModule
        !%%% NETCDF FILE (bmy, 9/20/13)
        !
        !var4  = (/ idLon, idLat, idLev, idTime /)    
-       !vId   = vId + 1
        !lName = '3D cloud fraction, large-scale'
        !units = '1'
        !gamap = 'GMAO-3D$'
@@ -404,7 +397,6 @@ MODULE GeosFpA3CldModule
     IF ( StrPos( 'CLOUD', tavg3_3d_rad_Nv_data ) >= 0 ) THEN
     !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Total cloud fraction in grid box'
        units = '1'
        gamap = 'GMAO-3D$'
@@ -421,7 +413,6 @@ MODULE GeosFpA3CldModule
     ! OPTDEPTH
     IF ( StrPos( 'OPTDEPTH', tavg3_3d_cld_Nv_data_c ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Total in-cloud optical thickness (visible band)'
        units = '1'
        gamap = 'GMAO-3D$'
@@ -438,7 +429,6 @@ MODULE GeosFpA3CldModule
     ! QCCU
     IF ( StrPos( 'QCCU', tavg3_3d_cld_Nv_data_c ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Cloud condensate mixing ratio, convective updraft'
        units = 'kg kg-1'
        gamap = 'GMAO-3D$'
@@ -455,7 +445,6 @@ MODULE GeosFpA3CldModule
     ! QI
     IF ( StrPos( 'QI', tavg3_3d_cld_Nv_data_c ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Cloud ice water mixing ratio'
        units = 'kg kg-1'
        gamap = 'GMAO-3D$'
@@ -472,7 +461,6 @@ MODULE GeosFpA3CldModule
     ! QL
     IF ( StrPos( 'QL', tavg3_3d_cld_Nv_data_c ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Cloud liquid water mixing ratio'
        units = 'kg kg-1'
        gamap = 'GMAO-3D$'
@@ -489,7 +477,6 @@ MODULE GeosFpA3CldModule
     ! RH
     IF ( StrPos( 'RH', tavg3_3d_cld_Nv_data_c ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'Relative humidity'
        units = '1'
        gamap = 'GMAO-3D$'
@@ -506,7 +493,6 @@ MODULE GeosFpA3CldModule
     ! TAUCLI
     IF ( StrPos( 'TAUCLI', tavg3_3d_cld_Nv_data_c ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'In-cloud ice optical thickness (visible band)'
        units = '1'
        gamap = 'GMAO-3D$'
@@ -523,7 +509,6 @@ MODULE GeosFpA3CldModule
     ! TAUCLW
     IF ( StrPos( 'TAUCLW', tavg3_3d_cld_Nv_data_c ) >= 0 ) THEN
        var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
        lName = 'In-cloud water optical thickness (visible band)'
        units = '1'
        gamap = 'GMAO-3D$'

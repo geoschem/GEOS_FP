@@ -259,7 +259,6 @@ CONTAINS
 
     ! Time index array (hardwire date to 2011/01/01)
     var1    = (/ idTime /)
-    vId     = 0
     cal     = 'gregorian'
     lName   = 'time'
     units   = UnitsForTime( 20110101 )
@@ -278,7 +277,6 @@ CONTAINS
 
     ! Latitude index array
     var1    = (/ idLat /)
-    vId     = vId + 1
     lName   = 'latitude'
     units   = 'degrees_north'
     CALL NcDef_Variable      ( fOut, 'lat', NF_FLOAT, 1, var1, vId           )
@@ -287,7 +285,6 @@ CONTAINS
 
     ! Longitude index array
     var1    = (/ idLon /)
-    vId     = vId + 1
     lName   = 'longitude'
     units   = 'degrees_east'
     CALL NcDef_Variable      ( fOut, 'lon', NF_FLOAT, 1, var1, vId           )
@@ -301,7 +298,6 @@ CONTAINS
     ! FRLAKE
     IF ( StrPos( 'FRLAKE', const_2d_asm_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of lake type in grid box' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -318,7 +314,6 @@ CONTAINS
     ! FRLAND
     IF ( StrPos( 'FRLAND', const_2d_asm_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of land in grid box' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -335,7 +330,6 @@ CONTAINS
     ! FRLANDICE
     IF ( StrPos( 'FRLANDIC', const_2d_asm_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of land ice in grid box' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -352,7 +346,6 @@ CONTAINS
     ! FROCEAN
     IF ( StrPos( 'FROCEAN', const_2d_asm_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Fraction of ocean in grid box' 
        units = '1'
        gamap = 'GMAO-2D'
@@ -369,7 +362,6 @@ CONTAINS
     ! PHIS
     IF ( StrPos( 'PHIS', const_2d_asm_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
        lName = 'Surface geopotential' 
        units = 'm2 s-2'
        gamap = 'GMAO-2D'
