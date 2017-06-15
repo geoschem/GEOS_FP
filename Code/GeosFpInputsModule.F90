@@ -10,15 +10,15 @@
 !  \texttt{GeosFpDriver.input} file.
 !\\
 !\\
-! !INTERFACE: 
+! !INTERFACE:
 
 MODULE GeosFpInputsModule
-! 
+!
 ! !USES:
 !
   ! Modules for reading netCDF
   USE m_netcdf_io_open
-  USE m_netcdf_io_close     
+  USE m_netcdf_io_close
   USE m_netcdf_io_get_dimlen
   USE m_netcdf_io_read
 
@@ -31,17 +31,17 @@ MODULE GeosFpInputsModule
   ! Limits
   INTEGER,      PARAMETER :: MAX_FLDS   = 200
   INTEGER,      PARAMETER :: MAX_CHAR   = 1024
-                                        
-  ! Number of times per file            
+
+  ! Number of times per file
   INTEGER,      PARAMETER :: TIMES_A1   = 24          ! # of A1 data times
   INTEGER,      PARAMETER :: TIMES_A3   = 8           ! # of A3 data times
-                                        
-  ! File units                          
+
+  ! File units
   INTEGER,      PARAMETER :: IU_LOG     = 6           ! Log file output
   INTEGER,      PARAMETER :: IU_TXT     = 70          ! Text file input
   INTEGER,      PARAMETER :: IU_BIN     = 71
-                     
-  ! Grid size dimensions                         
+
+  ! Grid size dimensions
   INTEGER,      PARAMETER :: I025x03125 = 1152        ! 0.25 x 0.3125 lon dim
   INTEGER,      PARAMETER :: J025x03125 = 721         ! 0.25 x 0.3125 lat dim
   INTEGER,      PARAMETER :: L025x03125 = 72          ! 0.25 x 0.3125 alt dim
@@ -65,7 +65,7 @@ MODULE GeosFpInputsModule
   INTEGER,      PARAMETER :: J05x0625   = 361         ! 0.5  x 0.625  lat dim
   INTEGER,      PARAMETER :: L05x0625   = 72          ! 0.5  x 0.625  alt dim
 !-----(finish edit)---------
-  
+
 !
 ! !PUBLIC TYPES:
 !
@@ -85,7 +85,7 @@ MODULE GeosFpInputsModule
   TYPE(MapObj),   POINTER :: mapTo4x5(:,:)            ! Map native -> 4 x 5
 ! (lzh, 06/20/2014)
   TYPE(MapObj),   POINTER :: mapTo05x0625(:,:)        ! Map native -> 0.5 x 0.625
-  
+
   ! NetCDF file Handles
 
   ! Scalars
@@ -93,19 +93,28 @@ MODULE GeosFpInputsModule
   LOGICAL                 :: doNestCh                 ! Save nested CH grid?
   INTEGER                 :: I0_ch,    J0_ch          ! LL corner of CH grid
   INTEGER                 :: I1_ch,    J1_ch          ! UR corner of CH grid
-  INTEGER                 :: I_NestCh, J_NestCh       ! NestCh dimensions   
+  INTEGER                 :: I_NestCh, J_NestCh       ! NestCh dimensions
   LOGICAL                 :: doNestEu                 ! Save nested EU grid?
   INTEGER                 :: I0_eu,    J0_eu          ! LL corner of EU grid
   INTEGER                 :: I1_eu,    J1_eu          ! UR corner of EU grid
-  INTEGER                 :: I_NestEu, J_NestEu       ! NestNa dimensions   
+  INTEGER                 :: I_NestEu, J_NestEu       ! NestNa dimensions
   LOGICAL                 :: doNestNa                 ! Save nested NA grid?
   INTEGER                 :: I0_na,    J0_na          ! LL corner of NA grid
   INTEGER                 :: I1_na,    J1_na          ! UR corner of NA grid
-  INTEGER                 :: I_NestNa, J_NestNa       ! NestNa dimensions   
+  INTEGER                 :: I_NestNa, J_NestNa       ! NestNa dimensions
   LOGICAL                 :: doNestSe                 ! Save nested SE grid?
   INTEGER                 :: I0_se,    J0_se          ! LL corner of SE grid
   INTEGER                 :: I1_se,    J1_se          ! UR corner of SE grid
-  INTEGER                 :: I_NestSe, J_NestSe       ! NestSe dimensions   
+  INTEGER                 :: I_NestSe, J_NestSe       ! NestSe dimensions
+! (jxu, 2015/12/08, add nested Asia)
+  LOGICAL                 :: doNestAs                 ! Save nested Asia grid?
+  INTEGER                 :: I0_as,    J0_as          ! LL corner of Asia grid
+  INTEGER                 :: I1_as,    J1_as          ! UR corner of Dia grid
+  INTEGER                 :: I_NestAs, J_NestAs       ! NestAs dimensions
+! (jxu, end)
+  !(jxu, 2016/02/13, add 0.25 global)
+  LOGICAL                 :: do025x03125              ! Save out 0.25 x 0.3125
+  !(jxu, end)
   LOGICAL                 :: do2x25                   ! Save out 2 x 2.25
   LOGICAL                 :: do4x5                    ! Save out 4 x 5?
   LOGICAL                 :: doMakeCn
@@ -116,10 +125,16 @@ MODULE GeosFpInputsModule
   INTEGER                 :: fOutNestEu               ! NC fId; output EU grid
   INTEGER                 :: fOutNestNa               ! NC fId; output NA grid
   INTEGER                 :: fOutNestSe               ! NC fId; output SE grid
+! (jxu, 2015/12/08, add nested Asia)
+  INTEGER                 :: fOutNestAs               ! NC fId; output IN grid
+! (jxu, end)
+!(jxu, 2016/02/13, add 0.25 global)
+ INTEGER                 :: fOut025x03125             ! NC fId; output 025x03125
+!(jxu, end)
   INTEGER                 :: fOut2x25                 ! NC fId; output 2x25
   INTEGER                 :: fOut4x5                  ! NC fId; output 4x5
   REAL*4                  :: FILL_VALUE = 1e15        ! Fill value in HDF file
-  REAL*4                  :: Ap(L025x03125+1)         ! Hybrid grid "A" array 
+  REAL*4                  :: Ap(L025x03125+1)         ! Hybrid grid "A" array
   REAL*4                  :: Bp(L025x03125+1)         ! Hybrid grid "B" array
   CHARACTER(LEN=8)        :: yyyymmdd_string          ! String for YYYYMMDD
   CHARACTER(LEN=MAX_CHAR) :: inputDataDir             ! netCDF data dir
@@ -135,6 +150,16 @@ MODULE GeosFpInputsModule
   CHARACTER(LEN=MAX_CHAR) :: dataTmplNestSe           ! NstSe file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestSe        ! NstSe temporary dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestSe        ! NstSe data dir
+! (jxu, 2015/12/08, add nested Asia)
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestAs           ! NstIn file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestAs        ! NstIn temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestAs        ! NstIn data dir
+! (jxu, end)
+!(jxu, 2016/02/13, add 0.25 global)
+ CHARACTER(LEN=MAX_CHAR) :: dataTmpl025x03125         ! 025x03125  file template
+ CHARACTER(LEN=MAX_CHAR) :: tempDirTmpl025x03125      ! 025x03125  temp dir
+ CHARACTER(LEN=MAX_CHAR) :: dataDirTmpl025x03125      ! 025x03125  data dir
+!(jxu, end)
   CHARACTER(LEN=MAX_CHAR) :: dataTmpl2x25             ! 2x25  file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmpl2x25          ! 2x25  temp dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmpl2x25          ! 2x25  data dir
@@ -156,13 +181,13 @@ MODULE GeosFpInputsModule
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_mst_Ne_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_rad_Nv_file     ! tavg3_3d_rad_Nv file
   CHARACTER(LEN=MAX_CHAR) :: tavg3_3d_rad_Nv_data     !  and list of data flds
-  CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_flx_Nx_file     ! tavg1_2d_flx_Nx 
+  CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_flx_Nx_file     ! tavg1_2d_flx_Nx
   CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_flx_Nx_data     !  and list of data flds
-  CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_lnd_Nx_file     ! tavg1_2d_lnd_Nx 
+  CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_lnd_Nx_file     ! tavg1_2d_lnd_Nx
   CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_lnd_Nx_data     !  and list of data flds
-  CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_rad_Nx_file     ! tavg1_2d_rad_Nx 
+  CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_rad_Nx_file     ! tavg1_2d_rad_Nx
   CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_rad_Nx_data     !  and list of data flds
-  CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_slv_Nx_file     ! tavg1_2d_slv_Nx 
+  CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_slv_Nx_file     ! tavg1_2d_slv_Nx
   CHARACTER(LEN=MAX_CHAR) :: tavg1_2d_slv_Nx_data     !  and list of data flds
   CHARACTER(LEN=MAX_CHAR) :: weightFileTo2x25       ! Mapping weights for
   CHARACTER(LEN=MAX_CHAR) :: weightFileTo4x5        !  Nx grid and Fx grid
@@ -175,31 +200,39 @@ MODULE GeosFpInputsModule
   REAL*4                  :: lwiMask  (I025x03125,J025x03125)  ! LWI mask
   REAL*4                  :: frLandIce(I025x03125,J025x03125)  ! FRLANDICE data
   REAL*4                  :: frLand   (I025x03125,J025x03125)  ! FRLAND data
-  
+
 ! ----- (lzh,06/20/2014) -----------
   LOGICAL                 :: doNestCh05               ! Save nested CH grid?
   INTEGER                 :: I0_ch05,    J0_ch05      ! LL corner of CH grid
   INTEGER                 :: I1_ch05,    J1_ch05      ! UR corner of CH grid
-  INTEGER                 :: I_NestCh05, J_NestCh05   ! NestCh dimensions   
+  INTEGER                 :: I_NestCh05, J_NestCh05   ! NestCh dimensions
   LOGICAL                 :: doNestEu05               ! Save nested EU grid?
   INTEGER                 :: I0_eu05,    J0_eu05      ! LL corner of EU grid
   INTEGER                 :: I1_eu05,    J1_eu05      ! UR corner of EU grid
-  INTEGER                 :: I_NestEu05, J_NestEu05   ! NestNa dimensions   
+  INTEGER                 :: I_NestEu05, J_NestEu05   ! NestNa dimensions
   LOGICAL                 :: doNestNa05               ! Save nested NA grid?
   INTEGER                 :: I0_na05,    J0_na05      ! LL corner of NA grid
   INTEGER                 :: I1_na05,    J1_na05      ! UR corner of NA grid
-  INTEGER                 :: I_NestNa05, J_NestNa05   ! NestNa dimensions   
+  INTEGER                 :: I_NestNa05, J_NestNa05   ! NestNa dimensions
   LOGICAL                 :: doNestSe05               ! Save nested SE grid?
   INTEGER                 :: I0_se05,    J0_se05      ! LL corner of SE grid
   INTEGER                 :: I1_se05,    J1_se05      ! UR corner of SE grid
-  INTEGER                 :: I_NestSe05, J_NestSe05   ! NestSe dimensions   
+  INTEGER                 :: I_NestSe05, J_NestSe05   ! NestSe dimensions
+!(jxu, 2015/12/08, add nested Asia)
+  LOGICAL                 :: doNestAs05               ! Save nested Asia grid?
+  INTEGER                 :: I0_as05,    J0_as05      ! LL corner of IN grid
+  INTEGER                 :: I1_as05,    J1_as05      ! UR corner of IN grid
+  INTEGER                 :: I_NestAs05, J_NestAs05   ! NestAs dimensions
+!(jxu, end)
   LOGICAL                 :: do05x0625                ! Save out 0.5 x 0.625
 
   INTEGER                 :: fOut05NestCh             ! NC fId; output CH grid
   INTEGER                 :: fOut05NestEu             ! NC fId; output EU grid
   INTEGER                 :: fOut05NestNa             ! NC fId; output NA grid
   INTEGER                 :: fOut05NestSe             ! NC fId; output SE grid
-
+!(jxu, 2015/12/08, add nested Asia)
+  INTEGER                 :: fOut05NestAs             ! NC fId; output In grid
+!(jxu, end)
   CHARACTER(LEN=MAX_CHAR) :: dataTmplNestCh05           ! NstCh file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestCh05        ! NstCh temporary dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestCh05        ! NstCh data dir
@@ -212,18 +245,22 @@ MODULE GeosFpInputsModule
   CHARACTER(LEN=MAX_CHAR) :: dataTmplNestSe05           ! NstSe file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestSe05        ! NstSe temporary dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestSe05        ! NstSe data dir
-
+!(jxu, 2015/12/08, add nested Asia)
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestAs05           ! NstIn file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestAs05        ! NstIn temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestAs05        ! NstIn data dir
+!(jxu, end)
   CHARACTER(LEN=MAX_CHAR) :: weightFileTo05x0625      ! Mapping weights
-! ----- (finish edit) -----------  
+! ----- (finish edit) -----------
 !
 ! !PUBLIC MEMBER FUNCTIONS:
 !
-  PUBLIC  :: GeosFpInitialize 
+  PUBLIC  :: GeosFpInitialize
   PUBLIC  :: GeosFpCleanup
 !
 ! !PRIVATE MEMBER FUNCTIONS:
 !
-  PRIVATE :: ReadMappingWeights 
+  PRIVATE :: ReadMappingWeights
 !
 ! !REVISION HISTORY:
 !  30 Aug 2011 - R. Yantosca - Initial version, based on MerraInputsModule
@@ -256,7 +293,7 @@ MODULE GeosFpInputsModule
 ! !IROUTINE: GeosFpInitialize
 
 !
-! !DESCRIPTION: This routine deallocates all previously-allocated 
+! !DESCRIPTION: This routine deallocates all previously-allocated
 !  module arrays and pointer objects.
 !\\
 !\\
@@ -264,10 +301,10 @@ MODULE GeosFpInputsModule
 !
   SUBROUTINE GeosFpInitialize
 !
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 !  30 Aug 2011 - R. Yantosca - Initial version, based on MerraInputsModule
 !  21 Dec 2011 - R. Yantosca - Now also initialize a3Mins, a3MinsI, a1Mins
-!  11 Jan 2012 - R. Yantosca - Split fields from the tavg3_3d_cld_Nv and 
+!  11 Jan 2012 - R. Yantosca - Split fields from the tavg3_3d_cld_Nv and
 !                              tavg3_3d_Mst_Ne collections into multiple
 !                              netCDF output files.
 !  15 Feb 2012 - R. Yantosca - Read information about nested NA grid
@@ -285,7 +322,7 @@ MODULE GeosFpInputsModule
     !-----------------------------------------------------------------------
     ! Read the file with the date (passed from the Perl script "doGeos5")
     !-----------------------------------------------------------------------
-    
+
     ! Get day of year
     READ( 5, '(i8)', ERR=990 ) yyyymmdd
 
@@ -296,13 +333,13 @@ MODULE GeosFpInputsModule
     DO T = 1, TIMES_A1
        a1Mins(T)  = ( ( T - 1 ) * 60 ) + 30
     ENDDO
-   
+
     ! 3-hourly timestamps
     DO T = 1, TIMES_A3
        a3MinsI(T) = ( ( T - 1 ) * 180 )
        a3Mins (T) = ( ( T - 1 ) * 180 ) + 90
     ENDDO
-       
+
     !-----------------------------------------------------------------------
     ! Read the file with the filename templates and fields to pull
     !-----------------------------------------------------------------------
@@ -311,7 +348,7 @@ MODULE GeosFpInputsModule
     OPEN( IU_TXT, FILE='./GeosFpDriver.input', STATUS='old', ERR=999 )
 
     ! Read each line
-    DO 
+    DO
 
        ! Read a line from the file
        READ( IU_TXT, '(a)', END=100 ) line
@@ -360,7 +397,18 @@ MODULE GeosFpInputsModule
              READ( IU_TXT,   *,      ERR=999 ) I0_se, J0_se, I1_se, J1_se
              I_NestSe = I1_se - I0_se + 1
              J_NestSe = J1_se - J0_se + 1
-             
+
+          !(jxu, 2015/12/08, add nested Asia)
+          CASE( '==> Nested AS output' )
+             READ( IU_TXT,   *,      ERR=999 ) doNestAs
+             READ( IU_TXT, '(a)',    ERR=999 ) dataTmplNestAs
+             READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmplNestAs
+             READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmplNestAs
+             READ( IU_TXT,   *,      ERR=999 ) I0_as, J0_as, I1_as, J1_as
+             I_NestAs = I1_as - I0_as + 1
+             J_NestAs = J1_as - J0_as + 1
+         !(jxu, end)
+
           ! ----- (lzh, 06/20/2014) ---------------
           CASE( '==> Nested 0625 CH output' )
              READ( IU_TXT,   *,      ERR=999 ) doNestCh05
@@ -397,14 +445,33 @@ MODULE GeosFpInputsModule
              READ( IU_TXT,   *,      ERR=999 ) I0_se05, J0_se05, I1_se05, J1_se05
              I_NestSe05 = I1_se05 - I0_se05 + 1
              J_NestSe05 = J1_se05 - J0_se05 + 1
-          ! ----- (finish edit) ----------------------             
+
+          !(jxu, 2015/12/08, add nested Asia)
+          CASE( '==> Nested 0625 AS output' )
+             READ( IU_TXT,   *,      ERR=999 ) doNestAs05
+             READ( IU_TXT, '(a)',    ERR=999 ) dataTmplNestAs05
+             READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmplNestAs05
+             READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmplNestAs05
+             READ( IU_TXT,   *,      ERR=999 ) I0_as05, J0_as05, I1_as05, J1_as05
+             I_NestAs05 = I1_as05 - I0_as05 + 1
+             J_NestAs05 = J1_as05 - J0_as05 + 1
+          !(jxu, end)
+          ! ----- (finish edit) ----------------------
+
+          !(jxu, 2016/02/13, add 0.25 global)
+          CASE( '==> 0.25 x 0.3125 output' )
+             READ( IU_TXT,   *,      ERR=999 ) do025x03125
+             READ( IU_TXT, '(a)',    ERR=999 ) dataTmpl025x03125
+             READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmpl025x03125
+             READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmpl025x03125
+         !(jxu, end)
 
           CASE( '==> 2 x 2.5 output' )
              READ( IU_TXT,   *,      ERR=999 ) do2x25
              READ( IU_TXT, '(a)',    ERR=999 ) dataTmpl2x25
              READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmpl2x25
              READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmpl2x25
-             
+
           CASE( '==> 4 x 5 output' )
              READ( IU_TXT,   *,      ERR=999 ) do4x5
              READ( IU_TXT, '(a)',    ERR=999 ) dataTmpl4x5
@@ -436,11 +503,11 @@ MODULE GeosFpInputsModule
              READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_asm_Nv_file
              READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_asm_Nv_data
 
-          CASE( '==> tavg3_3d_cld_Nv' ) 
+          CASE( '==> tavg3_3d_cld_Nv' )
              READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_cld_Nv_file
              READ( IU_TXT, '(7x,a)', ERR=999 ) tavg3_3d_cld_Nv_data_c
              READ( IU_TXT, '(7x,a)', ERR=999 ) tavg3_3d_cld_Nv_data_d
-             
+
           CASE( '==> tavg3_3d_mst_Ne' )
              READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_mst_Ne_file
              READ( IU_TXT, '(a)',    ERR=999 ) tavg3_3d_mst_Ne_data
@@ -457,12 +524,12 @@ MODULE GeosFpInputsModule
              READ( IU_TXT, '(a)',    ERR=999 ) inst3_3d_asm_Nv_file
              READ( IU_TXT, '(a)',    ERR=999 ) inst3_3d_asm_Nv_data
 
-          CASE( '==> Mapping Weight Files' ) 
+          CASE( '==> Mapping Weight Files' )
              READ( IU_TXT, '(a)',    ERR=999 ) weightFileTo05x0625   !(lzh)
              READ( IU_TXT, '(a)',    ERR=999 ) weightFileTo2x25
              READ( IU_TXT, '(a)',    ERR=999 ) weightFileTo4x5
 
-          CASE( '==> Template Files' ) 
+          CASE( '==> Template Files' )
              READ( IU_TXT, '(a)',    ERR=999 ) templateFile
 
           CASE DEFAULT
@@ -472,8 +539,8 @@ MODULE GeosFpInputsModule
     ENDDO
 
     !-----------------------------------------------------------------------
-    ! Define the mapping weight objects for cloud regridding 
-    ! after reading the file 
+    ! Define the mapping weight objects for cloud regridding
+    ! after reading the file
     !-----------------------------------------------------------------------
 100 CONTINUE
 
@@ -481,10 +548,14 @@ MODULE GeosFpInputsModule
     CLOSE( IU_TXT )
 
     ! Define a convenience switch for the native grid
-    doNative = ( doNestCh .or. doNestEu .or. doNestNa .or. doNestSe )
-    
+    ! (jxu, 2015/12/08, add nested Asia by adding .or. do NestAs)
+    doNative = ( doNestCh .or. doNestEu .or. doNestNa .or. doNestSe .or. doNestAs .or. do025x03125)
+    !(jxu,end)  We add do 025x03125 to this native grid (Chi Li)
+
     ! (lzh, 06/20/2014)
-    do05x0625 = ( doNestCh05 .or. doNestEu05 .or. doNestNa05 .or. doNestSe05 )    
+    !(jxu, 2015/12/08, add nested Asia by adding .or. do NestAs)
+    do05x0625 = ( doNestCh05 .or. doNestEu05 .or. doNestNa05 .or. doNestSe05 .or. doNestAs05)
+    !(jxu,end)
 
     ! Mapping weights: native grid (use as placeholder for routines below)
     IF ( doNative ) THEN
@@ -499,20 +570,20 @@ MODULE GeosFpInputsModule
        CALL ReadMappingWeights( weightFileTo05x0625,                         &
                        I05x0625,      J05x0625,       nPts, mapTo05x0625 )
     ENDIF
-   
+
     ! Mapping weights to 2 x 2.5 grid
     IF ( do2x25 ) THEN
        nPts = ( I025x03125 / I2x25 ) + 2
        CALL ReadMappingWeights( weightFileTo2x25,                         &
                                 I2x25,      J2x25,       nPts, mapTo2x25 )
     ENDIF
-    
+
     ! (lzh,06/20/2014) Mapping weights to 0.5 x 0.625 grid
     IF ( do05x0625 ) THEN
        nPts = ( I025x03125 / I05x0625 ) + 2
        CALL ReadMappingWeights( weightFileTo05x0625,                         &
                        I05x0625,      J05x0625,       nPts, mapTo05x0625 )
-    ENDIF    
+    ENDIF
 
     ! Mapping weights to 4 x 5 grid
     IF ( do4x5 ) THEN
@@ -524,7 +595,7 @@ MODULE GeosFpInputsModule
     !-----------------------------------------------------------------------
     ! Read data from template files
     !-----------------------------------------------------------------------
-    
+
     ! FRLANDICE data (for SNOMAS regridding)
     CALL ReadTemplateFile( templateFile, lwiMask, frLand, frLandIce )
 
@@ -595,6 +666,11 @@ MODULE GeosFpInputsModule
        PRINT*, 'doNestSe        : ', doNestSe
        PRINT*, ' I0, J0, I1, J1 : ', I0_se, J0_se, I1_se, J1_se
        PRINT*, ' ISE, JSE       : ', I_NestSe, J_NestSe
+!(jxu, 2015/12/08, add nested Asia)
+       PRINT*, 'doNestAs        : ', doNestAs
+       PRINT*, ' I0, J0, I1, J1 : ', I0_as, J0_as, I1_as, J1_as
+       PRINT*, ' IIN, JIN       : ', I_NestAs, J_NestAs
+!(jxu, end)
 !! (lzh, 05/25/2014)
        PRINT*, 'doNestCh05        : ', doNestCh05
        PRINT*, ' I0, J0, I1, J1 : ', I0_ch05, J0_ch05, I1_ch05, J1_ch05
@@ -608,7 +684,15 @@ MODULE GeosFpInputsModule
        PRINT*, 'doNestSe05        : ', doNestSe05
        PRINT*, ' I0, J0, I1, J1 : ', I0_se05, J0_se05, I1_se05, J1_se05
        PRINT*, ' ISE, JSE       : ', I_NestSe05, J_NestSe05
-!! --end edit---------      
+!(jxu, 2015/12/08, add nested Asia)
+       PRINT*, 'doNestAs05        : ', doNestAs05
+       PRINT*, ' I0, J0, I1, J1 : ', I0_as05, J0_as05, I1_as05, J1_as05
+       PRINT*, ' IIN, JIN       : ', I_NestAs05, J_NestAs05
+!(jxu, end)
+!! --end edit---------
+       !(jxu, 2016/02/13, add 0.25 global)
+       PRINT*, 'do025x03125     : ', do025x03125
+       !(jxu, end)
        PRINT*, 'do2x25          : ', do2x25
        PRINT*, 'do4x5           : ', do4x5
        PRINT*, 'doMakeCn        : ', doMakeCn
@@ -625,6 +709,16 @@ MODULE GeosFpInputsModule
        PRINT*, 'dataTmplNestSe  : ', TRIM( dataTmplNestSe          )
        PRINT*, 'tempDirNestSe   : ', TRIM( tempDirTmplNestSe       )
        PRINT*, 'dataDirNestSe   : ', TRIM( dataDirTmplNestSe       )
+!(jxu, 2015/12/08, add nested Asia)
+       PRINT*, 'dataTmplNestAs  : ', TRIM( dataTmplNestAs          )
+       PRINT*, 'tempDirNestAs   : ', TRIM( tempDirTmplNestAs       )
+       PRINT*, 'dataDirNestAs   : ', TRIM( dataDirTmplNestAs       )
+!(jxu, end)
+!(jxu, 2016/02/13, add 0.25 global)
+       PRINT*, 'dataTmpl025x03125    : ', TRIM( dataTmpl025x03125            )
+       PRINT*, 'tempDirTmpl025x03125 : ', TRIM( tempDirTmpl025x03125         )
+       PRINT*, 'dataDirTmpl025x03125 : ', TRIM( dataDirTmpl025x03125         )
+!(jxu, end)
        PRINT*, 'dataTmpl2x25    : ', TRIM( dataTmpl2x25            )
        PRINT*, 'tempDirTmpl2x25 : ', TRIM( tempDirTmpl2x25         )
        PRINT*, 'dataDirTmpl2x25 : ', TRIM( dataDirTmpl2x25         )
@@ -689,7 +783,7 @@ MODULE GeosFpInputsModule
 !
 ! !IROUTINE: ReadMappingWeights
 !
-! !DESCRIPTION: This routine reads the mapping weights from the GEOS-5 
+! !DESCRIPTION: This routine reads the mapping weights from the GEOS-5
 !  0.5 x 0.667 grid to coarser resolution grids (e.g. 2 x 2.5, 4 x 5).
 !\\
 !\\
@@ -697,7 +791,7 @@ MODULE GeosFpInputsModule
 !
   SUBROUTINE ReadMappingWeights( fileName, IMX, JMX, nPts, map )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
     CHARACTER(LEN=*), INTENT(IN) :: fileName   ! Name of file w/ weight info
     INTEGER,          INTENT(IN) :: IMX, JMX   ! Lon & lat dims of coarse grid
@@ -712,7 +806,7 @@ MODULE GeosFpInputsModule
 !   it and initialize it here.  The user is responsible for deallocating
 !   it elsewhere.
 !
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 !  25 Oct 2011 - R. Yantosca - Initial version, based on MERRA
 !  06 Jan 2012 - R. Yantosca - Now can define a placeholder map object
 !                              for the native grid
@@ -730,7 +824,7 @@ MODULE GeosFpInputsModule
 
        ! Allocate space for the MAP variable
        ALLOCATE( map( IMX, JMX ), STAT=rc )
-  
+
        ! Loop over lats & lons
        DO J = 1, JMX
        DO I = 1, IMX
@@ -754,7 +848,7 @@ MODULE GeosFpInputsModule
     !========================================================================
     ! Special handling: fill placeholder map object for native grid
     !========================================================================
-    IF ( IMX == I025x03125 .and. JMX == J025x03125 ) THEN 
+    IF ( IMX == I025x03125 .and. JMX == J025x03125 ) THEN
 
        ! Here the fine grid is equal to the coarse grid,
        ! so xInd=1, yInd=1, and weight=1.0
@@ -776,7 +870,7 @@ MODULE GeosFpInputsModule
 
     ! Pick the format string for the various resolutions (as created by
     ! IDL program ctm_getweight.pro).  The format string length varies so that
-    ! we don't introduce any extraneous values at 
+    ! we don't introduce any extraneous values at
     ! introdu
     IF ( IMX == 72 .and. JMX == 46 ) THEN
        fmtStr = '(3x,12f7.3)'                           ! 4 x 5
@@ -785,19 +879,19 @@ MODULE GeosFpInputsModule
     ELSE IF ( IMX == 288 .and. JMX == 181 ) THEN
        fmtStr = '(3x,12f9.5)'                           ! 1 x 1.25
     ELSE IF ( IMX == 576 .and. JMX == 361 ) THEN
-       fmtStr = '(3x,12f8.4)'                    ! 0.5 x 0.625 !(lzh,06/20/2014)       
+       fmtStr = '(3x,12f8.4)'                    ! 0.5 x 0.625 !(lzh,06/20/2014)
     ELSE IF ( IMX == 360 .and. JMX == 181 ) THEN
-       fmtStr = '(3x,12f8.4)'                           ! 1 x 1           
+       fmtStr = '(3x,12f8.4)'                           ! 1 x 1
     ENDIF
 
     ! Open file with weights
     OPEN( 10, FILE=TRIM( fileName ), IOSTAT=rc )
-    IF ( rc /= 0 ) THEN 
+    IF ( rc /= 0 ) THEN
        WRITE( 6, '(a)' ) 'Cannot open ' // TRIM( fileName )
     ENDIF
 
     ! Read data
-    DO 
+    DO
 
        ! Read "coarse" grid box indices to file
        READ( 10, '(2i4)', IOSTAT=rc ) I, J
@@ -808,7 +902,7 @@ MODULE GeosFpInputsModule
        ! Convert from IDL notation to F90 notation
        I = I + 1
        J = J + 1
-     
+
        ! Read lon & lat indices of "fine" boxes that comprise a "coarse" box
        READ( 10, '(3x,12i4)'   ) ( map(I,J)%xInd(Nx), Nx=1,nPts )
        READ( 10, '(3x,12i4)'   ) ( map(I,J)%yInd(Ny), Ny=1,nPts )
@@ -817,7 +911,7 @@ MODULE GeosFpInputsModule
        map(I,J)%xInd(:) =  map(I,J)%xInd(:) + 1
        map(I,J)%yInd(:) =  map(I,J)%yInd(:) + 1
 
-       ! Read mapping weights (fraction of each "fine" box that 
+       ! Read mapping weights (fraction of each "fine" box that
        ! lies within each "coarse" box
        READ( 10, fmtStr ) (( map(I,J)%weight(Nx,Ny), Nx=1,nPts ), Ny=1,nPts )
 
@@ -853,8 +947,8 @@ MODULE GeosFpInputsModule
     REAL*4,           INTENT(OUT) :: frLand   (:,:)
     REAL*4,           INTENT(OUT) :: frLandIce(:,:)
 !
-! !REVISION HISTORY: 
-!  05 Jan 2012 - R. Yantosca - Initial version 
+! !REVISION HISTORY:
+!  05 Jan 2012 - R. Yantosca - Initial version
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -869,11 +963,11 @@ MODULE GeosFpInputsModule
 
     ! Open netCDF file for input
     CALL NcOp_Rd( fId, TRIM( fileName ) )
-    
+
     ! netCDF indices (we know that the file is 0.25 x 0.3125)
     st3d = (/ 1,          1,          1 /)
     ct3d = (/ I025x03125, J025x03125, 1 /)
-    
+
     ! Read data
     CALL NcRd( lwiMask,   fId, 'LWI',      st3d, ct3d )
     CALL NcRd( frLand,    fId, 'FRLAND',   st3d, ct3d )
@@ -891,7 +985,7 @@ MODULE GeosFpInputsModule
 !
 ! !IROUTINE: GeosFpCleanup
 !
-! !DESCRIPTION: This routine deallocates all previously-allocated 
+! !DESCRIPTION: This routine deallocates all previously-allocated
 !  module arrays and pointer objects.
 !\\
 !\\
@@ -899,7 +993,7 @@ MODULE GeosFpInputsModule
 !
   SUBROUTINE GeosFpCleanup
 !
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 !  25 Oct 2011 - R. Yantosca - Initial version, based on MERRA
 !  06 Jan 2012 - R. Yantosca - Now deallocate the native-grid map object
 !EOP
@@ -915,7 +1009,7 @@ MODULE GeosFpInputsModule
     IF ( doNative ) THEN
 
        ! Echo info
-       IF ( VERBOSE ) WRITE( 6, 100 ) 
+       IF ( VERBOSE ) WRITE( 6, 100 )
 100    FORMAT( 'Deallocating mapping weight objects for native grid' )
 
        ! Loop over 2 x 2.5 boxes
@@ -925,14 +1019,14 @@ MODULE GeosFpInputsModule
           !-------------------------------------------------
           ! Deallocate Nx grid to 2 x 2.5 object fields
           !-------------------------------------------------
-          IF ( ASSOCIATED( mapNative(I,J)%xInd  ) ) THEN 
+          IF ( ASSOCIATED( mapNative(I,J)%xInd  ) ) THEN
              DEALLOCATE( mapNative(I,J)%xInd )
           ENDIF
- 
-          IF ( ASSOCIATED( mapNative(I,J)%yInd  ) ) THEN 
+
+          IF ( ASSOCIATED( mapNative(I,J)%yInd  ) ) THEN
              DEALLOCATE( mapNative(I,J)%yInd )
           ENDIF
-          
+
           IF ( ASSOCIATED( mapNative(I,J)%weight) ) THEN
              DEALLOCATE( mapNative(I,J)%weight )
           ENDIF
@@ -943,7 +1037,7 @@ MODULE GeosFpInputsModule
        ! Free the objects themselves
        IF ( ASSOCIATED( mapNative ) ) DEALLOCATE( mapNative )
     ENDIF
-    
+
 !----- (lzh, 06/20/2014)-----
     !======================================================================
     ! Deallocate 0.5x0.625 mapping weight objects
@@ -951,7 +1045,7 @@ MODULE GeosFpInputsModule
     IF ( do05x0625 ) THEN
 
        ! Echo info
-       IF ( VERBOSE ) WRITE( 6, 101 ) 
+       IF ( VERBOSE ) WRITE( 6, 101 )
 101    FORMAT( 'Deallocating mapping weight objects for 0.5 x 0.625 grid' )
 
        ! Loop over 0.5 x 0.625 boxes
@@ -961,14 +1055,14 @@ MODULE GeosFpInputsModule
           !-------------------------------------------------
           ! Deallocate Nx grid to 0.5 x 0.625 object fields
           !-------------------------------------------------
-          IF ( ASSOCIATED( mapTo05x0625(I,J)%xInd  ) ) THEN 
+          IF ( ASSOCIATED( mapTo05x0625(I,J)%xInd  ) ) THEN
              DEALLOCATE( mapTo05x0625(I,J)%xInd )
           ENDIF
- 
-          IF ( ASSOCIATED( mapTo05x0625(I,J)%yInd  ) ) THEN 
+
+          IF ( ASSOCIATED( mapTo05x0625(I,J)%yInd  ) ) THEN
              DEALLOCATE( mapTo05x0625(I,J)%yInd )
           ENDIF
-          
+
           IF ( ASSOCIATED( mapTo05x0625(I,J)%weight) ) THEN
              DEALLOCATE( mapTo05x0625(I,J)%weight )
           ENDIF
@@ -979,7 +1073,7 @@ MODULE GeosFpInputsModule
        ! Free the objects themselves
        IF ( ASSOCIATED( mapTo05x0625 ) ) DEALLOCATE( mapTo05x0625 )
     ENDIF
-!-----(finish edit)----------   
+!-----(finish edit)----------
 
     !======================================================================
     ! Deallocate 2x25 mapping weight objects
@@ -987,7 +1081,7 @@ MODULE GeosFpInputsModule
     IF ( do2x25 ) THEN
 
        ! Echo info
-       IF ( VERBOSE ) WRITE( 6, 110 ) 
+       IF ( VERBOSE ) WRITE( 6, 110 )
 110    FORMAT( 'Deallocating mapping weight objects for 2 x 2.5 grid' )
 
        ! Loop over 2 x 2.5 boxes
@@ -997,14 +1091,14 @@ MODULE GeosFpInputsModule
           !-------------------------------------------------
           ! Deallocate Nx grid to 2 x 2.5 object fields
           !-------------------------------------------------
-          IF ( ASSOCIATED( mapTo2x25(I,J)%xInd  ) ) THEN 
+          IF ( ASSOCIATED( mapTo2x25(I,J)%xInd  ) ) THEN
              DEALLOCATE( mapTo2x25(I,J)%xInd )
           ENDIF
- 
-          IF ( ASSOCIATED( mapTo2x25(I,J)%yInd  ) ) THEN 
+
+          IF ( ASSOCIATED( mapTo2x25(I,J)%yInd  ) ) THEN
              DEALLOCATE( mapTo2x25(I,J)%yInd )
           ENDIF
-          
+
           IF ( ASSOCIATED( mapTo2x25(I,J)%weight) ) THEN
              DEALLOCATE( mapTo2x25(I,J)%weight )
           ENDIF
@@ -1021,7 +1115,7 @@ MODULE GeosFpInputsModule
     !======================================================================
     IF ( do4x5 ) THEN
 
-       IF ( VERBOSE ) WRITE( 6, 120 ) 
+       IF ( VERBOSE ) WRITE( 6, 120 )
 120    FORMAT( 'Deallocating mapping weight objects for 4 x 5 grid' )
 
        ! Loop over 4 x 5 boxes
@@ -1031,14 +1125,14 @@ MODULE GeosFpInputsModule
           !-------------------------------------------------
           ! Deallocate Nx grid to 4x5 object fields
           !-------------------------------------------------
-          IF ( ASSOCIATED( mapTo4x5(I,J)%xInd  ) ) THEN 
+          IF ( ASSOCIATED( mapTo4x5(I,J)%xInd  ) ) THEN
              DEALLOCATE( mapTo4x5(I,J)%xInd )
           ENDIF
- 
-          IF ( ASSOCIATED( mapTo4x5(I,J)%yInd  ) ) THEN 
+
+          IF ( ASSOCIATED( mapTo4x5(I,J)%yInd  ) ) THEN
              DEALLOCATE( mapTo4x5(I,J)%yInd )
           ENDIF
-          
+
           IF ( ASSOCIATED( mapTo4x5(I,J)%weight) ) THEN
              DEALLOCATE( mapTo4x5(I,J)%weight )
           ENDIF

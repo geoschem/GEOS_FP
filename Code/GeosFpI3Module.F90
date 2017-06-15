@@ -5,14 +5,14 @@
 !
 ! !MODULE: GeosFpI3Module
 !
-! !DESCRIPTION: Module GeosFpI3Module contains routines to create the 
+! !DESCRIPTION: Module GeosFpI3Module contains routines to create the
 !  GEOS-Chem instantaneous 3-hr data files from the GEOS-FP raw data.
 !\\
 !\\
-! !INTERFACE: 
+! !INTERFACE:
 !
 MODULE GeosFpI3Module
-! 
+!
 ! !USES:
 !
   ! GEOS-5.7.x data modules
@@ -26,10 +26,10 @@ MODULE GeosFpI3Module
   USE m_netcdf_io_define
   USE m_netcdf_io_write
   USE m_netcdf_io_close
-  
+
   ! Modules for reading netCDF
   USE m_netcdf_io_open
-  USE m_netcdf_io_close     
+  USE m_netcdf_io_close
   USE m_netcdf_io_get_dimlen
   USE m_netcdf_io_read
 
@@ -70,7 +70,7 @@ MODULE GeosFpI3Module
 !
 ! !IROUTINE: NcOutFileDef
 !
-! !DESCRIPTION: Subroutine NcOutFileDef pre-defines variable names and 
+! !DESCRIPTION: Subroutine NcOutFileDef pre-defines variable names and
 !  attributes that will be added to the netCDF output files.
 !\\
 !\\
@@ -81,7 +81,7 @@ MODULE GeosFpI3Module
                            gridName, outFileName, fOut )
 !
 ! !INPUT PARAMETERS:
-! 
+!
     INTEGER,          INTENT(IN)    :: X             ! Longitude dimension
     INTEGER,          INTENT(IN)    :: Y             ! Latitude dimension
     INTEGER,          INTENT(IN)    :: Z             ! Latitude dimension
@@ -97,7 +97,7 @@ MODULE GeosFpI3Module
 !
     INTEGER,          INTENT(INOUT) :: fOut          ! Output netCDF file ID
 !
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 !  03 Jan 2012 - R. Yantosca - Initial version, based on GeosFpCnModule
 !  04 Jan 2012 - R. Yantosca - Add extra global attributes
 !  01 Feb 2012 - R. Yantosca - Make all global attribute names lowercase
@@ -119,7 +119,7 @@ MODULE GeosFpI3Module
     CHARACTER(LEN=255) :: delta_t, begin_d, begin_t, incr,  msg, cal
     INTEGER            :: idLon,   idLat,   idLev,   idAp
     INTEGER            :: idBp,    idTime,  vId,     omode
-
+    LOGICAL            :: is_nc4
     ! Arrays
     INTEGER            :: var1(1), var3(3), var4(4)
 
@@ -127,7 +127,7 @@ MODULE GeosFpI3Module
     ! %%% BEGINNING OF NETCDF DEFINITION SECTION %%%
     !=========================================================================
 
-    ! Echo info    
+    ! Echo info
     msg = '%%%%%% ENTERING ROUTINE NcOutFileDef %%%%%%'
     WRITE( IU_LOG, '(a)' ) '%%%'
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
@@ -136,8 +136,10 @@ MODULE GeosFpI3Module
     WRITE( 6, 100 ) TRIM( gridName )
 100 FORMAT ( '%%% Defining netCDF file vars & attrs for ', a' grid' )
 
+    is_nc4 = .TRUE.   !Output nc4 now to accomodate large file size for global 0.25x0.3125 data (Chi Li)
+
     ! Open netCDF file for writing
-    CALL NcCr_Wr( fOut, TRIM( outFileName ) )
+    CALL NcCr_Wr( fOut, TRIM( outFileName ), WRITE_NC4=is_nc4 )
 
     ! Turn filling off
     CALL NcSetFill( fOut, NF_NOFILL, omode )
@@ -145,7 +147,7 @@ MODULE GeosFpI3Module
     !-------------------------------------------------------------------------
     ! Define global attributes and filling mode
     !-------------------------------------------------------------------------
-  
+
     ! Title string
     lName = 'GEOS-FP instantaneous 3-hour parameters (I3), processed for GEOS-Chem input'
     CALL NcDef_Glob_Attributes( fOut, 'Title',                TRIM( lName ) )
@@ -153,15 +155,15 @@ MODULE GeosFpI3Module
     ! Contact
     lName = "GEOS-Chem Support Team (geos-chem-support@as.harvard.edu)"
     CALL NcDef_Glob_Attributes( fOut, 'Contact',              TRIM( lName ) )
-                                                              
-    ! References                                              
-    lName = "www.geos-chem.org; wiki.geos-chem.org"           
+
+    ! References
+    lName = "www.geos-chem.org; wiki.geos-chem.org"
     CALL NcDef_Glob_Attributes( fOut, 'References',           TRIM( lName ) )
-                                                              
-    ! Filename                                                
-    lName = NotDir( outFileName )                             
+
+    ! Filename
+    lName = NotDir( outFileName )
     CALL NcDef_Glob_Attributes( fOut, 'Filename',             TRIM( lName ) )
-    
+
     ! History
     sysTime = SystemTimeStamp()
     lName = 'File generated on: ' // TRIM( sysTime )
@@ -170,57 +172,57 @@ MODULE GeosFpI3Module
     CALL NcDef_Glob_Attributes( fOut, 'ModificationDateTime', TRIM( lName ) )
 
     ! Format
-    lName = "NetCDF-3" ;
+    lName = "NetCDF-4" ; !(jxu, 2015/09/004, convert nc3 to nc4)
     CALL NcDef_Glob_Attributes( fOut, 'Format' ,              TRIM( lName ) )
-                                                              
-    ! Format                                                  
-    lName = "global" ;                                        
+
+    ! Format
+    lName = "global" ;
     CALL NcDef_Glob_Attributes( fOut, 'SpatialCoverage',      TRIM( lName ) )
-                                                              
-    ! Conventions                                             
-    lName = 'COARDS'                                          
+
+    ! Conventions
+    lName = 'COARDS'
     CALL NcDef_Glob_Attributes( fOut, 'Conventions',          TRIM( lName ) )
-                                                              
-    ! Version                                                 
-    lName = 'GEOS-FP'                                        
+
+    ! Version
+    lName = 'GEOS-FP'
     CALL NcDef_Glob_Attributes( fOut, 'Version',              TRIM( lName ) )
-                                                              
-    ! Model                                                   
-    lName = 'GEOS-5'                                         
+
+    ! Model
+    lName = 'GEOS-5'
     CALL NcDef_Glob_Attributes( fOut, 'Model',                TRIM( lName ) )
-                                                              
-    ! NLayers                                                 
-    lName = '72'                                              
+
+    ! NLayers
+    lName = '72'
     CALL NcDef_Glob_Attributes( fOut, 'Nlayers',              TRIM( lName ) )
-                                                              
+
     ! Start Date
-    lName = yyyymmdd_string                                     
+    lName = yyyymmdd_string
     CALL NcDef_Glob_Attributes( fOut, 'Start_Date',           TRIM( lName ) )
-                                                              
-    ! Start Time                                              
-    lName = '00:00:00.0'                                      
+
+    ! Start Time
+    lName = '00:00:00.0'
     CALL NcDef_Glob_Attributes( fOut, 'Start_Time',           TRIM( lName ) )
-                                                              
+
     ! End Date
     lName = yyyymmdd_string
     CALL NcDef_Glob_Attributes( fOut, 'End_Date',             TRIM( lName ) )
-                                                              
-    ! End Time                                                
+
+    ! End Time
     lName = '23:59:59.99999'
     CALL NcDef_Glob_Attributes( fOut, 'End_Time',             TRIM( lName ) )
-                                                              
-    ! Delta-time                                              
-    lName = '030000'                                          
+
+    ! Delta-time
+    lName = '030000'
     CALL NcDef_Glob_Attributes( fOut, 'Delta_Time',           TRIM( lName ) )
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
-       CASE( 'native', 'nested CH', 'nested EU', 'nested NA', 'nested SE' )
+       CASE( 'native', 'nested CH', 'nested EU', 'nested NA', 'nested SE' , 'nested IN', '0.25 x 0.3125 global')
           DI = '0.3125'
           DJ = '0.25'
 !       CASE ( 'nested 0.5 x 0.625' )
 ! (lzh,06/21/2014)
-       CASE( 'nested CH 05', 'nested EU 05', 'nested NA 05', 'nested SE 05' )
+       CASE( 'nested CH 05', 'nested EU 05', 'nested NA 05', 'nested SE 05' , 'nested IN 05')
           DI = '0.625'
           DJ = '0.5'
        CASE( '2 x 2.5 global' )
@@ -238,7 +240,7 @@ MODULE GeosFpI3Module
     CALL NcDef_Glob_Attributes( fOut, 'Delta_Lat',            TRIM( DJ    ) )
 
     !-------------------------------------------------------------------------
-    ! Define dimensions and index arrays.  NOTE: COARDS specifies that index 
+    ! Define dimensions and index arrays.  NOTE: COARDS specifies that index
     ! arrays will have the same names as the dimensions that define them.
     !-------------------------------------------------------------------------
 
@@ -250,7 +252,6 @@ MODULE GeosFpI3Module
 
     ! Time index array
     var1    = (/ idTime /)
-    vId     = 0
     cal     = 'gregorian'
     lName   = 'time'
     units   = UnitsForTime( yyyymmdd )
@@ -261,33 +262,30 @@ MODULE GeosFpI3Module
     CALL NcDef_Variable      ( fOut, 'time', NF_INT,  1, var1, vId           )
     CALL NcDef_Var_Attributes( fOut, vId, 'calendar',       TRIM( cal     )  )
     CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName   )  )
-    CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units   )  ) 
-    CALL NcDef_Var_Attributes( fOut, vId, 'delta_t',        TRIM( delta_t )  ) 
+    CALL NcDef_Var_Attributes( fOut, vId, 'units',          TRIM( units   )  )
+    CALL NcDef_Var_Attributes( fOut, vId, 'delta_t',        TRIM( delta_t )  )
     CALL NcDef_Var_Attributes( fOut, vId, 'begin_date',     TRIM( begin_d )  )
     CALL NcDef_Var_Attributes( fOut, vId, 'begin_time',     TRIM( begin_t )  )
     CALL NcDef_Var_Attributes( fOut, vId, 'time_increment', TRIM( incr    )  )
 
     ! Level index array
     var1    = (/ idLev /)
-    vId     = vId + 1
     lName   = 'levels'
     units   = '1'
     CALL NcDef_Variable      ( fOut, 'lev', NF_FLOAT, 1, var1, vId           )
     CALL NcDef_Var_attributes( fOut, vId, 'long_name',      TRIM( lName )    )
-    CALL NcDef_Var_attributes( fOut, vId, 'units',          TRIM( units )    ) 
+    CALL NcDef_Var_attributes( fOut, vId, 'units',          TRIM( units )    )
 
     ! Latitude index array
     var1    = (/ idLat /)
-    vId     = vId + 1
     lName   = 'latitude'
     units   = 'degrees_north'
     CALL NcDef_Variable      ( fOut, 'lat', NF_FLOAT, 1, var1, vId           )
     CALL NcDef_Var_attributes( fOut, vId, 'long_name',      TRIM( lName )    )
-    CALL NcDef_Var_attributes( fOut, vId, 'units',          TRIM( units )    ) 
+    CALL NcDef_Var_attributes( fOut, vId, 'units',          TRIM( units )    )
 
     ! Longitude index array
     var1    = (/ idLon /)
-    vId     = vId + 1
     lName   = 'longitude'
     units   = 'degrees_east'
     CALL NcDef_Variable      ( fOut, 'lon', NF_FLOAT, 1, var1, vId           )
@@ -300,9 +298,9 @@ MODULE GeosFpI3Module
 
     ! PS
     IF ( StrPos( 'PS', inst3_3d_asm_Nv_Data ) >= 0 ) THEN
-       var3  = (/ idLon, idLat, idTime /)    
-       vId   = vId + 1
-       lName = 'Surface pressure' 
+       var3  = (/ idLon, idLat, idTime /)
+       
+       lName = 'Surface pressure'
        units = 'hPa'
        gamap = 'GMAO-2D'
        CALL NcDef_Variable      ( fOut, 'PS',  NF_FLOAT, 3, var3, vId        )
@@ -317,9 +315,9 @@ MODULE GeosFpI3Module
 
     ! PV (aka EPV)
     IF ( StrPos( 'PV', inst3_3d_asm_Nv_Data ) >= 0 ) THEN
-       var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
-       lName = 'Ertel potential vorticity' 
+       var4  = (/ idLon, idLat, idLev, idTime /)
+       
+       lName = 'Ertel potential vorticity'
        units = 'K m-2 kg-1 s-1'
        gamap = 'GMAO-3D$'
        CALL NcDef_Variable      ( fOut, 'PV', NF_FLOAT, 4, var4, vId        )
@@ -334,9 +332,9 @@ MODULE GeosFpI3Module
 
     ! QV
     IF ( StrPos( 'QV', inst3_3d_asm_Nv_Data ) >= 0 ) THEN
-       var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
-       lName = 'Specific humidity' 
+       var4  = (/ idLon, idLat, idLev, idTime /)
+       
+       lName = 'Specific humidity'
        units = 'kg kg-1'
        gamap = 'GMAO-3D$'
        CALL NcDef_Variable      ( fOut, 'QV', NF_FLOAT, 4, var4, vId         )
@@ -351,9 +349,9 @@ MODULE GeosFpI3Module
 
     ! T
     IF ( StrPos( 'T', inst3_3d_asm_Nv_Data ) >= 0 ) THEN
-       var4  = (/ idLon, idLat, idLev, idTime /)    
-       vId   = vId + 1
-       lName = 'Temperature' 
+       var4  = (/ idLon, idLat, idLev, idTime /)
+       
+       lName = 'Temperature'
        units = 'K'
        gamap = 'GMAO-3D$'
        CALL NcDef_Variable      ( fOut, 'T', NF_FLOAT, 4, var4, vId    )
@@ -379,7 +377,7 @@ MODULE GeosFpI3Module
     CALL NcWr( zMid, fOut, 'lev',  (/ 1 /), (/ Z   /) )
     CALL NcWr( time, fOut, 'time', (/ 1 /), (/ T   /) )
 
-    ! Echo info    
+    ! Echo info
     msg = '%%%%%% LEAVING ROUTINE NcOutFileDef %%%%%%'
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
@@ -392,11 +390,11 @@ MODULE GeosFpI3Module
 !
 ! !IROUTINE: GeosFpMakeI3
 !
-! !DESCRIPTION: Routine GeosFpMakeI3 is the the driver routine for 
+! !DESCRIPTION: Routine GeosFpMakeI3 is the the driver routine for
 ! \begin{enumerate}
-! \item Extracting instantaneous 3-hr data fields (surface values) from 
+! \item Extracting instantaneous 3-hr data fields (surface values) from
 !       the GEOS-FP raw data files (netCDF4 format),
-! \item Regridding the fields to GEOS-Chem data resolution, and 
+! \item Regridding the fields to GEOS-Chem data resolution, and
 ! \item Saving the regridded data to netCDF format.
 ! \end{enumerate}
 ! This routine is called directly from the main program GeosFpDriver.F90
@@ -406,7 +404,7 @@ MODULE GeosFpI3Module
 !
   SUBROUTINE GeosFpMakeI3
 !
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 !  03 Jan 2012 - Initial version, based on MERRA
 !  11 Jan 2012 - R. Yantosca - Now call StrCompress to remove white space
 !                              in the input file name.
@@ -494,7 +492,7 @@ MODULE GeosFpI3Module
     IF ( doNestNa ) THEN
        fName = TRIM( tempDirTmplNestNa ) // TRIM( dataTmplNestNa )
        gName = 'nested NA'
-       CALL ExpandDate  ( fName,     yyyymmdd,     000000                 )    
+       CALL ExpandDate  ( fName,     yyyymmdd,     000000                 )
        CALL StrRepl     ( fName,     '%%%%%%',     'I3    '               )
        CALL StrCompress ( fName,     RemoveAll=.TRUE.                     )
        CALL NcOutFileDef( I_NestNa,  J_NestNa,     L025x03125, TIMES_A3,   &
@@ -508,7 +506,7 @@ MODULE GeosFpI3Module
     IF ( doNestSe ) THEN
        fName = TRIM( tempDirTmplNestSe ) // TRIM( dataTmplNestSe )
        gName = 'nested SE'
-       CALL ExpandDate  ( fName,     yyyymmdd,     000000                 )    
+       CALL ExpandDate  ( fName,     yyyymmdd,     000000                 )
        CALL StrRepl     ( fName,     '%%%%%%',     'I3    '               )
        CALL StrCompress ( fName,     RemoveAll=.TRUE.                     )
        CALL NcOutFileDef( I_NestSe,  J_NestSe,     L025x03125, TIMES_A3,   &
@@ -517,6 +515,36 @@ MODULE GeosFpI3Module
                           zMid_025x03125,                      a3MinsI,    &
                           gName,     fName,        fOutNestSe             )
     ENDIF
+
+    !(jxu, 2015/12/08, add nested Asia)
+    ! Open nested IN output file
+    IF ( doNestAs ) THEN
+       fName = TRIM( tempDirTmplNestAs ) // TRIM( dataTmplNestAs )
+       gName = 'nested IN'
+       CALL ExpandDate  ( fName,     yyyymmdd,     000000                 )
+       CALL StrRepl     ( fName,     '%%%%%%',     'I3    '               )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                     )
+       CALL NcOutFileDef( I_NestAs,  J_NestAs,     L025x03125, TIMES_A3,   &
+                          xMid_025x03125(I0_as:I1_as),                     &
+                          yMid_025x03125(J0_as:J1_as),                     &
+                          zMid_025x03125,                      a3MinsI,    &
+                          gName,     fName,        fOutNestAs             )
+    ENDIF
+    !(jxu, end)
+
+    !(jxu, 2016/02/13, add 0.25 global)
+    ! Open 0.25x0.3125 output file
+    IF ( do025x03125 ) THEN
+       fName = TRIM( tempDirTmpl025x03125 ) // TRIM( dataTmpl025x03125 )
+       gName = '0.25x0.3125 global'
+       CALL ExpandDate  ( fName,     yyyymmdd,     000000                )
+       CALL StrRepl     ( fName,     '%%%%%%',     'I3    '              )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.                     )
+       CALL NcOutFileDef( I025x03125,     J025x03125,        L025x03125,      TIMES_A3,  &
+                          xMid_025x03125, yMid_025x03125, zMid_025x03125,  a3MinsI,    &
+                          gName,     fName,        fOut025x03125              )
+    ENDIF
+    !(jxu, end)
 
     ! Open 2 x 2.5 output file
     IF ( do2x25 ) THEN
@@ -530,7 +558,7 @@ MODULE GeosFpI3Module
                           gName,     fName   ,     fOut2x25               )
     ENDIF
 
-    ! Open 4 x 5 output file 
+    ! Open 4 x 5 output file
     IF ( do4x5 ) THEN
        fname = TRIM( tempDirTmpl4x5 ) // TRIM( dataTmpl4x5 )
        gName = '4 x 5 global'
@@ -541,7 +569,7 @@ MODULE GeosFpI3Module
                           xMid_4x5,  nc_yMid_4x5,  zMid_4x5,   a3MinsI,    &
                           gName,     fName,        fOut4x5                )
     ENDIF
-    
+
     !----- (lzh,06/20/2014)------------
     ! Open nested 0625 CH output file
     IF ( doNestCh05 ) THEN
@@ -598,11 +626,28 @@ MODULE GeosFpI3Module
                           zMid_05x0625,                a3MinsI,    &
                           gName,    fName,      fOut05NestSe         )
     ENDIF
-    !------(finish edit)---------------    
+
+    !(jxu, 2015/12/08, add nested Asia)
+    ! Open nested IN output file
+    IF ( doNestAs05 ) THEN
+       fName = TRIM( tempDirTmplNestAs05 ) // TRIM( dataTmplNestAs05 )
+       gName = 'nested IN 05'
+       CALL ExpandDate  ( fName,     yyyymmdd,     000000      )
+       CALL StrRepl     ( fName,     '%%%%%%',     'I3    '    )
+       CALL StrCompress ( fName,     RemoveAll=.TRUE.          )
+       CALL NcOutFileDef( I_NestAs05,  J_NestAs05, L05x0625, TIMES_A3,  &
+                          xMid_05x0625(I0_as05:I1_as05),          &
+                          yMid_05x0625(J0_as05:J1_as05),          &
+                          zMid_05x0625,                a3MinsI,    &
+                          gName,    fName,      fOut05NestAs         )
+    ENDIF
+    !(jxu, end)
+
+    !------(finish edit)---------------
 
     ! Regrid fields from the various raw data files
     CALL ProcessI33dAsmNv( nFields, fields )
-    
+
     !=======================================================================
     ! Cleanup & quit
     !=======================================================================
@@ -616,6 +661,12 @@ MODULE GeosFpI3Module
     IF ( doNestEu ) CALL NcCl( fOutNestEu )
     IF ( doNestNa ) CALL NcCl( fOutNestNa )
     IF ( doNestSe ) CALL NcCl( fOutNestSe )
+    !(jxu, 2015/12/08, add nested Asia)
+    IF ( doNestAs ) CALL NcCl( fOutNestAs )
+    !(jxu, end)
+    !(jxu, 2016/02/13, add 0.25 global)
+    IF ( do025x03125   ) CALL NcCl( fOut025x03125   )
+    !(jxu, end)
     IF ( do2x25   ) CALL NcCl( fOut2x25   )
     IF ( do4x5    ) CALL NcCl( fOut4x5    )
     ! (lzh, 06/21/2014) add nested 0.5x0.625
@@ -623,7 +674,10 @@ MODULE GeosFpI3Module
     IF ( doNestEu05 ) CALL NcCl( fOut05NestEu )
     IF ( doNestNa05 ) CALL NcCl( fOut05NestNa )
     IF ( doNestSe05 ) CALL NcCl( fOut05NestSe )
-    
+    !(jxu, 2015/12/08, add nested Asia)
+    IF ( doNestAs05 ) CALL NcCl( fOut05NestAs )
+    !(jxu, end)
+
     ! Echo info
     msg = '%%%%%%%%%% LEAVING ROUTINE GeosFpMakeI3 %%%%%%%%%%'
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
@@ -637,7 +691,7 @@ MODULE GeosFpI3Module
 !
 ! !IROUTINE: ProcessI33dAsmNv
 !
-! !DESCRIPTION: Subroutine  ProcessI33dAsmNv regrids the GEOS-FP met fields 
+! !DESCRIPTION: Subroutine  ProcessI33dAsmNv regrids the GEOS-FP met fields
 !  from the "inst3t\_3d\_asm\_Nv" file and saves to netCDF format.
 !\\
 !\\
@@ -650,7 +704,7 @@ MODULE GeosFpI3Module
     INTEGER,          INTENT(IN) :: nFields     ! # of fields to process
     CHARACTER(LEN=*), INTENT(IN) :: fields(:)   ! List of field names
 !
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 !  04 Jan 2012 - R. Yantosca - Initial version, based on MERRA
 !  09 Jan 2012 - R. Yantosca - Now close input file w/in the hourly do loop
 !  09 Jan 2012 - R. Yantosca - Remove fOut* arguments, they are passed via
@@ -658,8 +712,8 @@ MODULE GeosFpI3Module
 !  10 Jan 2012 - R. Yantosca - Activate parallel loop over vertical levels
 !  17 Jan 2012 - R. Yantosca - Bug fix: flip data in vertical immediately
 !                              after reading.
-!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them  
-!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file 
+!  17 Jan 2012 - R. Yantosca - Nullify pointers after using them
+!  15 Feb 2012 - R. Yantosca - Now save output to nested NA grid netCDF file
 !  20 Sep 2013 - R. Yantosca - Now save output to nested Europe grid (EU)
 !  08 Oct 2013 - R. Yantosca - Now save output to nested SE Asia grid (SE)
 !EOP
@@ -670,7 +724,7 @@ MODULE GeosFpI3Module
 !
     ! Loop and time variables
     INTEGER                 :: F,        H,        L,       LR
-    INTEGER                 :: hhmmss 
+    INTEGER                 :: hhmmss
 
     ! Variables for netCDF I/O
     INTEGER                 :: X,        Y,        Z,       T
@@ -678,6 +732,12 @@ MODULE GeosFpI3Module
     INTEGER                 :: XNestEu,  YNestEu,  ZNestEu, TNestEu
     INTEGER                 :: XNestNa,  YNestNa,  ZNestNa, TNestNa
     INTEGER                 :: XNestSe,  YNestSe,  ZNestSe, TNestSe
+    !(jxu, 2015/12/08, add nested Asia)
+    INTEGER                 :: XNestAs,  YNestAs,  ZNestAs, TNestAs
+    !(jxu, end
+    !(jxu, 2016/02/13, add 0.25 global)
+    INTEGER                 :: X025x03125, Y025x03125, Z025x03125, T025x03125
+    !(jxu, end)
     INTEGER                 :: X2x25,    Y2x25,    Z2x25,   T2x25
     INTEGER                 :: X4x5,     Y4x5,     Z4x5,    T4x5
     INTEGER                 :: st3d(3),  st4d(4)
@@ -690,14 +750,17 @@ MODULE GeosFpI3Module
     REAL*4,  TARGET         :: Q3d     ( I025x03125, J025x03125, L025x03125  )
     REAL*4                  :: Q3d_2x25( I2x25,      J2x25,      L2x25       )
     REAL*4                  :: Q3d_4x5 ( I4x5,       J4x5,       L4x5        )
-    
+
     ! (lzh,06/20/2014) 0.5x0.625
     INTEGER                 :: XNestCh05,  YNestCh05, ZNestCh05, TNestCh05
     INTEGER                 :: XNestEu05,  YNestEu05, ZNestEu05, TNestEu05
     INTEGER                 :: XNestNa05,  YNestNa05, ZNestNa05, TNestNa05
     INTEGER                 :: XNestSe05,  YNestSe05, ZNestSe05, TNestSe05
+    !(jxu, 2015/12/08, add nested Asia)
+    INTEGER                 :: XNestAs05,  YNestAs05, ZNestAs05, TNestAs05
+    !(jxu, end)
     REAL*4,  TARGET         :: Q2d_05    ( I05x0625, J05x0625           )
-    REAL*4,  TARGET         :: Q3d_05    ( I05x0625, J05x0625, L05x0625 )    
+    REAL*4,  TARGET         :: Q3d_05    ( I05x0625, J05x0625, L05x0625 )
 
     ! Pointers
     REAL*4,  POINTER        :: Ptr_2d(:,:)
@@ -720,51 +783,71 @@ MODULE GeosFpI3Module
     ! Nested CH grid
     IF ( doNestCh ) THEN
        CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
-       CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh ) 
-       CALL NcGet_DimLen( fOutNestCh, 'lev',  ZNestCh ) 
+       CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh )
+       CALL NcGet_DimLen( fOutNestCh, 'lev',  ZNestCh )
        CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
     ENDIF
 
     ! Nested EU grid
     IF ( doNestEu ) THEN
        CALL NcGet_DimLen( fOutNestEu, 'lon',  XNestEu )
-       CALL NcGet_DimLen( fOutNestEu, 'lat',  YNestEu ) 
-       CALL NcGet_DimLen( fOutNestEu, 'lev',  ZNestEu ) 
+       CALL NcGet_DimLen( fOutNestEu, 'lat',  YNestEu )
+       CALL NcGet_DimLen( fOutNestEu, 'lev',  ZNestEu )
        CALL NcGet_DimLen( fOutNestEu, 'time', TNestEu )
     ENDIF
 
     ! Nested NA grid
     IF ( doNestNa ) THEN
        CALL NcGet_DimLen( fOutNestNa, 'lon',  XNestNa )
-       CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa ) 
-       CALL NcGet_DimLen( fOutNestNa, 'lev',  ZNestNa ) 
+       CALL NcGet_DimLen( fOutNestNa, 'lat',  YNestNa )
+       CALL NcGet_DimLen( fOutNestNa, 'lev',  ZNestNa )
        CALL NcGet_DimLen( fOutNestNa, 'time', TNestNa )
     ENDIF
 
     ! Nested SE grid
     IF ( doNestSe ) THEN
        CALL NcGet_DimLen( fOutNestSe, 'lon',  XNestSe )
-       CALL NcGet_DimLen( fOutNestSe, 'lat',  YNestSe ) 
-       CALL NcGet_DimLen( fOutNestSe, 'lev',  ZNestSe ) 
+       CALL NcGet_DimLen( fOutNestSe, 'lat',  YNestSe )
+       CALL NcGet_DimLen( fOutNestSe, 'lev',  ZNestSe )
        CALL NcGet_DimLen( fOutNestSe, 'time', TNestSe )
     ENDIF
 
-    ! 2 x 2.5 global grid       
+    !(jxu, 2015/12/08, add nested Asia)
+    ! Nested AS grid
+    IF ( doNestAs ) THEN
+       CALL NcGet_DimLen( fOutNestAs, 'lon',  XNestAs )
+       CALL NcGet_DimLen( fOutNestAs, 'lat',  YNestAs )
+       CALL NcGet_DimLen( fOutNestAs, 'lev',  ZNestAs )
+       CALL NcGet_DimLen( fOutNestAs, 'time', TNestAs )
+    ENDIF
+    !(jxu, end)
+
+    !(jxu, 2016/02/13, add 0.25 global)
+    ! 0.25x0.3125 global grid
+    IF ( do025x03125 ) THEN
+       CALL NcGet_DimLen( fOut025x03125,   'lon',  X025x03125   )
+       CALL NcGet_DimLen( fOut025x03125,   'lat',  Y025x03125   )
+       CALL NcGet_DimLen( fOut025x03125,   'lev',  Z025x03125   )
+       CALL NcGet_DimLen( fOut025x03125,   'time', T025x03125   )
+    ENDIF
+    !(jxu, end)
+
+    ! 2 x 2.5 global grid
     IF ( do2x25 ) THEN
        CALL NcGet_DimLen( fOut2x25,   'lon',  X2x25   )
-       CALL NcGet_DimLen( fOut2x25,   'lat',  Y2x25   ) 
-       CALL NcGet_DimLen( fOut2x25,   'lev',  Z2x25   ) 
+       CALL NcGet_DimLen( fOut2x25,   'lat',  Y2x25   )
+       CALL NcGet_DimLen( fOut2x25,   'lev',  Z2x25   )
        CALL NcGet_DimLen( fOut2x25,   'time', T2x25   )
     ENDIF
 
     ! 4x5 global grid
     IF ( do4x5 ) THEN
        CALL NcGet_DimLen( fOut4x5,    'lon',  X4x5    )
-       CALL NcGet_DimLen( fOut4x5,    'lat',  Y4x5    )   
-       CALL NcGet_DimLen( fOut4x5,    'lev',  Z4x5    )   
+       CALL NcGet_DimLen( fOut4x5,    'lat',  Y4x5    )
+       CALL NcGet_DimLen( fOut4x5,    'lev',  Z4x5    )
        CALL NcGet_DimLen( fOut4x5,    'time', T4x5    )
     ENDIF
-    
+
     ! (lzh, 06/21/2014) 0.5x0.625
     ! Nested CH grid
     IF ( doNestCh05 ) THEN
@@ -797,13 +880,23 @@ MODULE GeosFpI3Module
        CALL NcGet_DimLen( fOut05NestSe, 'lev',  ZNestSe05 )
        CALL NcGet_DimLen( fOut05NestSe, 'time', TNestSe05 )
     ENDIF
-        
+
+    !(jxu, 2015/12/08, add nested Asia)
+    ! Nested AS grid
+    IF ( doNestAs05 ) THEN
+       CALL NcGet_DimLen( fOut05NestAs, 'lon',  XNestAs05 )
+       CALL NcGet_DimLen( fOut05NestAs, 'lat',  YNestAs05 )
+       CALL NcGet_DimLen( fOut05NestAs, 'lev',  ZNestAs05 )
+       CALL NcGet_DimLen( fOut05NestAs, 'time', TNestAs05 )
+    ENDIF
+    !(jxu, end)
+
     !=======================================================================
     ! Open input file
     ! NOTE: For constant file, hardwire date to 2011/01/01
     !=======================================================================
 
-    ! Echo info    
+    ! Echo info
     msg = '%%%%%% ENTERING ROUTINE ProcessI33dAsmNv %%%%%%'
     WRITE( IU_LOG, '(a)' ) '%%%'
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
@@ -824,11 +917,11 @@ MODULE GeosFpI3Module
 
        ! Open the netCDF4 file for input
        CALL NcOp_Rd( fIn, TRIM( fNameInput ) )
-       
+
        ! Get the dimensions from the netCDF file
        CALL NcGet_DimLen( fIn, 'lon',  X )
-       CALL NcGet_DimLen( fIn, 'lat',  Y ) 
-       CALL NcGet_DimLen( fIn, 'lev',  Z ) 
+       CALL NcGet_DimLen( fIn, 'lat',  Y )
+       CALL NcGet_DimLen( fIn, 'lev',  Z )
        CALL NcGet_DimLen( fIn, 'time', T )
 
        !====================================================================
@@ -837,11 +930,11 @@ MODULE GeosFpI3Module
 
        ! Loop over data fields
        DO F = 1, nFields
-          
-          ! Save field name into an 9-char variable. 
+
+          ! Save field name into an 9-char variable.
           ! This will truncate field names longer than 8 chars.
           name  = TRIM( fields(F) )
-          
+
           ! Skip if fieldname is empty
           IF ( name == '' ) CYCLE
 
@@ -854,10 +947,10 @@ MODULE GeosFpI3Module
           Q3d_4x5  = 0e0
           Q2d_05   = 0e0    ! (lzh, 06/21/2014)
           Q3d_05   = 0e0    ! (lzh, 06/21/2014)
-          
+
           ! Test field name
           IF ( TRIM( name ) == 'PS' ) THEN
-          
+
              !==============================================================
              ! Special handling for surface pressure data
              ! since this field is defined at the surface only
@@ -874,7 +967,7 @@ MODULE GeosFpI3Module
              msg = '%%% Reading     ' // name
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
              CALL NcRd( Q2d, fIn, TRIM( name ), st3d, ct3d )
-             
+
              ! Replace missing values with zeroes
              WHERE( Q2d == FILL_VALUE ) Q2d = 0e0
 
@@ -886,17 +979,17 @@ MODULE GeosFpI3Module
              !--------------------------------------------------------------
              msg = '%%% Regridding  ' // name
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
-             
+
              ! Regrid to 2 x 2.5
              IF ( do2x25 ) THEN
                 CALL RegridGeosFpto2x25( 0, Q2d, Q2d_2x25 )
              ENDIF
-             
-             ! Regrid to 4x5 
+
+             ! Regrid to 4x5
              IF ( do4x5 ) THEN
                 CALL RegridGeosFpTo4x5 ( 0, Q2d, Q2d_4x5  )
              ENDIF
- 
+
              ! Regrid to 0.5 x 0.625 (lzh, 06/21/2014)
              IF ( do05x0625 ) THEN
                 CALL RegridGeosFpTo05x0625( 0, Q2d, Q2d_05 )
@@ -907,7 +1000,7 @@ MODULE GeosFpI3Module
              !--------------------------------------------------------------
              msg = '%%% Archiving   ' // name
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
-             
+
              ! Nested CH (point to proper slice of global data)
              IF ( doNestCh ) THEN
                 Ptr_2d => Q2d( I0_ch:I1_ch, J0_ch:J1_ch )
@@ -943,14 +1036,35 @@ MODULE GeosFpI3Module
                 CALL NcWr( Ptr_2d, fOutNestSe, TRIM( name ), st3d, ct3d )
                 NULLIFY( Ptr_2d )
              ENDIF
-             
+
+             !(jxu, 2015/12/08, add nested Asia)
+             ! Nested AS (point to proper slice of global data)
+             IF ( doNestAs ) THEN
+                Ptr_2d => Q2d( I0_as:I1_as, J0_as:J1_as )
+                st3d   = (/ 1,       1,       H /)
+                ct3d   = (/ XNestAs, YNestAs, 1 /)
+                CALL NcWr( Ptr_2d, fOutNestAs, TRIM( name ), st3d, ct3d )
+                NULLIFY( Ptr_2d )
+             ENDIF
+             !(jxu, end)
+
+             !(jxu, 2016/02/13, add 0.25 global)
+             IF ( do025x03125 ) THEN
+                Ptr_2d  => Q2d
+                st3d = (/ 1,       1,       H /)
+                ct3d = (/ X025x03125, Y025x03125, 1 /)
+                CALL NcWr( Ptr_2d, fOut025x03125, TRIM( name ), st3d, ct3d )
+                NULLIFY( Ptr_2d )
+             ENDIF
+             !(jxu, end)
+
              ! Write 2 x 2.5 data
              IF ( do2x25 ) THEN
                 st3d  = (/ 1,     1,     H  /)
                 ct3d  = (/ X2x25, Y2x25, 1  /)
                 CALL NcWr( Q2d_2x25, fOut2x25, TRIM( name ), st3d, ct3d )
              ENDIF
-       
+
              ! Write 4x5 data
              IF ( do4x5 ) THEN
                 st3d  = (/ 1,    1,    H /)
@@ -993,9 +1107,21 @@ MODULE GeosFpI3Module
                 CALL NcWr( Ptr_2d, fOut05NestSe, TRIM( name ), st3d, ct3d )
                 NULLIFY( Ptr_2d )
              ENDIF
-          !-------(finish edit)------------------------------            
+
+             !(jxu, 2015/12/08, add nested Asia)
+             ! Nested AS (point to proper slice of global data)
+              IF ( doNestAs05 ) THEN
+                 Ptr_2d  => Q2d_05( I0_as05:I1_as05, J0_as05:J1_as05 )
+                 st3d = (/ 1,       1,       H /)
+                 ct3d = (/ XNestAs05, YNestAs05, 1 /)
+                 CALL NcWr( Ptr_2d, fOut05NestAs, TRIM( name ), st3d, ct3d )
+                 NULLIFY( Ptr_2d )
+              ENDIF
+             !(jxu, end)
+
+          !-------(finish edit)------------------------------
           ELSE
-          
+
              !==============================================================
              ! Process all other fields
              !==============================================================
@@ -1005,7 +1131,7 @@ MODULE GeosFpI3Module
              st4d = (/ 1, 1, 1, 1 /)
              ct4d = (/ X, Y, Z, 1 /)
 
-             ! Special handling: "EPV" is known as "PV" 
+             ! Special handling: "EPV" is known as "PV"
              ! for backwards compatibility
              name8 = name
              IF ( TRIM( name8 ) == 'PV' ) name8 = 'EPV'
@@ -1016,7 +1142,7 @@ MODULE GeosFpI3Module
              msg = '%%% Reading     ' // name8
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
              CALL NcRd( Q3d, fIn, TRIM( name8 ), st4d, ct4d )
-             
+
              ! Replace missing values with zeroes
              WHERE( Q3d == FILL_VALUE ) Q3d = 0e0
 
@@ -1028,16 +1154,16 @@ MODULE GeosFpI3Module
              !--------------------------------------------------------------
              msg = '%%% Regridding  ' // name
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
-             
+
              ! Loop over vertical levels
-             DO L = 1, Z 
+             DO L = 1, Z
 
                 ! Regrid to 2 x 2.5
                 IF ( do2x25 ) THEN
                    CALL RegridGeosFpto2x25( 0, Qflip(:,:,L), Q3d_2x25(:,:,L) )
                 ENDIF
-             
-                ! Regrid to 4x5 
+
+                ! Regrid to 4x5
                 IF ( do4x5 ) THEN
                    CALL RegridGeosFpTo4x5 ( 0, Qflip(:,:,L), Q3d_4x5(:,:,L)  )
                 ENDIF
@@ -1045,7 +1171,7 @@ MODULE GeosFpI3Module
                 IF ( do05x0625 ) THEN
                    CALL RegridGeosFpTo05x0625( 0, Qflip(:,:,L), Q3d_05(:,:,L) )
                 ENDIF
-                            
+
              ENDDO
 
              !--------------------------------------------------------------
@@ -1053,7 +1179,7 @@ MODULE GeosFpI3Module
              !--------------------------------------------------------------
              msg = '%%% Archiving   ' // name
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
-             
+
              ! Nested CH (point to proper slice of global data)
              IF ( doNestCh ) THEN
                 Ptr_3d => Qflip( I0_ch:I1_ch, J0_ch:J1_ch, : )
@@ -1089,14 +1215,35 @@ MODULE GeosFpI3Module
                 CALL NcWr( Ptr_3d, fOutNestSe, TRIM( name ), st4d, ct4d )
                 NULLIFY( Ptr_3d )
              ENDIF
-             
+
+             !(jxu, 2015/12/08, add nested Asia)
+             ! Nested AS (point to proper slice of global data)
+             IF ( doNestAs ) THEN
+                Ptr_3d => Qflip( I0_as:I1_as, J0_as:J1_as, : )
+                st4d   = (/ 1,       1,       1,       H /)
+                ct4d   = (/ XNestAs, YNestAs, ZNestAs, 1 /)
+                CALL NcWr( Ptr_3d, fOutNestAs, TRIM( name ), st4d, ct4d )
+                NULLIFY( Ptr_3d )
+             ENDIF
+             !(jxu, end)
+
+             !(jxu, 2016/02/13, add 0.25 global)
+             IF ( do025x03125 ) THEN
+                Ptr_3d  => Qflip(:,:,:)
+                st4d = (/ 1,       1,       1,       H /)
+                ct4d = (/ X025x03125, Y025x03125, Z025x03125, 1 /)
+                CALL NcWr( Ptr_3d, fOut025x03125, TRIM( name ), st4d, ct4d )
+                NULLIFY( Ptr_3d )
+             ENDIF
+             !(jxu, end)
+
              ! Write 2 x 2.5 data
              IF ( do2x25 ) THEN
                 st4d  = (/ 1,     1,     1,     H  /)
                 ct4d  = (/ X2x25, Y2x25, Z2x25, 1  /)
                 CALL NcWr( Q3d_2x25, fOut2x25, TRIM( name ), st4d, ct4d )
              ENDIF
-       
+
              ! Write 4x5 data
              IF ( do4x5 ) THEN
                 st4d  = (/ 1,    1,    1,    H /)
@@ -1140,7 +1287,19 @@ MODULE GeosFpI3Module
                 CALL NcWr( Ptr_3d, fOut05NestSe, TRIM( name ), st4d, ct4d )
                 NULLIFY( Ptr_3d )
              ENDIF
-          !-------(finish edit)--------------            
+
+             !(jxu, 2015/12/08, add nested Asia)
+             ! Nested AS (point to proper slice of global data)
+             IF ( doNestAs05 ) THEN
+                Ptr_3d  => Q3d_05( I0_as05:I1_as05, J0_as05:J1_as05, : )
+                st4d = (/ 1,       1,       1,       H /)
+                ct4d = (/ XNestAs05, YNestAs05, ZNestAs05, 1 /)
+                CALL NcWr( Ptr_3d, fOut05NestAs, TRIM( name ), st4d, ct4d )
+                NULLIFY( Ptr_3d )
+             ENDIF
+             !(jxu, end)
+
+          !-------(finish edit)--------------
 
              ! Free pointer memory
              NULLIFY( Qflip )
@@ -1164,4 +1323,3 @@ MODULE GeosFpI3Module
   END SUBROUTINE ProcessI33dAsmNv
 !EOC
 END MODULE GeosFpI3Module
-
