@@ -551,11 +551,13 @@ MODULE GeosFpA3MstEModule
        gName = '0.25x0.3125 global'
        CALL ExpandDate  ( fName,     yyyymmdd,     000000                )
        CALL StrRepl     ( fName,     '%%%%%%',     'A3mstE'              )
-       CALL NcOutFileDef( I025x03125,     J025x03125,        L025x03125+1,      TIMES_A3,  &
-                          xMid_025x03125, yMid_025x03125, zMid_025x03125,  a3Mins,    &
-                          gName,     fName,        fOut025x03125              )
+       CALL NcOutFileDef( I025x03125,     J025x03125,        L025x03125+1,  &    
+                          TIMES_A3,  xMid_025x03125, yMid_025x03125,        &
+                           zEdge_025x03125,  a3Mins,                        &
+                          gName,     fName,        fOut025x03125         )
     ENDIF
     !(jxu, end)
+    !(Bug fix for 73 layers)
 
     ! Open 2 x 2.5 output file
     IF ( do2x25 ) THEN
@@ -580,26 +582,27 @@ MODULE GeosFpA3MstEModule
     ENDIF
 
     !----- (lzh,06/20/2014)------------
+    ! (0.5 d nested regions, bug fix for 73 layers, Chi Li)
     ! Open nested 0625 CH output file
     IF ( doNestCh05 ) THEN
        fName = TRIM( tempDirTmplNestCh05 ) // TRIM( dataTmplNestCh05 )
        gName = 'nested CH 05'
        CALL ExpandDate  ( fName,     yyyymmdd,     000000      )
        CALL StrRepl     ( fName,     '%%%%%%',     'A3mstE'    )
-       CALL NcOutFileDef( I_NestCh05,  J_NestCh05, L05x0625,  TIMES_A3,  &
+       CALL NcOutFileDef( I_NestCh05,  J_NestCh05, L05x0625+1,  TIMES_A3,  &
                           xMid_05x0625(I0_ch05:I1_ch05),          &
                           yMid_05x0625(J0_ch05:J1_ch05),          &
                           zEdge_05x0625,                a3Mins,    &
                           gName,    fName,        fOut05NestCh          )
     ENDIF
 
-    ! Open nested EU output file
+    ! Open nested EU output file  
     IF ( doNestEu05 ) THEN
        fName = TRIM( tempDirTmplNestEu05 ) // TRIM( dataTmplNestEu05 )
        gName = 'nested EU 05'
        CALL ExpandDate  ( fName,     yyyymmdd,     000000      )
        CALL StrRepl     ( fName,     '%%%%%%',     'A3mstE'    )
-       CALL NcOutFileDef( I_NestEu05,  J_NestEu05, L05x0625, TIMES_A3,  &
+       CALL NcOutFileDef( I_NestEu05,  J_NestEu05, L05x0625+1, TIMES_A3,  &
                           xMid_05x0625(I0_eu05:I1_eu05),          &
                           yMid_05x0625(J0_eu05:J1_eu05),          &
                           zEdge_05x0625,                a3Mins,    &
@@ -612,7 +615,7 @@ MODULE GeosFpA3MstEModule
        gName = 'nested NA 05'
        CALL ExpandDate  ( fName,     yyyymmdd,     000000      )
        CALL StrRepl     ( fName,     '%%%%%%',     'A3mstE'    )
-       CALL NcOutFileDef( I_NestNa05,  J_NestNa05, L05x0625, TIMES_A3,  &
+       CALL NcOutFileDef( I_NestNa05,  J_NestNa05, L05x0625+1, TIMES_A3,  &
                           xMid_05x0625(I0_na05:I1_na05),          &
                           yMid_05x0625(J0_na05:J1_na05),          &
                           zEdge_05x0625,                a3Mins,    &
@@ -625,7 +628,7 @@ MODULE GeosFpA3MstEModule
        gName = 'nested SE 05'
        CALL ExpandDate  ( fName,     yyyymmdd,     000000      )
        CALL StrRepl     ( fName,     '%%%%%%',     'A3mstE'    )
-       CALL NcOutFileDef( I_NestSe05,  J_NestSe05, L05x0625, TIMES_A3,  &
+       CALL NcOutFileDef( I_NestSe05,  J_NestSe05, L05x0625+1, TIMES_A3,  &
                           xMid_05x0625(I0_se05:I1_se05),          &
                           yMid_05x0625(J0_se05:J1_se05),          &
                           zEdge_05x0625,                a3Mins,    &
@@ -639,7 +642,7 @@ MODULE GeosFpA3MstEModule
        gName = 'nested AS 05'
        CALL ExpandDate  ( fName,     yyyymmdd,     000000      )
        CALL StrRepl     ( fName,     '%%%%%%',     'A3mstE'    )
-       CALL NcOutFileDef( I_NestAs05,  J_NestAs05, L05x0625, TIMES_A3,  &
+       CALL NcOutFileDef( I_NestAs05,  J_NestAs05, L05x0625+1, TIMES_A3,  &
                           xMid_05x0625(I0_as05:I1_as05),          &
                           yMid_05x0625(J0_as05:J1_as05),          &
                           zEdge_05x0625,                a3Mins,    &
