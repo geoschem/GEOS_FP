@@ -1,3 +1,5 @@
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/geoschem/GEOS_FP/blob/master/LICENSE.txt)
+
 GEOS_FP
 =======
 
