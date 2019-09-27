@@ -596,7 +596,7 @@ MODULE GeosFpA1Module
     IF ( StrPos( 'PRECANV', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)
        lName = 'Surface precipitation flux from anvils'
-       units = 'kg m-2 s-2'
+       units = 'kg m-2 s-1'
        gamap = 'GMAO-2D'
        CALL NcDef_Variable      ( fOut, 'PRECANV', NF_FLOAT, 3, var3, vId    )
        CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
@@ -612,7 +612,7 @@ MODULE GeosFpA1Module
     IF ( StrPos( 'PRECCON', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)
        lName = 'Surface precipitation flux from convection'
-       units = 'kg m-2 s-2'
+       units = 'kg m-2 s-1'
        gamap = 'GMAO-2D'
        CALL NcDef_Variable      ( fOut, 'PRECCON', NF_FLOAT, 3, var3, vId    )
        CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
@@ -628,7 +628,7 @@ MODULE GeosFpA1Module
     IF ( StrPos( 'PRECLSC', tavg1_2d_flx_Nx_Data ) >= 0 ) THEN
        var3  = (/ idLon, idLat, idTime /)
        lName = 'Surface precipitation flux from large-scale'
-       units = 'kg m-2 s-2'
+       units = 'kg m-2 s-1'
        gamap = 'GMAO-2D'
        CALL NcDef_Variable      ( fOut, 'PRECLSC', NF_FLOAT, 3, var3, vId    )
        CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
@@ -645,7 +645,7 @@ MODULE GeosFpA1Module
        var3  = (/ idLon, idLat, idTime /)
 
        lName = 'Surface precipitation flux from snow'
-       units = 'kg m-2 s-2'
+       units = 'kg m-2 s-1'
        gamap = 'GMAO-2D'
        CALL NcDef_Variable      ( fOut, 'PRECSNO', NF_FLOAT, 3, var3, vId    )
        CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
@@ -662,7 +662,7 @@ MODULE GeosFpA1Module
        var3  = (/ idLon, idLat, idTime /)
        
        lName = 'Total surface precipitation flux'
-       units = 'kg m-2 s-2'
+       units = 'kg m-2 s-1'
        gamap = 'GMAO-2D'
        CALL NcDef_Variable      ( fOut, 'PRECTOT', NF_FLOAT, 3, var3, vId    )
        CALL NcDef_Var_Attributes( fOut, vId, 'long_name',      TRIM( lName ) )
