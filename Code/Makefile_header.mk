@@ -93,6 +93,9 @@ endif
 ###                                                                         ###
 ###############################################################################
 
+NETCDF_INCLUDE=$(shell nc-config --includedir)
+NETCDF_FORTRAN_INCLUDE=$(shell nf-config --includedir)
+
 ifdef NETCDF_INCLUDE
  NC_INC_CMD           := -I$(NETCDF_INCLUDE)
 else
@@ -275,7 +278,7 @@ ifeq ($(COMPILER_FAMILY),GNU)
   # running out of memory at hi-res, especially when using netCDF I/O.
   ifneq ($(UNAME),Darwin)
     #GFORTRAN_BAD#FFLAGS           += -mcmodel=medium -shared-intel
-    FFLAGS           += -mcmodel=medium
+    FFLAGS           += -mcmodel=large
   endif
 
   # Turn on checking for floating-point exceptions
