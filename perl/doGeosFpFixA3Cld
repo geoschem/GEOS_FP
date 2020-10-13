@@ -400,7 +400,7 @@ qx( umask 022; cd $CODE_DIRECTORY; $exeFile < $DATE_FILE >> \$sLog );
 qx( ./moveGeosFp $DATE_STRING A3cld >> \$sLog );
 
 # Send an email that the job is finished
-if ( \$\? == 0 ) { qx( $mailCmd ); }
+# if ( \$\? == 0 ) { qx( $mailCmd ); }
 
 # Remove the date file
 qx( rm -f $DATE_FILE >> /dev/null ); 
