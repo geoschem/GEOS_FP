@@ -127,6 +127,7 @@ MODULE GeosFpUtilityModule
     CALL makeCharArrayFromCharList( pathName, '/', fields )
     
     ! Find the last occupied field
+    nFields=0
     DO F = 1, SIZE( fields )
        IF ( TRIM( fields(F) ) /= '' ) nFields = nFields + 1
     ENDDO
