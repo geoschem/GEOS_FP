@@ -36,7 +36,7 @@
 #
 
 ==> Raw Met Data Directory
-/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/GEOS_FP-raw/2020/11/
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/GEOS_FP-raw/2021/03/
 
 ==> Code Directory
 ../bin
@@ -48,7 +48,7 @@
 ../logs
 
 ==> Temporary Directory
-/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/2020/11/
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/2021/03/
 
 ==> Program Executable
 GeosFpDriver{THREAD}.x

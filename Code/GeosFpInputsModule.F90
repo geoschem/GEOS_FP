@@ -249,6 +249,12 @@ MODULE GeosFpInputsModule
   CHARACTER(LEN=MAX_CHAR) :: dataTmplNestAs05           ! NstIn file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestAs05        ! NstIn temporary dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestAs05        ! NstIn data dir
+!(lb, 2021/03/22, added global 05)  
+  LOGICAL                 :: doGlobal05 
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplGlobal05
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplGlobal05
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplGlobal05
+  INTEGER                 :: fOutGlobal05
 !(jxu, end)
   CHARACTER(LEN=MAX_CHAR) :: weightFileTo05x0625      ! Mapping weights
 ! ----- (finish edit) -----------
@@ -457,6 +463,13 @@ MODULE GeosFpInputsModule
              J_NestAs05 = J1_as05 - J0_as05 + 1
           !(jxu, end)
           ! ----- (finish edit) ----------------------
+          
+          !(lb, 2021/03/22)
+          CASE( '==> 0.5 x 0.625 output' )
+             READ( IU_TXT,   *,      ERR=999 ) doGlobal05
+             READ( IU_TXT, '(a)',    ERR=999 ) dataTmplGlobal05
+             READ( IU_TXT, '(a)',    ERR=999 ) tempDirTmplGlobal05
+             READ( IU_TXT, '(a)',    ERR=999 ) dataDirTmplGlobal05
 
           !(jxu, 2016/02/13, add 0.25 global)
           CASE( '==> 0.25 x 0.3125 output' )
@@ -554,7 +567,7 @@ MODULE GeosFpInputsModule
 
     ! (lzh, 06/20/2014)
     !(jxu, 2015/12/08, add nested Asia by adding .or. do NestAs)
-    do05x0625 = ( doNestCh05 .or. doNestEu05 .or. doNestNa05 .or. doNestSe05 .or. doNestAs05)
+    do05x0625 = ( doNestCh05 .or. doNestEu05 .or. doNestNa05 .or. doNestSe05 .or. doNestAs05 .or. doGlobal05)
     !(jxu,end)
 
     ! Mapping weights: native grid (use as placeholder for routines below)
@@ -692,6 +705,7 @@ MODULE GeosFpInputsModule
 !! --end edit---------
        !(jxu, 2016/02/13, add 0.25 global)
        PRINT*, 'do025x03125     : ', do025x03125
+       PRINT*, 'doGlobal05      : ', doGlobal05
        !(jxu, end)
        PRINT*, 'do2x25          : ', do2x25
        PRINT*, 'do4x5           : ', do4x5
@@ -714,6 +728,9 @@ MODULE GeosFpInputsModule
        PRINT*, 'tempDirNestAs   : ', TRIM( tempDirTmplNestAs       )
        PRINT*, 'dataDirNestAs   : ', TRIM( dataDirTmplNestAs       )
 !(jxu, end)
+       PRINT*, 'dataTmplGlobal05    : ', TRIM( dataTmplGlobal05          )
+       PRINT*, 'tempDirTmplGlobal05 : ', TRIM( tempDirTmplGlobal05       )
+       PRINT*, 'dataDirTmplGlobal05 : ', TRIM( dataDirTmplGlobal05       )
 !(jxu, 2016/02/13, add 0.25 global)
        PRINT*, 'dataTmpl025x03125    : ', TRIM( dataTmpl025x03125            )
        PRINT*, 'tempDirTmpl025x03125 : ', TRIM( tempDirTmpl025x03125         )

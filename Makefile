@@ -37,6 +37,7 @@ DIR   = Code
 
 all: 
 	$(MAKE) -C $(DIR) all
+	chmod +x bin/*.x
 
 lib:
 	$(MAKE) -C $(DIR) lib

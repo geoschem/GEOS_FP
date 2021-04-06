@@ -93,7 +93,7 @@ GEOS.fp.asm.inst3_3d_asm_Nv.YYYYMMDD_hhmm.V01.nc4
 PS,PV,QV,T
 
 ==> Local Raw Data Path
-/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/GEOS_FP-raw/2020/11/
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/GEOS_FP-raw/2021/03/
 
 ==> Nested CH output
 T
@@ -166,6 +166,12 @@ GEOSFP.YYYYMMDD.%%%%%%.4x5.nc
 ==> 0.25 x 0.3125 output
 T
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.nc
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
+
+==> 0.5 x 0.625 output
+F
+GEOSFP.YYYYMMDD.%%%%%%.05x0625.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 

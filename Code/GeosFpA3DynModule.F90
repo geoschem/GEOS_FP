@@ -570,6 +570,17 @@ MODULE GeosFpA3DynModule
     ENDIF
     !(jxu, end)
 
+    IF ( doGlobal05 ) THEN
+      fName = TRIM( tempDirTmplGlobal05 ) // TRIM( dataTmplGlobal05 )
+      gName = '0.5x0.625 global'
+      CALL ExpandDate  ( fName,     yyyymmdd,     000000                )
+      CALL StrRepl     ( fName,     '%%%%%%',    'A3dyn '               )
+      CALL StrCompress ( fName,     RemoveAll=.TRUE.                    )
+      CALL NcOutFileDef( I05x0625,     J05x0625,        L05x0625,      TIMES_A3,  &
+                         xMid_05x0625, yMid_05x0625, zMid_05x0625,  a3Mins,    &
+                         gName,     fName,        fOutGlobal05             )
+    ENDIF
+
     ! Open 2 x 2.5 output file
     IF ( do2x25 ) THEN
        fName = TRIM( tempDirTmpl2x25 ) // TRIM( dataTmpl2x25 )
@@ -704,6 +715,9 @@ MODULE GeosFpA3DynModule
     IF ( doNestAs05 ) CALL NcCl( fOut05NestAs )
     !(jxu, end)
 
+    !(lb, 2021/03/22)
+    IF ( doGlobal05   ) CALL NcCl( fOutGlobal05  )
+
     ! Echo info
     msg = '%%%%%%%%%% LEAVING ROUTINE GeosFpMakeA3Dyn %%%%%%%%%%'
     WRITE( IU_LOG, '(a)' ) '%%%'
@@ -765,6 +779,8 @@ MODULE GeosFpA3DynModule
     !(jxu, end)
     !(jxu, 2016/02/13, add 0.25 global)
     INTEGER                 :: X025x03125, Y025x03125, Z025x03125, T025x03125
+    !(lb, 2021/03/22)
+    INTEGER                 :: X05x0625, Y05x0625, Z05x0625, T05x0625
     !(jxu, end)
     INTEGER                 :: X2x25,    Y2x25,    Z2x25,   T2x25
     INTEGER                 :: X4x5,     Y4x5,     Z4x5,    T4x5
@@ -854,6 +870,13 @@ MODULE GeosFpA3DynModule
        CALL NcGet_DimLen( fOut025x03125,   'time', T025x03125   )
     ENDIF
     !(jxu, end)
+
+    IF ( doGlobal05 ) THEN
+      CALL NcGet_DimLen( fOutGlobal05,   'lon',  X05x0625   )
+      CALL NcGet_DimLen( fOutGlobal05,   'lat',  Y05x0625   )
+      CALL NcGet_DimLen( fOutGlobal05,   'lev',  Z05x0625   )
+      CALL NcGet_DimLen( fOutGlobal05,   'time', T05x0625   )
+   ENDIF
 
     ! 2 x 2.5 global grid
     IF ( do2x25 ) THEN
@@ -1069,6 +1092,14 @@ MODULE GeosFpA3DynModule
         ENDIF
         !(jxu, end)
 
+        IF ( doGlobal05 ) THEN
+         Ptr  => Q05
+         st4d = (/ 1,       1,       1,       H /)
+         ct4d = (/ X05x0625, Y05x0625, Z05x0625, 1 /)
+         CALL NcWr( Ptr, fOutGlobal05, TRIM( name ), st4d, ct4d )
+         NULLIFY( Ptr )
+        ENDIF 
+
           ! Write 2 x 2.5 data
           IF ( do2x25 ) THEN
              st4d = (/ 1,     1,     1,     H  /)
@@ -1204,6 +1235,8 @@ MODULE GeosFpA3DynModule
     !(jxu, end)
     !(jxu, 2016/02/13, add 0.25 global)
     INTEGER                 :: X025x03125,Y025x03125, Z025x03125, T025x03125
+    !(lb, 2021/03/22)
+    INTEGER                 :: X05x0625, Y05x0625, Z05x0625, T05x0625
     !(jxu, end)
     INTEGER                 :: X2x25,    Y2x25,   Z2x25,   T2x25
     INTEGER                 :: X4x5,     Y4x5,    Z4x5,    T4x5
@@ -1297,6 +1330,14 @@ MODULE GeosFpA3DynModule
        CALL NcGet_DimLen( fOut025x03125,   'time', T025x03125   )
     ENDIF
     !(jxu, end)
+
+    !(lb, 2021/03/22)
+    IF ( doGlobal05 ) THEN
+      CALL NcGet_DimLen( fOutGlobal05,   'lon',  X05x0625   )
+      CALL NcGet_DimLen( fOutGlobal05,   'lat',  Y05x0625   )
+      CALL NcGet_DimLen( fOutGlobal05,   'lev',  Z05x0625   )
+      CALL NcGet_DimLen( fOutGlobal05,   'time', T05x0625   )
+   ENDIF
 
     ! 2 x 2.5 global grid
     IF ( do2x25 ) THEN
@@ -1540,6 +1581,14 @@ MODULE GeosFpA3DynModule
              NULLIFY( Ptr )
           ENDIF
           !(jxu, end)
+
+          IF ( doGlobal05 ) THEN
+            Ptr  => Q05
+            st4d = (/ 1,       1,       1,       H /)
+            ct4d = (/ X05x0625, Y05x0625, Z05x0625, 1 /)
+            CALL NcWr( Ptr, fOutGlobal05, TRIM( name ), st4d, ct4d )
+            NULLIFY( Ptr )
+          ENDIF
 
           ! Write 2 x 2.5 data
           IF ( do2x25 ) THEN
