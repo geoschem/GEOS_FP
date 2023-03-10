@@ -2774,7 +2774,7 @@ MODULE GeosFpA3CldModule
 ! !DESCRIPTION: This routine regrids the GEOS-5 optical depth and cloud
 !  fraction fields from the 0.5 x 0.666 native resolution grid to a GEOS-Chem
 !  "coarse" grid (e.g. 1 x 1.25, 2 x 2.5, 4 x 5).
-!
+! !REFERENCE: Liu, H., Crawford, J. H., Considine, D. B., Platnick, S., Norris, P. M., Duncan, B. N., Pierce, R. B., Chen, G., and Yantosca, R. M. (2009), Sensitivity of photolysis frequencies and key tropospheric oxidants in a global model to cloud vertical distributions and optical properties, J. Geophys. Res., 114, D10305, doi:10.1029/2008JD011503.
 ! !REMARKS:
 !  Regridding formulae from Hongyu Liu:
 !
