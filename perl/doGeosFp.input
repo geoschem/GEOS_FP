@@ -25,14 +25,7 @@
 #
 # !REVISION HISTORY: 
 #  24 Oct 2011 - R. Yantosca - Initial version (based on doGeos5.input)
-#  13 Jan 2012 - R. Yantosca - Executable is now named "Geos57Driver.x"
-#  20 Jan 2012 - R. Yantosca - Now add variable for the file containing
-#                              the default settings for the executable
-#  06 Aug 2013 - R. Yantosca - Now add list of emails for notification
-#  06 Aug 2013 - R. Yantosca - Now add sleep time between tries [s]
-#  20 Sep 2013 - R. Yantosca - Renamed to doGeosFp.input
-#  25 Sep 2013 - R. Yantosca - Updated file sizes for GEOSFP files
-#  11 Feb 2014 - R. Yantosca - Now added file sizes for EU, SE grids
+#  See https://github.com/geoschem/GEOS_FP for complete history
 #
 
 ==> Raw Met Data Directory
@@ -71,14 +64,14 @@ your\@email.address
 # before getting new files
 #-----------------------------------------------------
 
-==> CH Nested-Grid Met Fields
-/as/data/geos/GEOS_0.25x0.3125_CH/GEOS_FP/YYYY/MM
- 159985884  GEOSFP.YYYYMMDD.A1.025x03125.CH.nc
- 584242324  GEOSFP.YYYYMMDD.A3cld.025x03125.CH.nc
- 417317376  GEOSFP.YYYYMMDD.A3dyn.025x03125.CH.nc
- 333854836  GEOSFP.YYYYMMDD.A3mstC.025x03125.CH.nc
- 423113044  GEOSFP.YYYYMMDD.A3mstE.025x03125.CH.nc
- 251550928  GEOSFP.YYYYMMDD.I3.025x03125.CH.nc
+==> AS Nested-Grid Met Fields
+/as/data/geos/GEOS_0.25x0.3125_AS/GEOS_FP/YYYY/MM
+ 159985884  GEOSFP.YYYYMMDD.A1.025x03125.AS.nc
+ 584242324  GEOSFP.YYYYMMDD.A3cld.025x03125.AS.nc
+ 417317376  GEOSFP.YYYYMMDD.A3dyn.025x03125.AS.nc
+ 333854836  GEOSFP.YYYYMMDD.A3mstC.025x03125.AS.nc
+ 423113044  GEOSFP.YYYYMMDD.A3mstE.025x03125.AS.nc
+ 251550928  GEOSFP.YYYYMMDD.I3.025x03125.AS.nc
 
 ==> EU Nested-Grid Met Fields
 /as/data/geos/GEOS_0.25x0.3125_EU/GEOS_FP/YYYY/MM
@@ -97,15 +90,6 @@ your\@email.address
  418872100  GEOSFP.YYYYMMDD.A3mstC.025x03125.NA.nc
  530861208  GEOSFP.YYYYMMDD.A3mstE.025x03125.NA.nc
  315609504  GEOSFP.YYYYMMDD.I3.025x03125.NA.nc
-
-==> SE Nested-Grid Met Fields
-/as/data/geos/GEOS_0.25x0.3125_SE/GEOS_FP/YYYY/MM
- 128594824  GEOSFP.YYYYMMDD.A1.025x03125.SE.nc
- 459604948  GEOSFP.YYYYMMDD.A3cld.025x03125.SE.nc
- 328290124  GEOSFP.YYYYMMDD.A3dyn.025x03125.SE.nc
- 262632896  GEOSFP.YYYYMMDD.A3mstC.025x03125.SE.nc
- 332849812  GEOSFP.YYYYMMDD.A3mstE.025x03125.SE.nc
- 197887516  GEOSFP.YYYYMMDD.I3.025x03125.SE.nc
 
 ==> 2x25 Global Met Fields
 /as/data/geos/GEOS_2x2.5/GEOS_FP/YYYY/MM

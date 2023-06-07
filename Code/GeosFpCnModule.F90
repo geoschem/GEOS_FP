@@ -227,12 +227,10 @@ CONTAINS
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
-       CASE( 'native', 'nested CH', 'nested EU', 'nested NA', 'nested SE' , 'nested AS', '0.25 x 0.3125 global')
+       CASE( 'native', 'nested AS', 'nested EU', 'nested NA', '0.25 x 0.3125 global')
           DI = '0.3125'
           DJ = '0.25'
-!       CASE ( 'nested 0.5 x 0.625' )
-! (lzh,06/21/2014)
-       CASE( 'nested CH 05', 'nested EU 05', 'nested NA 05', 'nested SE 05' , 'nested AS 05')
+       CASE( 'nested AS 05', 'nested EU 05', 'nested NA 05')
           DI = '0.625'
           DJ = '0.5'
        CASE( '2 x 2.5 global' )
@@ -482,18 +480,18 @@ CONTAINS
     ! Hours in the day
     time = (/ 0 /)
 
-    ! Open nested CH output file
-    IF ( doNestCh ) THEN
-       fName = TRIM( tempDirTmplNestCh ) // TRIM( dataTmplNestCh )
-       gName = 'nested CH'
+    ! Open nested AS output file
+    IF ( doNestAs ) THEN
+       fName = TRIM( tempDirTmplNestAs ) // TRIM( dataTmplNestAs )
+       gName = 'nested AS'
        CALL ExpandDate  ( fName,     20110101,     000000      )
        CALL StrRepl     ( fName,     '%%%%%%',     'CN    '    )
        CALL StrCompress ( fName, RemoveAll=.TRUE.              )
-       CALL NcOutFileDef( I_NestCh,  J_NestCh,     1,           &
-                          xMid_025x03125(I0_ch:I1_ch),          &
-                          yMid_025x03125(J0_ch:J1_ch),          &
+       CALL NcOutFileDef( I_NestAs,  J_NestAs,  1,              &
+                          xMid_025x03125(I0_as:I1_as),          &
+                          yMid_025x03125(J0_as:J1_as),          &
                           time,      gName,        fName,       &
-                          fOutNestCh                           )
+                          fOutNestAs                            )
     ENDIF
 
     ! Open nested EU output file
@@ -524,37 +522,6 @@ CONTAINS
                           fOutNestNa                            )
     ENDIF
 
-    ! Open nested SE output file
-    IF ( doNestSe ) THEN
-       fName = TRIM( tempDirTmplNestSe ) // TRIM( dataTmplNestSe )
-       gName = 'nested SE'
-       CALL ExpandDate  ( fName,     20110101,     000000      )
-       CALL StrRepl     ( fName,     '%%%%%%',     'CN    '    )
-       CALL StrCompress ( fName, RemoveAll=.TRUE.              )
-       CALL NcOutFileDef( I_NestSe,  J_NestSe,  1,              &
-                          xMid_025x03125(I0_se:I1_se),          &
-                          yMid_025x03125(J0_se:J1_se),          &
-                          time,      gName,        fName,       &
-                          fOutNestSe                            )
-    ENDIF
-
-    !(jxu, 2015/12/08, add nested Asia)
-    ! Open nested AS output file
-    IF ( doNestAs ) THEN
-       fName = TRIM( tempDirTmplNestAs ) // TRIM( dataTmplNestAs )
-       gName = 'nested AS'
-       CALL ExpandDate  ( fName,     20110101,     000000      )
-       CALL StrRepl     ( fName,     '%%%%%%',     'CN    '    )
-       CALL StrCompress ( fName, RemoveAll=.TRUE.              )
-       CALL NcOutFileDef( I_NestAs,  J_NestAs,  1,              &
-                          xMid_025x03125(I0_as:I1_as),          &
-                          yMid_025x03125(J0_as:J1_as),          &
-                          time,      gName,        fName,       &
-                          fOutNestAs                            )
-    ENDIF
-    !(jxu, end)
-
-    !(jxu, 2016/02/13, add 0.25 global)
     ! Open 0.25x0.3125 output file
     IF ( do025x03125 ) THEN
        fName = TRIM( tempDirTmpl025x03125 ) // TRIM( dataTmpl025x03125 )
@@ -566,7 +533,6 @@ CONTAINS
                           xMid_025x03125, yMid_025x03125, time, &
                           gName,     fName,        fOut025x03125  )
     ENDIF
-    !(jxu, end)
 
     ! Open 2 x 2.5 output file
     IF ( do2x25 ) THEN
@@ -591,19 +557,19 @@ CONTAINS
                           xMid_4x5,  nc_yMid_4x5,  time,        &
                           gName,     fName,     fOut4x5        )
     ENDIF
-    !----- (lzh,06/21/2014)------------
-    ! Open nested CH output file
-    IF ( doNestCh05 ) THEN
-       fName = TRIM( tempDirTmplNestCh05 ) // TRIM( dataTmplNestCh05 )
-       gName = 'nested CH 05'
+
+    ! Open nested AS output file
+    IF ( doNestAs05 ) THEN
+       fName = TRIM( tempDirTmplNestAs05 ) // TRIM( dataTmplNestAs05 )
+       gName = 'nested As 05'
        CALL ExpandDate  ( fName,     20110101,     000000      )
        CALL StrRepl     ( fName,     '%%%%%%',     'CN    '    )
        CALL StrCompress ( fName, RemoveAll=.TRUE.              )
-       CALL NcOutFileDef( I_NestCh05,  J_NestCh05,     1,           &
-                          xMid_05x0625(I0_ch05:I1_ch05),          &
-                          yMid_05x0625(J0_ch05:J1_ch05),          &
+       CALL NcOutFileDef( I_NestAs05,  J_NestAs05,  1,              &
+                          xMid_05x0625(I0_as05:I1_as05),          &
+                          yMid_05x0625(J0_as05:J1_as05),          &
                           time,      gName,        fName,       &
-                          fOut05NestCh                           )
+                          fOut05NestAs                            )
     ENDIF
 
     ! Open nested EU output file
@@ -634,38 +600,6 @@ CONTAINS
                           fOut05NestNa                            )
     ENDIF
 
-    ! Open nested SE output file
-    IF ( doNestSe05 ) THEN
-       fName = TRIM( tempDirTmplNestSe05 ) // TRIM( dataTmplNestSe05 )
-       gName = 'nested SE 05'
-       CALL ExpandDate  ( fName,     20110101,     000000      )
-       CALL StrRepl     ( fName,     '%%%%%%',     'CN    '    )
-       CALL StrCompress ( fName, RemoveAll=.TRUE.              )
-       CALL NcOutFileDef( I_NestSe05,  J_NestSe05,  1,              &
-                          xMid_05x0625(I0_se05:I1_se05),          &
-                          yMid_05x0625(J0_se05:J1_se05),          &
-                          time,      gName,        fName,       &
-                          fOut05NestSe                            )
-    ENDIF
-
-    !(jxu, 2015/12/08, add nested Asia)
-    ! Open nested AS output file
-    IF ( doNestAs05 ) THEN
-       fName = TRIM( tempDirTmplNestAs05 ) // TRIM( dataTmplNestAs05 )
-       gName = 'nested As 05'
-       CALL ExpandDate  ( fName,     20110101,     000000      )
-       CALL StrRepl     ( fName,     '%%%%%%',     'CN    '    )
-       CALL StrCompress ( fName, RemoveAll=.TRUE.              )
-       CALL NcOutFileDef( I_NestAs05,  J_NestAs05,  1,              &
-                          xMid_05x0625(I0_as05:I1_as05),          &
-                          yMid_05x0625(J0_as05:J1_as05),          &
-                          time,      gName,        fName,       &
-                          fOut05NestAs                            )
-    ENDIF
-    !(jxu, end)
-
-    !------(finish edit)---------------
-
     !=======================================================================
     ! Process data
     !=======================================================================
@@ -682,27 +616,15 @@ CONTAINS
     WRITE( IU_LOG, '(a)' ) TRIM( msg )
 
     ! Close output files
-    IF ( doNestCh ) CALL NcCl( fOutNestCh )
-    IF ( doNestEu ) CALL NcCl( fOutNestEu )
-    IF ( doNestNa ) CALL NcCl( fOutNestNa )
-    IF ( doNestSe ) CALL NcCl( fOutNestSe )
-    !(jxu, 2015/12/08, add nested Asia)
-    IF ( doNestAs ) CALL NcCl( fOutNestAs )
-    !(jxu, end)
-    !(jxu, 2016/02/13, add 0.25 global)
-    IF ( do025x03125   ) CALL NcCl( fOut025x03125   )
-    !(jxu, end)
-    IF ( do2x25   ) CALL NcCl( fOut2x25   )
-    IF ( do4x5    ) CALL NcCl( fOut4x5    )
-    ! (lzh, 06/20/2014) add nested 0.5x0.625
-    IF ( doNestCh05 ) CALL NcCl( fOut05NestCh )
-    IF ( doNestEu05 ) CALL NcCl( fOut05NestEu )
-    IF ( doNestNa05 ) CALL NcCl( fOut05NestNa )
-    IF ( doNestSe05 ) CALL NcCl( fOut05NestSe )
-    !(jxu, 2015/12/08, add nested Asia)
-    IF ( doNestAs05 ) CALL NcCl( fOut05NestAs )
-    !(jxu, end)
-
+    IF ( doNestAs    ) CALL NcCl( fOutNestAs    )
+    IF ( doNestEu    ) CALL NcCl( fOutNestEu    )
+    IF ( doNestNa    ) CALL NcCl( fOutNestNa    )
+    IF ( do025x03125 ) CALL NcCl( fOut025x03125 )
+    IF ( doNestAs05  ) CALL NcCl( fOut05NestAs  )
+    IF ( doNestEu05  ) CALL NcCl( fOut05NestEu  )
+    IF ( doNestNa05  ) CALL NcCl( fOut05NestNa  )
+    IF ( do2x25      ) CALL NcCl( fOut2x25      )
+    IF ( do4x5       ) CALL NcCl( fOut4x5       )
 
     ! Echo info
     msg = '%%%%%%%%%% LEAVING ROUTINE GeosFpMakeCn %%%%%%%%%%'
@@ -749,16 +671,10 @@ CONTAINS
 
     ! Variables for netCDF I/O
     INTEGER                 :: X,        Y,        T
-    INTEGER                 :: XNestCh,  YNestCh,  TNestCh
+    INTEGER                 :: XNestAs,  YNestAs,  TNestAs
     INTEGER                 :: XNestEu,  YNestEu,  TNestEu
     INTEGER                 :: XNestNa,  YNestNa,  TNestNa
-    INTEGER                 :: XNestSe,  YNestSe,  TNestSe
-    !(jxu, 2015/12/08, add nested Asia)
-    INTEGER                 :: XNestAs,  YNestAs,  TNestAs
-    !(jxu, end)
-    !(jxu, 2016/02/13, add 0.25 global)
     INTEGER                 :: X025x03125,    Y025x03125,   T025x03125
-    !(jxu, end)
     INTEGER                 :: X2x25,    Y2x25,    T2x25
     INTEGER                 :: X4x5,     Y4x5,     T4x5
     INTEGER                 :: st2d(2),  st3d(3)
@@ -768,14 +684,9 @@ CONTAINS
     REAL*4,  TARGET         :: Q    ( I025x03125, J025x03125, 1 )
     REAL*4                  :: Q2x25( I2x25,      J2x25         )
     REAL*4                  :: Q4x5 ( I4x5,       J4x5          )
-    ! (lzh,06/20/2014) 0.5x0.625
-    INTEGER                 :: XNestCh05,  YNestCh05,  TNestCh05
+    INTEGER                 :: XNestAs05,  YNestAs05,  TNestAs05
     INTEGER                 :: XNestEu05,  YNestEu05,  TNestEu05
     INTEGER                 :: XNestNa05,  YNestNa05,  TNestNa05
-    INTEGER                 :: XNestSe05,  YNestSe05,  TNestSe05
-    !(jxu, 2015/12/08, add nested Asia)
-    INTEGER                 :: XNestAs05,  YNestAs05,  TNestAs05
-    !(jxu, end)
     REAL*4, TARGET          :: Q05  ( I05x0625, J05x0625, 1     )
 
     ! Pointers
@@ -791,11 +702,11 @@ CONTAINS
     ! Get dimensions from output files
     !=======================================================================
 
-    ! Nested CH grid
-    IF ( doNestCh ) THEN
-       CALL NcGet_DimLen( fOutNestCh, 'lon',  XNestCh )
-       CALL NcGet_DimLen( fOutNestCh, 'lat',  YNestCh )
-       CALL NcGet_DimLen( fOutNestCh, 'time', TNestCh )
+    ! Nested AS grid
+    IF ( doNestAs ) THEN
+       CALL NcGet_DimLen( fOutNestAs, 'lon',  XNestAs )
+       CALL NcGet_DimLen( fOutNestAs, 'lat',  YNestAs )
+       CALL NcGet_DimLen( fOutNestAs, 'time', TNestAs )
     ENDIF
 
     ! Nested EU grid
@@ -812,31 +723,12 @@ CONTAINS
        CALL NcGet_DimLen( fOutNestNa, 'time', TNestNa )
     ENDIF
 
-    ! Nested SE grid
-    IF ( doNestSe ) THEN
-       CALL NcGet_DimLen( fOutNestSe, 'lon',  XNestSe )
-       CALL NcGet_DimLen( fOutNestSe, 'lat',  YNestSe )
-       CALL NcGet_DimLen( fOutNestSe, 'time', TNestSe )
-    ENDIF
-
-    !(jxu, 2015/12/08, add nested Asia)
-    ! Nested AS grid
-    IF ( doNestAs ) THEN
-       CALL NcGet_DimLen( fOutNestAs, 'lon',  XNestAs )
-       CALL NcGet_DimLen( fOutNestAs, 'lat',  YNestAs )
-       CALL NcGet_DimLen( fOutNestAs, 'time', TNestAs )
-    ENDIF
-    !(jxu, end)
-
-    !(jxu, 2016/02/13, add 0.25 global)
     ! 0.25x0.3125 global grid
     IF ( do025x03125 ) THEN
        CALL NcGet_DimLen( fOut025x03125,   'lon',  X025x03125   )
        CALL NcGet_DimLen( fOut025x03125,   'lat',  Y025x03125   )
        CALL NcGet_DimLen( fOut025x03125,   'time', T025x03125   )
     ENDIF
-    !(jxu, end)
-
 
     ! 2 x 2.5 global grid
     IF ( do2x25 ) THEN
@@ -852,12 +744,11 @@ CONTAINS
        CALL NcGet_DimLen( fOut4x5,    'time', T4x5    )
     ENDIF
 
-    ! (lzh, 06/20/2014) 0.5x0.625
-    ! Nested CH grid 0625
-    IF ( doNestCh05 ) THEN
-       CALL NcGet_DimLen( fOut05NestCh, 'lon',  XNestCh05 )
-       CALL NcGet_DimLen( fOut05NestCh, 'lat',  YNestCh05 )
-       CALL NcGet_DimLen( fOut05NestCh, 'time', TNestCh05 )
+    ! Nested AS grid 0625
+    IF ( doNestAs05 ) THEN
+       CALL NcGet_DimLen( fOut05NestAs, 'lon',  XNestAs05 )
+       CALL NcGet_DimLen( fOut05NestAs, 'lat',  YNestAs05 )
+       CALL NcGet_DimLen( fOut05NestAs, 'time', TNestAs05 )
     ENDIF
 
     ! Nested EU grid 0625
@@ -873,22 +764,6 @@ CONTAINS
        CALL NcGet_DimLen( fOut05NestNa, 'lat',  YNestNa05 )
        CALL NcGet_DimLen( fOut05NestNa, 'time', TNestNa05 )
     ENDIF
-
-    ! Nested SE grid 0625
-    IF ( doNestSe05 ) THEN
-       CALL NcGet_DimLen( fOut05NestSe, 'lon',  XNestSe05 )
-       CALL NcGet_DimLen( fOut05NestSe, 'lat',  YNestSe05 )
-       CALL NcGet_DimLen( fOut05NestSe, 'time', TNestSe05 )
-    ENDIF
-
-    !(jxu, 2015/12/08, add nested Asia)
-    ! Nested AS grid 0625
-    IF ( doNestAs05 ) THEN
-       CALL NcGet_DimLen( fOut05NestAs, 'lon',  XNestAs05 )
-       CALL NcGet_DimLen( fOut05NestAs, 'lat',  YNestAs05 )
-       CALL NcGet_DimLen( fOut05NestAs, 'time', TNestAs05 )
-    ENDIF
-    !(jxu, end)
 
     !=======================================================================
     ! Open input file
@@ -967,7 +842,7 @@ CONTAINS
        IF ( do4x5 ) THEN
           CALL RegridGeosFpTo4x5( 0, Q(:,:,1), Q4x5 )
        ENDIF
-       ! Regrid to 0.5 x 0.625   ! (lzh,06/21/2014)
+       ! Regrid to 0.5 x 0.625
        IF ( do05x0625 ) THEN
           CALL RegridGeosFpto05x0625( 0, Q(:,:,1), Q05 )
        ENDIF
@@ -982,13 +857,13 @@ CONTAINS
        ! Special handing
        IF ( TRIM( name ) == 'FRLANDICE' ) name ='FRLANDIC'
 
-       ! Nested CH
-       IF ( doNestCh ) THEN
-          QNest => Q( I0_ch:I1_ch, J0_ch:J1_ch, 1 )  ! Point to proper slice
+       ! Nested AS
+       IF ( doNestAs ) THEN
+          QNest => Q( I0_as:I1_as, J0_as:J1_as, 1 )  ! Point to proper slice
 
           st3d  = (/ 1,       1,       1       /)
-          ct3d  = (/ XNestCh, YNestCh, TNestCh /)
-          CALL NcWr( QNest, fOutNestCh, TRIM( name ), st3d, ct3d )
+          ct3d  = (/ XNestAs, YNestAs, TNestAs /)
+          CALL NcWr( QNest, fOutNestAs, TRIM( name ), st3d, ct3d )
           NULLIFY( QNest )
        ENDIF
 
@@ -1012,29 +887,7 @@ CONTAINS
           NULLIFY( QNest )
        ENDIF
 
-       ! Nested SE
-       IF ( doNestSe ) THEN
-          QNest => Q( I0_se:I1_se, J0_se:J1_se, 1 )  ! Point to proper slice
-
-          st3d  = (/ 1,       1,       1       /)
-          ct3d  = (/ XNestSe, YNestSe, TNestSe /)
-          CALL NcWr( QNest, fOutNestSe, TRIM( name ), st3d, ct3d )
-          NULLIFY( QNest )
-       ENDIF
-
-       !(jxu, 2015/12/08, add nested Asia)
-       ! Nested AS
-       IF ( doNestAs ) THEN
-          QNest => Q( I0_as:I1_as, J0_as:J1_as, 1 )  ! Point to proper slice
-
-          st3d  = (/ 1,       1,       1       /)
-          ct3d  = (/ XNestAs, YNestAs, TNestAs /)
-          CALL NcWr( QNest, fOutNestAs, TRIM( name ), st3d, ct3d )
-          NULLIFY( QNest )
-       ENDIF
-       !(jxu, end)
-
-       !(jxu, 2016/02/13, add 0.25 global)
+       ! Global 0.25x0.3125
        IF ( do025x03125 ) THEN
           QNest  => Q(:,:,1)
           st3d = (/ 1,       1,       1       /)
@@ -1042,7 +895,6 @@ CONTAINS
           CALL NcWr( QNest, fOut025x03125, TRIM( name ), st3d, ct3d )
           NULLIFY( QNest )
        ENDIF
-       !(jxu, end)
 
        ! Write 2 x 2.5 data
        IF ( do2x25 ) THEN
@@ -1057,14 +909,14 @@ CONTAINS
           ct3d = (/ X4x5, Y4x5, T4x5 /)
           CALL NcWr( Q4x5, fOut4x5, TRIM( name ), st3d, ct3d )
        ENDIF
-    !-------(lzh, 06/21/2014) add 0.5x0.625------------
-       ! Nested CH
-       IF ( doNestCh05 ) THEN
-          QNest => Q05( I0_ch05:I1_ch05, J0_ch05:J1_ch05, 1 )  ! Point to proper slice
+
+       ! Nested AS
+       IF ( doNestAs05 ) THEN
+          QNest => Q05( I0_as05:I1_as05, J0_as05:J1_as05, 1 )  ! Point to proper slice
 
           st3d  = (/ 1,       1,       1       /)
-          ct3d  = (/ XNestCh05, YNestCh05, TNestCh05 /)
-          CALL NcWr( QNest, fOut05NestCh, TRIM( name ), st3d, ct3d )
+          ct3d  = (/ XNestAs05, YNestAs05, TNestAs05 /)
+          CALL NcWr( QNest, fOut05NestAs, TRIM( name ), st3d, ct3d )
           NULLIFY( QNest )
        ENDIF
 
@@ -1087,31 +939,6 @@ CONTAINS
           CALL NcWr( QNest, fOut05NestNa, TRIM( name ), st3d, ct3d )
           NULLIFY( QNest )
        ENDIF
-
-       ! Nested SE
-       IF ( doNestSe05 ) THEN
-          QNest => Q05( I0_se05:I1_se05, J0_se05:J1_se05, 1 )  ! Point to proper slice
-
-          st3d  = (/ 1,       1,       1       /)
-          ct3d  = (/ XNestSe05, YNestSe05, TNestSe05 /)
-          CALL NcWr( QNest, fOut05NestSe, TRIM( name ), st3d, ct3d )
-          NULLIFY( QNest )
-       ENDIF
-
-       !(jxu, 2015/12/08, add nested Asia)
-       ! Nested AS
-       IF ( doNestAs05 ) THEN
-          QNest => Q05( I0_as05:I1_as05, J0_as05:J1_as05, 1 )  ! Point to proper slice
-
-          st3d  = (/ 1,       1,       1       /)
-          ct3d  = (/ XNestAs05, YNestAs05, TNestAs05 /)
-          CALL NcWr( QNest, fOut05NestAs, TRIM( name ), st3d, ct3d )
-          NULLIFY( QNest )
-       ENDIF
-
-       !(jxu, end)
-
-    !-------(finish edit)------------------------------
 
     ENDDO
 

@@ -38,10 +38,10 @@ our $USER_ID           = "";
 our $YEAR_STRING       = "";
 
 # Data file names and directories
-our $DO_NEST_CH        = "";
-our $DATA_FILE_NEST_CH = "";
-our $TEMP_DIR_NEST_CH  = "";
-our $DATA_DIR_NEST_CH  = "";
+our $DO_NEST_AS        = "";
+our $DATA_FILE_NEST_AS = "";
+our $TEMP_DIR_NEST_AS  = "";
+our $DATA_DIR_NEST_AS  = "";
 our $DO_NEST_EU        = "";
 our $DATA_FILE_NEST_EU = "";
 our $TEMP_DIR_NEST_EU  = "";
@@ -50,10 +50,6 @@ our $DO_NEST_NA        = "";
 our $DATA_FILE_NEST_NA = "";
 our $TEMP_DIR_NEST_NA  = "";
 our $DATA_DIR_NEST_NA  = "";
-our $DO_NEST_SE        = "";
-our $DATA_FILE_NEST_SE = "";
-our $TEMP_DIR_NEST_SE  = "";
-our $DATA_DIR_NEST_SE  = "";
 our $DO_2x25           = "";
 our $DATA_FILE_2x25    = "";
 our $TEMP_DIR_2x25     = "";
@@ -191,11 +187,11 @@ sub getDirectories($) {
   # Loop thru each line in the file
   for ( my $i = 0; $i < scalar( @file ); $i++ ) {
 
-    if ( $file[$i] =~ "==> Nested CH output" ) {
-      $DO_NEST_CH        = $file[++$i];
-      $DATA_FILE_NEST_CH = $file[++$i];
-      $TEMP_DIR_NEST_CH  = $file[++$i];
-      $DATA_DIR_NEST_CH  = $file[++$i];
+    if ( $file[$i] =~ "==> Nested AS output" ) {
+      $DO_NEST_AS        = $file[++$i];
+      $DATA_FILE_NEST_AS = $file[++$i];
+      $TEMP_DIR_NEST_AS  = $file[++$i];
+      $DATA_DIR_NEST_AS  = $file[++$i];
 
     } elsif ( $file[$i] =~ "==> Nested EU output" ) {
       $DO_NEST_EU        = $file[++$i];
@@ -208,12 +204,6 @@ sub getDirectories($) {
       $DATA_FILE_NEST_NA = $file[++$i];
       $TEMP_DIR_NEST_NA  = $file[++$i];
       $DATA_DIR_NEST_NA  = $file[++$i];
-
-    } elsif ( $file[$i] =~ "==> Nested SE output" ) {
-      $DO_NEST_SE        = $file[++$i];
-      $DATA_FILE_NEST_SE = $file[++$i];
-      $TEMP_DIR_NEST_SE  = $file[++$i];
-      $DATA_DIR_NEST_SE  = $file[++$i];
 
     } elsif ( $file[$i] =~ "==> 2 x 2.5 output" ) {
       $DO_2x25           = $file[++$i];
@@ -234,10 +224,9 @@ sub getDirectories($) {
   # data directory string.  This allows us to skip using the temporary 
   # directory.  You must edit bin/GeosFpDriver.input accordingly.
   # is the same as the data directory string
-  if ( $TEMP_DIR_NEST_CH eq $DATA_DIR_NEST_CH ) { $DO_NEST_CH = "F"; }
+  if ( $TEMP_DIR_NEST_AS eq $DATA_DIR_NEST_AS ) { $DO_NEST_AS = "F"; }
   if ( $TEMP_DIR_NEST_EU eq $DATA_DIR_NEST_EU ) { $DO_NEST_EU = "F"; }
   if ( $TEMP_DIR_NEST_NA eq $DATA_DIR_NEST_NA ) { $DO_NEST_NA = "F"; }
-  if ( $TEMP_DIR_NEST_SE eq $DATA_DIR_NEST_SE ) { $DO_NEST_SE = "F"; }
   if ( $TEMP_DIR_2x25    eq $DATA_DIR_2x25    ) { $DO_2x25    = "F"; }
   if ( $TEMP_DIR_4x5     eq $DATA_DIR_4x5     ) { $DO_4x5     = "F"; }
 
@@ -397,23 +386,23 @@ sub moveFiles(@) {
     $fileType = $_[$i];
 
     #-------------------------------
-    # Nested China grid 
+    # Nested Asia grid 
     #-------------------------------
-    if ( $DO_NEST_CH =~ "T" ) {
+    if ( $DO_NEST_AS =~ "T" ) {
 
       # Temporary file mask
-      $mask   = "$TEMP_DIR_NEST_CH$DATA_FILE_NEST_CH";
+      $mask   = "$TEMP_DIR_NEST_AS$DATA_FILE_NEST_AS";
       $mask   = &replaceTokens( $mask, $fileType );
   
       # Data directory path
-      $dir    = "$DATA_DIR_NEST_CH";
+      $dir    = "$DATA_DIR_NEST_AS";
       $dir    = &replaceTokens( $dir, $fileType );
       &checkDir( $dir );
 
-      if ( $TEMP_DIR_NEST_CH eq $DATA_DIR_NEST_CH ) {
+      if ( $TEMP_DIR_NEST_AS eq $DATA_DIR_NEST_AS ) {
 
 	# We don't have to move files
-	print "No move necessary, nested CH data is in proper location\n";
+	print "No move necessary, nested AS data is in proper location\n";
 
       } else {
 
