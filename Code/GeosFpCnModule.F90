@@ -146,7 +146,8 @@ CONTAINS
     WRITE( 6, 100 ) TRIM( gridName )
 100 FORMAT ( '%%% Defining netCDF file vars & attrs for ', a' grid' )
 
-    is_nc4 = .TRUE.   !Output nc4 now to accomodate large file size for global 0.25x0.3125 data (Chi Li)
+    ! Output nc4 now to accomodate large file size for global 0.25x0.3125 data
+    is_nc4 = .TRUE.
 
     ! Open netCDF file for writing
     CALL NcCr_Wr( fOut, TRIM( outFileName ), WRITE_NC4=is_nc4 )
@@ -227,7 +228,7 @@ CONTAINS
 
     ! Pick DI and DJ attributes based on the grid
     SELECT CASE ( TRIM( gridName ) )
-       CASE( 'native', 'nested AS', 'nested EU', 'nested NA', '0.25 x 0.3125 global')
+       CASE( 'native', 'nested AF', 'nested AS', 'nested EU', 'nested ME', 'nested NA', 'nested OC', 'nested RU', 'nested SA', '0.25 x 0.3125 global' )
           DI = '0.3125'
           DJ = '0.25'
        CASE( 'nested AS 05', 'nested EU 05', 'nested NA 05')
@@ -480,7 +481,7 @@ CONTAINS
     ! Hours in the day
     time = (/ 0 /)
 
-    ! Open nested AS output file
+    ! Open 0.25x0.3125 nested AS output file
     IF ( doNestAs ) THEN
        fName = TRIM( tempDirTmplNestAs ) // TRIM( dataTmplNestAs )
        gName = 'nested AS'
@@ -494,7 +495,7 @@ CONTAINS
                           fOutNestAs                            )
     ENDIF
 
-    ! Open nested EU output file
+    ! Open 0.25x0.3125 nested EU output file
     IF ( doNestEu ) THEN
        fName = TRIM( tempDirTmplNestEu ) // TRIM( dataTmplNestEu )
        gName = 'nested EU'
@@ -508,7 +509,7 @@ CONTAINS
                           fOutNestEu                           )
     ENDIF
 
-    ! Open nested NA output file
+    ! Open 0.25x0.3125 nested NA output file
     IF ( doNestNa ) THEN
        fName = TRIM( tempDirTmplNestNa ) // TRIM( dataTmplNestNa )
        gName = 'nested NA'
@@ -522,7 +523,7 @@ CONTAINS
                           fOutNestNa                            )
     ENDIF
 
-    ! Open 0.25x0.3125 output file
+    ! Open global 0.25x0.3125 output file
     IF ( do025x03125 ) THEN
        fName = TRIM( tempDirTmpl025x03125 ) // TRIM( dataTmpl025x03125 )
        gName = '0.25x0.3125 global'
@@ -558,7 +559,7 @@ CONTAINS
                           gName,     fName,     fOut4x5        )
     ENDIF
 
-    ! Open nested AS output file
+    ! Open 0.5x0.625 nested AS output file
     IF ( doNestAs05 ) THEN
        fName = TRIM( tempDirTmplNestAs05 ) // TRIM( dataTmplNestAs05 )
        gName = 'nested As 05'
@@ -572,7 +573,7 @@ CONTAINS
                           fOut05NestAs                            )
     ENDIF
 
-    ! Open nested EU output file
+    ! Open 0.5x0.625 nested EU output file
     IF ( doNestEu05 ) THEN
        fName = TRIM( tempDirTmplNestEu05 ) // TRIM( dataTmplNestEu05 )
        gName = 'nested EU 05'
@@ -586,7 +587,7 @@ CONTAINS
                           fOut05NestEu                           )
     ENDIF
 
-    ! Open nested NA output file
+    ! Open 0.5x0.625 nested NA output file
     IF ( doNestNa05 ) THEN
        fName = TRIM( tempDirTmplNestNa05 ) // TRIM( dataTmplNestNa05 )
        gName = 'nested NA 05'

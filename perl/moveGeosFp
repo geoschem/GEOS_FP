@@ -38,26 +38,66 @@ our $USER_ID           = "";
 our $YEAR_STRING       = "";
 
 # Data file names and directories
-our $DO_NEST_AS        = "";
-our $DATA_FILE_NEST_AS = "";
-our $TEMP_DIR_NEST_AS  = "";
-our $DATA_DIR_NEST_AS  = "";
-our $DO_NEST_EU        = "";
-our $DATA_FILE_NEST_EU = "";
-our $TEMP_DIR_NEST_EU  = "";
-our $DATA_DIR_NEST_EU  = "";
-our $DO_NEST_NA        = "";
-our $DATA_FILE_NEST_NA = "";
-our $TEMP_DIR_NEST_NA  = "";
-our $DATA_DIR_NEST_NA  = "";
-our $DO_2x25           = "";
-our $DATA_FILE_2x25    = "";
-our $TEMP_DIR_2x25     = "";
-our $DATA_DIR_2x25     = "";
-our $DO_4x5            = "";
-our $DATA_FILE_4x5     = "";
-our $TEMP_DIR_4x5      = "";
-our $DATA_DIR_4x5      = "";
+our $DO_NEST_AF          = "";
+our $DATA_FILE_NEST_AF   = "";
+our $TEMP_DIR_NEST_AF    = "";
+our $DATA_DIR_NEST_AF    = "";
+our $DO_NEST_AS          = "";
+our $DATA_FILE_NEST_AS   = "";
+our $TEMP_DIR_NEST_AS    = "";
+our $DATA_DIR_NEST_AS    = "";
+our $DO_NEST_EU          = "";
+our $DATA_FILE_NEST_EU   = "";
+our $TEMP_DIR_NEST_EU    = "";
+our $DATA_DIR_NEST_EU    = "";
+our $DO_NEST_ME          = "";
+our $DATA_FILE_NEST_ME   = "";
+our $TEMP_DIR_NEST_ME    = "";
+our $DATA_DIR_NEST_ME    = "";
+our $DO_NEST_NA          = "";
+our $DATA_FILE_NEST_NA   = "";
+our $TEMP_DIR_NEST_NA    = "";
+our $DATA_DIR_NEST_NA    = "";
+our $DO_NEST_OC          = "";
+our $DATA_FILE_NEST_OC   = "";
+our $TEMP_DIR_NEST_OC    = "";
+our $DATA_DIR_NEST_OC    = "";
+our $DO_NEST_RU          = "";
+our $DATA_FILE_NEST_RU   = "";
+our $TEMP_DIR_NEST_RU    = "";
+our $DATA_DIR_NEST_RU    = "";
+our $DO_NEST_SA          = "";
+our $DATA_FILE_NEST_SA   = "";
+our $TEMP_DIR_NEST_SA    = "";
+our $DATA_DIR_NEST_SA    = "";
+our $DO_NEST_AS_05       = "";
+our $DATA_FILE_NEST_AS_05= "";
+our $TEMP_DIR_NEST_AS_05 = "";
+our $DATA_DIR_NEST_AS_05 = "";
+our $DO_NEST_EU_05       = "";
+our $DATA_FILE_NEST_EU_05= "";
+our $TEMP_DIR_NEST_EU_05 = "";
+our $DATA_DIR_NEST_EU_05 = "";
+our $DO_NEST_NA_05       = "";
+our $DATA_FILE_NEST_NA_05= "";
+our $TEMP_DIR_NEST_NA_05 = "";
+our $DATA_DIR_NEST_NA_05 = "";
+our $DO_025x03125        = "";
+our $DATA_FILE_025x03125 = "";
+our $TEMP_DIR_025x03125  = "";
+our $DATA_DIR_025x03125  = "";
+our $DO_05x0625          = "";
+our $DATA_FILE_05x0625   = "";
+our $TEMP_DIR_05x0625    = "";
+our $DATA_DIR_05x0625    = "";
+our $DO_2x25             = "";
+our $DATA_FILE_2x25      = "";
+our $TEMP_DIR_2x25       = "";
+our $DATA_DIR_2x25       = "";
+our $DO_4x5              = "";
+our $DATA_FILE_4x5       = "";
+our $TEMP_DIR_4x5        = "";
+our $DATA_DIR_4x5        = "";
 #
 # !CALLING SEQUENCE:
 # moveGeosFp YYYYMMDD FILETYPE
@@ -187,31 +227,91 @@ sub getDirectories($) {
   # Loop thru each line in the file
   for ( my $i = 0; $i < scalar( @file ); $i++ ) {
 
-    if ( $file[$i] =~ "==> Nested AS output" ) {
+    if ( $file[$i] =~ "==> 0.25x0.3125 Nested AF output" ) {
+      $DO_NEST_AF        = $file[++$i];
+      $DATA_FILE_NEST_AF = $file[++$i];
+      $TEMP_DIR_NEST_AF  = $file[++$i];
+      $DATA_DIR_NEST_AF  = $file[++$i];
+
+    } elsif ( $file[$i] =~ "==> 0.25x0.3125 Nested AS output" ) {
       $DO_NEST_AS        = $file[++$i];
       $DATA_FILE_NEST_AS = $file[++$i];
       $TEMP_DIR_NEST_AS  = $file[++$i];
       $DATA_DIR_NEST_AS  = $file[++$i];
 
-    } elsif ( $file[$i] =~ "==> Nested EU output" ) {
+    } elsif ( $file[$i] =~ "==> 0.25x0.3125 Nested EU output" ) {
       $DO_NEST_EU        = $file[++$i];
       $DATA_FILE_NEST_EU = $file[++$i];
       $TEMP_DIR_NEST_EU  = $file[++$i];
       $DATA_DIR_NEST_EU  = $file[++$i];
 
-    } elsif ( $file[$i] =~ "==> Nested NA output" ) {
+    if ( $file[$i] =~ "==> 0.25x0.3125 Nested ME output" ) {
+      $DO_NEST_ME        = $file[++$i];
+      $DATA_FILE_NEST_ME = $file[++$i];
+      $TEMP_DIR_NEST_ME  = $file[++$i];
+      $DATA_DIR_NEST_ME  = $file[++$i];
+
+    } elsif ( $file[$i] =~ "==> 0.25x0.3125 Nested NA output" ) {
       $DO_NEST_NA        = $file[++$i];
       $DATA_FILE_NEST_NA = $file[++$i];
       $TEMP_DIR_NEST_NA  = $file[++$i];
       $DATA_DIR_NEST_NA  = $file[++$i];
 
-    } elsif ( $file[$i] =~ "==> 2 x 2.5 output" ) {
+    if ( $file[$i] =~ "==> 0.25x0.3125 Nested OC output" ) {
+      $DO_NEST_OC        = $file[++$i];
+      $DATA_FILE_NEST_OC = $file[++$i];
+      $TEMP_DIR_NEST_OC  = $file[++$i];
+      $DATA_DIR_NEST_OC  = $file[++$i];
+
+    if ( $file[$i] =~ "==> 0.25x0.3125 Nested RU output" ) {
+      $DO_NEST_RU        = $file[++$i];
+      $DATA_FILE_NEST_RU = $file[++$i];
+      $TEMP_DIR_NEST_RU  = $file[++$i];
+      $DATA_DIR_NEST_RU  = $file[++$i];
+
+    if ( $file[$i] =~ "==> 0.25x0.3125 Nested SA output" ) {
+      $DO_NEST_SA        = $file[++$i];
+      $DATA_FILE_NEST_SA = $file[++$i];
+      $TEMP_DIR_NEST_SA  = $file[++$i];
+      $DATA_DIR_NEST_SA  = $file[++$i];
+
+    } elsif ( $file[$i] =~ "==> 0.5x0.625 Nested AS output" ) {
+      $DO_NEST_AS_05        = $file[++$i];
+      $DATA_FILE_NEST_AS_05 = $file[++$i];
+      $TEMP_DIR_NEST_AS_05  = $file[++$i];
+      $DATA_DIR_NEST_AS_05  = $file[++$i];
+
+    } elsif ( $file[$i] =~ "==> 0.5x0.625 Nested EU output" ) {
+      $DO_NEST_EU_05        = $file[++$i];
+      $DATA_FILE_NEST_EU_05 = $file[++$i];
+      $TEMP_DIR_NEST_EU_05  = $file[++$i];
+      $DATA_DIR_NEST_EU_05  = $file[++$i];
+
+    } elsif ( $file[$i] =~ "==> 0.5x0.625 Nested NA output" ) {
+      $DO_NEST_NA_05        = $file[++$i];
+      $DATA_FILE_NEST_NA_05 = $file[++$i];
+      $TEMP_DIR_NEST_NA_05  = $file[++$i];
+      $DATA_DIR_NEST_NA_05  = $file[++$i];
+
+    if ( $file[$i] =~ "==> 0.25x0.3125 global output" ) {
+      $DO_025x03125        = $file[++$i];
+      $DATA_FILE_025x03125 = $file[++$i];
+      $TEMP_DIR_025x03125  = $file[++$i];
+      $DATA_DIR_025x03125  = $file[++$i];
+
+    if ( $file[$i] =~ "==> 0.5x0.625 global output" ) {
+      $DO_05x06125        = $file[++$i];
+      $DATA_FILE_05x0625 = $file[++$i];
+      $TEMP_DIR_05x0625  = $file[++$i];
+      $DATA_DIR_05x0625  = $file[++$i];
+
+    } elsif ( $file[$i] =~ "==> 2 x 2.5 global output" ) {
       $DO_2x25           = $file[++$i];
       $DATA_FILE_2x25    = $file[++$i];
       $TEMP_DIR_2x25     = $file[++$i];
       $DATA_DIR_2x25     = $file[++$i];
 
-    } elsif ( $file[$i] =~ "==> 4 x 5 output" ) {
+    } elsif ( $file[$i] =~ "==> 4 x 5 global output" ) {
       $DO_4x5            = $file[++$i];
       $DATA_FILE_4x5     = $file[++$i];
       $TEMP_DIR_4x5      = $file[++$i];
@@ -224,11 +324,21 @@ sub getDirectories($) {
   # data directory string.  This allows us to skip using the temporary 
   # directory.  You must edit bin/GeosFpDriver.input accordingly.
   # is the same as the data directory string
-  if ( $TEMP_DIR_NEST_AS eq $DATA_DIR_NEST_AS ) { $DO_NEST_AS = "F"; }
-  if ( $TEMP_DIR_NEST_EU eq $DATA_DIR_NEST_EU ) { $DO_NEST_EU = "F"; }
-  if ( $TEMP_DIR_NEST_NA eq $DATA_DIR_NEST_NA ) { $DO_NEST_NA = "F"; }
-  if ( $TEMP_DIR_2x25    eq $DATA_DIR_2x25    ) { $DO_2x25    = "F"; }
-  if ( $TEMP_DIR_4x5     eq $DATA_DIR_4x5     ) { $DO_4x5     = "F"; }
+  if ( $TEMP_DIR_NEST_AF    eq $DATA_DIR_NEST_AF    ) { $DO_NEST_AF    = "F"; }
+  if ( $TEMP_DIR_NEST_AS    eq $DATA_DIR_NEST_AS    ) { $DO_NEST_AS    = "F"; }
+  if ( $TEMP_DIR_NEST_EU    eq $DATA_DIR_NEST_EU    ) { $DO_NEST_EU    = "F"; }
+  if ( $TEMP_DIR_NEST_ME    eq $DATA_DIR_NEST_ME    ) { $DO_NEST_ME    = "F"; }
+  if ( $TEMP_DIR_NEST_NA    eq $DATA_DIR_NEST_NA    ) { $DO_NEST_NA    = "F"; }
+  if ( $TEMP_DIR_NEST_OC    eq $DATA_DIR_NEST_AS    ) { $DO_NEST_OC    = "F"; }
+  if ( $TEMP_DIR_NEST_RU    eq $DATA_DIR_NEST_AS    ) { $DO_NEST_RU    = "F"; }
+  if ( $TEMP_DIR_NEST_SA    eq $DATA_DIR_NEST_AS    ) { $DO_NEST_SA    = "F"; }
+  if ( $TEMP_DIR_NEST_AS_05 eq $DATA_DIR_NEST_AS_05 ) { $DO_NEST_AS_05 = "F"; }
+  if ( $TEMP_DIR_NEST_EU_05 eq $DATA_DIR_NEST_EU_05 ) { $DO_NEST_EU_05 = "F"; }
+  if ( $TEMP_DIR_NEST_NA_05 eq $DATA_DIR_NEST_NA_05 ) { $DO_NEST_NA_05 = "F"; }
+  if ( $TEMP_DIR_025x03125  eq $DATA_DIR_025x03125  ) { $DO_025x03125  = "F"; }
+  if ( $TEMP_DIR_05x0625    eq $DATA_DIR_05x0625    ) { $DO_05x0625    = "F"; }
+  if ( $TEMP_DIR_2x25       eq $DATA_DIR_2x25       ) { $DO_2x25       = "F"; }
+  if ( $TEMP_DIR_4x5        eq $DATA_DIR_4x5        ) { $DO_4x5        = "F"; }
 
   # Return normally
   return(0);
@@ -386,7 +496,37 @@ sub moveFiles(@) {
     $fileType = $_[$i];
 
     #-------------------------------
-    # Nested Asia grid 
+    # 0.25x0.3125 Nested Africa grid 
+    #-------------------------------
+    if ( $DO_NEST_AF =~ "T" ) {
+
+      # Temporary file mask
+      $mask   = "$TEMP_DIR_NEST_AF$DATA_FILE_NEST_AF";
+      $mask   = &replaceTokens( $mask, $fileType );
+  
+      # Data directory path
+      $dir    = "$DATA_DIR_NEST_AF";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );
+
+      if ( $TEMP_DIR_NEST_AF eq $DATA_DIR_NEST_AF ) {
+
+	# We don't have to move files
+	print "No move necessary, nested AF data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+    
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
+    }
+
+    #-------------------------------
+    # 0.25x0.3125 Nested Asia grid 
     #-------------------------------
     if ( $DO_NEST_AS =~ "T" ) {
 
@@ -416,7 +556,7 @@ sub moveFiles(@) {
     }
 
     #-------------------------------
-    # Nested Europe grid
+    # 0.25x0.3125 Nested Europe grid
     #-------------------------------
     if ( $DO_NEST_EU =~ "T" ) {
 
@@ -429,16 +569,54 @@ sub moveFiles(@) {
       $dir    = &replaceTokens( $dir, $fileType );
       &checkDir( $dir );
 
-      # Move command (list the directory first to force an automount)
-      $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+      if ( $TEMP_DIR_NEST_AS eq $DATA_DIR_NEST_AS ) {
+
+	# We don't have to move files
+	print "No move necessary, nested EU data is in proper location\n";
+
+      } else {
+
+        # Move command (list the directory first to force an automount)
+        $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
     
-      # Move the files
-      print "$cmd\n";
-      $result = qx( $cmd );
+        # Move the files
+        print "$cmd\n";
+        $result = qx( $cmd );
+    }	
     }	
 
     #-------------------------------
-    # Nested N. America grid
+    # 0.25x0.3125 Middle East grid 
+    #-------------------------------
+    if ( $DO_NEST_ME =~ "T" ) {
+
+      # Temporary file mask
+      $mask   = "$TEMP_DIR_NEST_ME$DATA_FILE_NEST_ME";
+      $mask   = &replaceTokens( $mask, $fileType );
+  
+      # Data directory path
+      $dir    = "$DATA_DIR_NEST_ME";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );
+
+      if ( $TEMP_DIR_NEST_ME eq $DATA_DIR_NEST_ME ) {
+
+	# We don't have to move files
+	print "No move necessary, nested ME data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+    
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
+    }
+
+    #-------------------------------
+    # 0.25x0.3125 Nested N. America grid
     #-------------------------------
     if ( $DO_NEST_NA =~ "T" ) {
 
@@ -451,13 +629,261 @@ sub moveFiles(@) {
       $dir    = &replaceTokens( $dir, $fileType );
       &checkDir( $dir );
 
-      # Move command (list the directory first to force an automount)
-      $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+      if ( $TEMP_DIR_NEST_NA eq $DATA_DIR_NEST_NA ) {
+
+	# We don't have to move files
+	print "No move necessary, nested NA data is in proper location\n";
+
+      } else {
+
+        # Move command (list the directory first to force an automount)
+        $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
     
-      # Move the files
-      print "$cmd\n";
-      $result = qx( $cmd );
+        # Move the files
+        print "$cmd\n";
+        $result = qx( $cmd );
     }				
+    }				
+
+    #-------------------------------
+    # 0.25x0.3125 Nested Oceania grid 
+    #-------------------------------
+    if ( $DO_NEST_OC =~ "T" ) {
+
+      # Temporary file mask
+      $mask   = "$TEMP_DIR_NEST_OC$DATA_FILE_NEST_OC";
+      $mask   = &replaceTokens( $mask, $fileType );
+  
+      # Data directory path
+      $dir    = "$DATA_DIR_NEST_OC";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );
+
+      if ( $TEMP_DIR_NEST_OC eq $DATA_DIR_NEST_OC ) {
+
+	# We don't have to move files
+	print "No move necessary, nested OC data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+    
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
+    }
+
+    #-------------------------------
+    # 0.25x0.3125 Nested Russia grid 
+    #-------------------------------
+    if ( $DO_NEST_RU =~ "T" ) {
+
+      # Temporary file mask
+      $mask   = "$TEMP_DIR_NEST_RU$DATA_FILE_NEST_RU";
+      $mask   = &replaceTokens( $mask, $fileType );
+  
+      # Data directory path
+      $dir    = "$DATA_DIR_NEST_RU";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );
+
+      if ( $TEMP_DIR_NEST_RU eq $DATA_DIR_NEST_RU ) {
+
+	# We don't have to move files
+	print "No move necessary, nested RU data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+    
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
+    }
+
+    #-------------------------------
+    # 0.25x0.3125 Nested S. America grid 
+    #-------------------------------
+    if ( $DO_NEST_SA =~ "T" ) {
+
+      # Temporary file mask
+      $mask   = "$TEMP_DIR_NEST_SA$DATA_FILE_NEST_SA";
+      $mask   = &replaceTokens( $mask, $fileType );
+  
+      # Data directory path
+      $dir    = "$DATA_DIR_NEST_SA";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );
+
+      if ( $TEMP_DIR_NEST_SA eq $DATA_DIR_NEST_SA ) {
+
+	# We don't have to move files
+	print "No move necessary, nested SA data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+    
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
+    }
+
+    #-------------------------------
+    # 0.5x0.625 Nested Asia grid 
+    #-------------------------------
+    if ( $DO_NEST_AS_05 =~ "T" ) {
+
+      # Temporary file mask
+      $mask   = "$TEMP_DIR_NEST_AS_05$DATA_FILE_NEST_AS_05";
+      $mask   = &replaceTokens( $mask, $fileType );
+  
+      # Data directory path
+      $dir    = "$DATA_DIR_NEST_AS_05";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );
+
+      if ( $TEMP_DIR_NEST_AS_05 eq $DATA_DIR_NEST_AS_05 ) {
+
+	# We don't have to move files
+	print "No move necessary, nested AS data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+    
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
+    }
+
+    #-------------------------------
+    # 0.5x0.625 Nested Europe grid
+    #-------------------------------
+    if ( $DO_NEST_EU_05 =~ "T" ) {
+
+      # Temporary file mask
+      $mask   = "$TEMP_DIR_NEST_EU_05$DATA_FILE_NEST_EU_05";
+      $mask   = &replaceTokens( $mask, $fileType );
+  
+      # Data directory path
+      $dir    = "$DATA_DIR_NEST_EU_05";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );
+
+      if ( $TEMP_DIR_NEST_EU_05 eq $DATA_DIR_NEST_EU_05 ) {
+
+	# We don't have to move files
+	print "No move necessary, nested EU data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+    
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
+    }	
+
+    #-------------------------------
+    # 0.5x0.625 Nested N. America grid
+    #-------------------------------
+    if ( $DO_NEST_NA_05 =~ "T" ) {
+
+      # Temporary file mask
+      $mask   = "$TEMP_DIR_NEST_NA_05$DATA_FILE_NEST_NA_05";
+      $mask   = &replaceTokens( $mask, $fileType );
+  
+      # Data directory path
+      $dir    = "$DATA_DIR_NEST_NA_05";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );
+
+      if ( $TEMP_DIR_NEST_NA_05 eq $DATA_DIR_NEST_NA_05 ) {
+
+	# We don't have to move files
+	print "No move necessary, nested NA data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+    
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
+    }				
+
+    #-------------------------------
+    # 0.25x0.3125 global grid
+    #-------------------------------
+    if ( $DO_025x03125 =~ "T" ) {
+
+      # File path to temporary directory
+      $mask   = "$TEMP_DIR_025x03125$DATA_FILE_025x03125";
+      $mask   = &replaceTokens( $mask, $fileType );
+    
+      # File path to data directory
+      $dir    = "$DATA_DIR_025x03125";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );    
+
+      if ( $TEMP_DIR_025x03125 eq $DATA_DIR_025x03125 ) {
+
+	# We don't have to move files
+	print "No move necessary, 025x03125 data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+    
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
+    }    
+
+    #-------------------------------
+    # 0.5x0.625 global grid
+    #-------------------------------
+    if ( $DO_05x0625 =~ "T" ) {
+
+      # File path to temporary directory
+      $mask   = "$TEMP_DIR_05x0625$DATA_FILE_05x0625";
+      $mask   = &replaceTokens( $mask, $fileType );
+    
+      # File path to data directory
+      $dir    = "$DATA_DIR_05x0625";
+      $dir    = &replaceTokens( $dir, $fileType );
+      &checkDir( $dir );    
+
+      if ( $TEMP_DIR_05x0625 eq $DATA_DIR_05x0625 ) {
+
+	# We don't have to move files
+	print "No move necessary, 05x0625 data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+    
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
+    }    
 
     #-------------------------------
     # 2 x 2.5 global grid
@@ -473,12 +899,20 @@ sub moveFiles(@) {
       $dir    = &replaceTokens( $dir, $fileType );
       &checkDir( $dir );    
 
-      # Move command (list the directory first to force an automount)
-      $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+      if ( $TEMP_DIR_2x25 eq $DATA_DIR_2x25 ) {
+
+	# We don't have to move files
+	print "No move necessary, 2x25 data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
     
-      # Move the files
-      print "$cmd\n";
-      $result = qx( $cmd );
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
     }    
 
     #-------------------------------
@@ -495,15 +929,23 @@ sub moveFiles(@) {
       $dir    = &replaceTokens( $dir, $fileType );
       &checkDir( $dir );    
 
-      # Move command (list the directory first to force an automount)
-      $cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+      if ( $TEMP_DIR_4x5 eq $DATA_DIR_4x5 ) {
 
-      # Move the files
-      print "$cmd\n";
-      $result = qx( $cmd );
+	# We don't have to move files
+	print "No move necessary, 4x5 data is in proper location\n";
+
+      } else {
+
+	# Move command (list the directory first to force an automount)
+	$cmd    = "ls $dir > /dev/null; mv -f $mask $dir";
+    
+	# Move the files
+	print "$cmd\n";
+	$result = qx( $cmd );
+    }
     }
   }
-
+  
   # Return normally
   return( 0 );
 }
