@@ -25,8 +25,8 @@
                          outFile : string  )
 ;
 ; !INPUT PARAMETERS:
-;  inFile   : Name of GEOS-5.7.2 "A3dyn" file w/ input data
-;  outFile  : Name of GEOSFP "A3dyn" file w/ vars & atts adjusted for COARDS
+;  inFile   : Name of GEOS-FP "A3dyn" file w/ input data
+;  outFile  : Name of GEOS-FP "A3dyn" file w/ vars & atts adjusted for COARDS
 ;
 ; !LOCAL VARIABLES:
 ;

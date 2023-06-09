@@ -2,9 +2,8 @@
 !          Harvard University Atmospheric Chemistry Modeling Group            !
 !------------------------------------------------------------------------------
 !BOI
-! !TITLE: Geos57Driver: Code for processing GEOS-5.7.x met data
-! !AUTHORS: Bob Yantosca
-! !AFFILIATION: School of Engineering and Applied Sciences, Harvard University
+! !TITLE: GeosFpDriver: Code for processing GEOS-FP met data
+! !AUTHORS: GEOS-Chem Support Team
 ! !DATE: 12 Jan 2012
 !EOI
 !------------------------------------------------------------------------------

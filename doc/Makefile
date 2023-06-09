@@ -6,7 +6,7 @@
 # !MODULE: Makefile (in doc subdirectory)
 #
 # !DESCRIPTION: Makefile for building the documentation (in PDF and 
-#  PostScript formats) for the GEOS-5.7.x data processing code, Makefiles,
+#  PostScript formats) for the GEOS-FP data processing code, Makefiles,
 #  and Perl scripts.
 #\\
 #\\
