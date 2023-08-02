@@ -82,7 +82,7 @@ T
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.AF.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
-  769 317 1057 581  <-- FIX
+  513 213 747 521
 
 ==> 0.25x0.3125 Nested AS output
 T
@@ -103,7 +103,7 @@ T
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.ME.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
-  769 317 1057 581  <-- FIX
+  513 409 801 561
 
 ==> 0.25x0.3125 Nested NA output
 T
@@ -117,21 +117,21 @@ T
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.OC.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
-  769 317 1057 581  <-- FIX
+  929 161 1 381
 
 ==> 0.25x0.3125 Nested RU output
 T
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.RU.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
-  769 317 1057 581  <-- FIX
+  638 525 1 693
 
 ==> 0.25x0.3125 Nested SA output
 T
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.SA.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
-  769 317 1057 581  <-- FIX
+  295 125 478 425
 
 ==> 0.5x0.625 Nested AS output
 T
