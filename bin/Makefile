@@ -5,7 +5,7 @@
 #
 # !MODULE: Makefile (run-directory)
 #
-# !DESCRIPTION: Makefile for the GEOS-5.7.x data processing code.  This is a
+# !DESCRIPTION: Makefile for the GEOS-FP data processing code.  This is a
 #  "router" makefile, which calls to the Makefile in the Code directory.
 #\\
 #\\
@@ -30,9 +30,9 @@
 # Define variables
 SHELL = /bin/sh
 DIR   = ../Code
-EXE0   = Geos57Driver0.x
-EXE1   = Geos57Driver1.x
-EXE2   = Geos57Driver2.x
+EXE0   = GeosFpDriver0.x
+EXE1   = GeosFpDriver1.x
+EXE2   = GeosFpDriver2.x
 
 #==============================================================================
 # Makefile targets (for now, build w/ the sample data)
@@ -55,16 +55,13 @@ debug:
 	$(EXE0) < 20110901 > log.0 &
 	$(EXE1) < 20110901 > log.1 &
 	$(EXE2) < 20110901 > log.2 &
-	$(EXE3) < 20110901 > log.3 &
-	$(EXE4) < 20110901 > log.4 &
-	$(EXE5) < 20110901 > log.5 &
 
 clean:
 	$(MAKE) -C $(DIR) clean
 
 realclean:
 	$(MAKE) -C $(DIR) realclean
-	rm -f GEOS572*.nc         
+	rm -f GEOSFP*.nc         
 
 doc:
 	$(MAKE) -C $(DIR) doc

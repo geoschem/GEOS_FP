@@ -22,25 +22,7 @@
 #
 # !REVISION HISTORY: 
 #  26 Oct 2011 - R. Yantosca - Initial version, based on MerraDriver.input
-#  03 Jan 2012 - R. Yantosca - Added fields for I3 output file
-#  05 Jan 2012 - R. Yantosca - Added fields for A1 output file
-#  05 Jan 2012 - R. Yantosca - Now use a single netCDF template file
-#  10 Jan 2012 - R. Yantosca - Added fields for A3 output file
-#  13 Jan 2012 - R. Yantosca - Now point file paths on /as/data/geos-rw/
-#  20 Jan 2012 - R. Yantosca - Now specify temporary & data directories
-#  16 Feb 2012 - R. Yantosca - Fix SEAC4RS grid offset for 20-50N (not 40N)
-#  20 Jun 2012 - R. Yantosca - Updated for new SEAC4RS grid (China)
-#  25 Jul 2013 - R. Yantosca - Updated for modified SEAC4RS mission (Houston)
-#  19 Sep 2013 - R. Yantosca - Changed "GEOS572" to "GEOSFP" in filenames
-#  19 Sep 2013 - R. Yantosca - Added inputs for nested Europe grid
-#  19 Sep 2013 - R. Yantosca - Removed reference to tavg3_3d_rad_Nv collection
-#  20 Sep 2013 - R. Yantosca - Removed CFCU from the list
-#  08 Oct 2013 - R. Yantosca - Added output for nested SE Asia grid (SE)
-#  09 Oct 2013 - R. Yantosca - Added output for native wind speed
-#  16 Oct 2013 - R. Yantosca - Added TO3 as a field
-#  05 Dec 2013 - R. Yantosca - Now read CLOUD from tavg3_3d_rad_Nv collection
-#  05 Dec 2013 - R. Yantosca - Remove CLOUD from the tavg3_3d_cld_Nv data
-#                              line.  Also take out CFAN+CFLS.
+#  See https://github.com/geoschem/GEOS_FP for complete history
 #
 
 ==> Turn on debug print output?
@@ -95,61 +77,82 @@ PS,PV,QV,T
 ==> Local Raw Data Path
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/GEOS_FP-raw/2021/03/
 
-==> Nested CH output
+==> 0.25x0.3125 Nested AF output
 T
-GEOSFP.YYYYMMDD.%%%%%%.025x03125.CH.nc
+GEOSFP.YYYYMMDD.%%%%%%.025x03125.AF.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
-  801  421  1025 581   # China grid
+  513 213 747 521
 
-==> Nested EU output
+==> 0.25x0.3125 Nested AS output
+T
+GEOSFP.YYYYMMDD.%%%%%%.025x03125.AS.nc
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
+  769 317 1057 581
+
+==> 0.25x0.3125 Nested EU output
 T
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.EU.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
-  529 492 705 606      # NOTE: Need correct indices
+  529 492 705 606
 
-==> Nested NA output
+==> 0.25x0.3125 Nested ME output
+T
+GEOSFP.YYYYMMDD.%%%%%%.025x03125.ME.nc
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
+  513 409 801 561
+
+==> 0.25x0.3125 Nested NA output
 T
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.NA.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
   161 400 385 601
 
-==> Nested AS output
+==> 0.25x0.3125 Nested OC output
 T
-GEOSFP.YYYYMMDD.%%%%%%.025x03125.AS.nc
+GEOSFP.YYYYMMDD.%%%%%%.025x03125.OC.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
-  769 317 1057 581
-  
-==> Nested 0625 CH output
-T
-GEOSFP.YYYYMMDD.%%%%%%.05x0625.CH.nc
-/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
-/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
-  401  211  513 291   # China grid
+  929 161 1 381
 
-==> Nested 0625 EU output
+==> 0.25x0.3125 Nested RU output
+T
+GEOSFP.YYYYMMDD.%%%%%%.025x03125.RU.nc
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
+  638 525 1 693
+
+==> 0.25x0.3125 Nested SA output
+T
+GEOSFP.YYYYMMDD.%%%%%%.025x03125.SA.nc
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
+  295 125 478 425
+
+==> 0.5x0.625 Nested AS output
+T
+GEOSFP.YYYYMMDD.%%%%%%.05x0625.AS.nc
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
+/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
+  385 159 529 291
+
+==> 0.5x0.625 Nested EU output
 T
 GEOSFP.YYYYMMDD.%%%%%%.05x0625.EU.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
   265 246 353 303     
 
-==> Nested 0625 NA output
+==> 0.5x0.625 Nested NA output
 T
 GEOSFP.YYYYMMDD.%%%%%%.05x0625.NA.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
   81 201 193 301
-
-==> Nested 0625 AS output
-T
-GEOSFP.YYYYMMDD.%%%%%%.05x0625.AS.nc
-/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
-/storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
-  385 159 529 291
   
 ==> 2 x 2.5 output
 T
@@ -163,13 +166,13 @@ GEOSFP.YYYYMMDD.%%%%%%.4x5.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 
-==> 0.25 x 0.3125 output
+==> 0.25 x 0.3125 global output
 T
 GEOSFP.YYYYMMDD.%%%%%%.025x03125.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/
 
-==> 0.5 x 0.625 output
+==> 0.5 x 0.625 global output
 F
 GEOSFP.YYYYMMDD.%%%%%%.05x0625.nc
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/YYYY/MM/

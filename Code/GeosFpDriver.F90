@@ -6,8 +6,8 @@
 ! !ROUTINE: GeosFpDriver
 !
 ! !DESCRIPTION: Program GeosFpDriver is the top-level driver for the 
-!  GEOS-5.7.x regridding programs.  GeosFpDriver will call routines to 
-!  extract, regrid, and save the GEOS-5.7.x met data to files for 
+!  GEOS-FP regridding programs.  GeosFpDriver will call routines to 
+!  extract, regrid, and save the GEOS-FP met data to files for 
 !  input to GEOS-Chem.
 !\\
 !\\

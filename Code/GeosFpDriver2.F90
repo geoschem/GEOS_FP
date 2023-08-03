@@ -6,7 +6,7 @@
 ! !ROUTINE: GeosFpDriver2
 !
 ! !DESCRIPTION: Program GeosFpDriver2 is the top-level driver for the 
-!  GEOS-5.7.x regridding programs.
+!  GEOS-FP regridding programs.
 !\\
 !\\
 ! !INTERFACE:

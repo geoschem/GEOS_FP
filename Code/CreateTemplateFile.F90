@@ -7,7 +7,7 @@
 !
 ! !DESCRIPTION: Program CreateTemplateFile creates the template file that
 !  contains the LWI mask, FRLAND, and FRLANDICE quantities.  These are needed
-!  for special handling of certain GEOS-5.7.x met fields.
+!  for special handling of certain GEOS-FP met fields.
 !\\
 !\\
 ! !INTERFACE:

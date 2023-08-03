@@ -7,7 +7,7 @@
 # !MODULE: gmaoOps
 #
 # !DESCRIPTION: gmaoOps parses the GMAO data processing status web page
-#  and displays information about GEOS-5.7.2 data processing.
+#  and displays information about GEOS-GP data processing.
 #
 #\\
 #\\
@@ -128,7 +128,7 @@ sub formatDateAndTime($) {
 # !IROUTINE: main
 #
 # !DESCRIPTION: Parses the GMAO status web page and prints a summary of the
-#  GEOS-5.7.2 data production status. 
+#  GEOS-FP data production status. 
 #\\
 #\\
 # !INTERFACE:
@@ -171,7 +171,7 @@ sub main() {
     # Strip HTML from each line
     $lines[$i] = &stripHtml( $lines[$i] );
 
-    # Get info about GEOS-5.7.2
+    # Get info about GEOS-FP
     if ( $lines[$i] =~ m/5.11.0DAS/ ) {
       $status    = $statTags{          &stripHtml( $lines[++$i] ) };
       $running   = &formatDateAndTime( &stripHtml( $lines[++$i] ) );

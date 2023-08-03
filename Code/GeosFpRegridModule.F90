@@ -200,7 +200,7 @@ MODULE GeosFpRegridModule
 ! Modified by Bob Yantosca and placed into F90 module format
 !
 ! !REMARKS:
-!  The GEOS-5.7.x 0.25 x 0.3125 grid is centered on (-180,-90).
+!  The GEOS-FP    0.25 x 0.3125 grid is centered on (-180,-90).
 !  The GEOS-Chem  1.0  x 1.25   grid is centered on (-180,-90).
 !  The GEOS-Chem  2.0  x 2.5    grid is centered on (-180,-90).
 !  The GEOS-Chem  4.0  x 5.0    grid is centered on (-180,-90).
@@ -232,7 +232,7 @@ MODULE GeosFpRegridModule
 ! !IROUTINE: RegridGeosFpto1x125
 !
 ! !DESCRIPTION: Subroutine RegridGeosFpto1x125 is a wrapper for MAP\_A2A.  
-!  It is called to regrid from the GEOS-5.7.x chemistry forcing ("F") 
+!  It is called to regrid from the GEOS-FP chemistry forcing ("F") 
 !  grid (1 x 1.25) to the GEOS-Chem 4 x 5 grid.
 !\\
 !\\
@@ -285,7 +285,7 @@ MODULE GeosFpRegridModule
 ! !IROUTINE: RegridGeosFpto05x0625
 !
 ! !DESCRIPTION: Subroutine RegridGeosFpto1x125 is a wrapper for MAP\_A2A.  
-!  It is called to regrid from the GEOS-5.7.x chemistry forcing ("F") 
+!  It is called to regrid from the GEOS-FP chemistry forcing ("F") 
 !  grid (1 x 1.25) to the GEOS-Chem 4 x 5 grid.
 !\\
 !\\
@@ -338,7 +338,7 @@ MODULE GeosFpRegridModule
 ! !IROUTINE: RegridGeosFpTo2x25
 !
 ! !DESCRIPTION: Subroutine RegridGeosFpTo2x25 is a wrapper for MAP\_A2A.
-!  It is called to regrid from the GEOS-5.7.x native grid (0.25 x0 x 0.3125)
+!  It is called to regrid from the GEOS-FP native grid (0.25 x0 x 0.3125)
 !  to the GEOS-Chem 2 x 2.5 grid.
 !\\
 !\\
@@ -388,7 +388,7 @@ MODULE GeosFpRegridModule
 ! !IROUTINE: RegridGeosFpNTo4x5
 !
 ! !DESCRIPTION: Subroutine RegridGeosFpNTo2x25 is a wrapper for MAP\_A2A.
-!  It is called to regrid from the GEOS-5.7.x native ("N") grid (0.5 x 0.666)
+!  It is called to regrid from the GEOS-FP native ("N") grid (0.5 x 0.666)
 !  to the GEOS-Chem 4 x 5 grid.
 !\\
 !\\
@@ -1469,7 +1469,7 @@ MODULE GeosFpRegridModule
     REAL*8  :: DI, DJ
 
     !======================================================================
-    ! GEOS-5.7.x NATIVE GRID
+    ! GEOS-FP NATIVE GRID
     ! 0.25 x 0.3125 resolution; centered on (-180,-90)
     !======================================================================
 

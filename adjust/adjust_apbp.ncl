@@ -23,8 +23,8 @@
  undef( "adjust_apbp" )
 ;
 ; !INPUT PARAMETERS:
-;  inFile   : Name of GEOS-5.7.2 "Ap/Bp" file w/ input data
-;  outFile  : Name of GEOSFP "Ap/Bp" file w/ vars & atts adjusted for COARDS
+;  inFile   : Name of GEOS-FP "Ap/Bp" file w/ input data
+;  outFile  : Name of GEOS-FP "Ap/Bp" file w/ vars & atts adjusted for COARDS
 ;
 ; !LOCAL VARIABLES:
 ;  local fIn, time, lat, lon, lev, ap,  bp, fOut

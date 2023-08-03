@@ -5,9 +5,9 @@
 #------------------------------------------------------------------------------
 #BOP
 #
-# !MODULE: delGeos5
+# !MODULE: delGeosFp
 #
-# !DESCRIPTION: Perl script delGeos5 deletes GEOS-5 "raw" met data files
+# !DESCRIPTION: Perl script delGeosFp deletes GEOS-FP "raw" met data files
 #  from the "Raw Met Data Directory".
 #\\
 #\\
@@ -22,7 +22,7 @@
 #  &main
 #
 # !CALLING SEQUENCE:
-#  delGeos5 [ YYYYMMDD | YYYYMM | YYYY ]
+#  delGeosFp [ YYYYMMDD | YYYYMM | YYYY ]
 #
 # !REVISION HISTORY: 
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/delGeos5
@@ -35,7 +35,7 @@
 # !IROUTINE: getDefaults
 #
 # !DESCRIPTION:  Routine getDefaults reads an input file and returns the
-#  name of the directory where the GEOS-5 "raw" met data files are found.
+#  name of the directory where the GEOS-FP "raw" met data files are found.
 #\\
 #\\
 # !INTERFACE:
@@ -88,7 +88,7 @@ sub getDefaults($) {
 #
 # !IROUTINE: delFiles
 #
-# !DESCRIPTION: Suboutine delFiles deletes the GEOS-5 raw met data from 
+# !DESCRIPTION: Suboutine delFiles deletes the GEOS-FP raw met data from 
 #  "Raw Met Data Directory".
 #\\
 #\\
@@ -101,7 +101,7 @@ sub delFiles($) {
   my ( $date ) = @_;   # Date(s) of data to delete: YYYY, YYYYMM, YYYYMMDD
 #
 # !CALLING SEQUENCE:
-#  &delGeos5( $date );
+#  &delGeosFp( $date );
 #
 # !REVISION HISTORY: 
 #  24 Oct 2011 - R. Yantosca - Initial version, based on GEOS_5/perl/delGeos5
@@ -114,13 +114,13 @@ sub delFiles($) {
   my @files  = (); 
   my $year   = substr( $date, 0, 4 );
   my $month  = substr( $date, 4, 2 );
-  my $metDir = &getDefaults( "doGeos57.input" );
+  my $metDir = &getDefaults( "doGeosFp.input" );
   my $cmd    = "";
   my $input  = "";
 
   # Print warning for user
   print "*******************************************************************\n";
-  print "* Are you really sure you want to delete GEOS-5.7.x raw data files *\n";
+  print "* Are you really sure you want to delete GEOS-FOP raw data files  *\n";
   print "* for $year/$month\?  The file deletion is irrevocable!              *\n"; 
   print "*******************************************************************\n";
   print '==> ';
@@ -165,7 +165,7 @@ sub delFiles($) {
 #
 # !IROUTINE: main
 #
-# !DESCRIPTION: Main is the driver program for the delGeos5 script.
+# !DESCRIPTION: Main is the driver program for the delGeosFp script.
 #\\
 #\\
 # !INTERFACE:
@@ -183,11 +183,11 @@ sub main() {
 
   # Error check # of arguments
   if ( scalar( @ARGV ) != 1 ) {
-    print "Usage: delGeos5 [ YYYYMMDD | YYYYMM | YYYY ]\n!";
+    print "Usage: delGeosFp [ YYYYMMDD | YYYYMM | YYYY ]\n!";
     exit(1);
   }
 
-  # Delete GEOS-5 data files
+  # Delete GEOS-FP data files
   &delFiles( @ARGV );
 
   # Return error code

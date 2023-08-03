@@ -2,9 +2,8 @@
 #          Harvard University Atmospheric Chemistry Modeling Group            !
 #------------------------------------------------------------------------------
 #BOI
-# !TITLE: Makefiles used to build the GEOS-5.7.x data processing code
-# !AUTHORS: Bob Yantosca
-# !AFFILIATION: School of Engineering and Applied Sciences, Harvard University
+# !TITLE: Makefiles used to build the GEOS-FP data processing code
+# !AUTHORS: GEOS-Chem Support Team
 # !DATE: November 1, 2011
 #EOI
 #------------------------------------------------------------------------------
