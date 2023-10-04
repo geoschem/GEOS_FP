@@ -1711,6 +1711,7 @@ MODULE GeosFpA1Module
              ! Echo info
              msg = '%%% Computing fractional sea ice coverage and LWI flags'
              WRITE( IU_LOG, '(a)' ) TRIM( msg )
+200          FORMAT( 'SEAICE', i1, '0' )
 
              IF ( doNative ) THEN
 

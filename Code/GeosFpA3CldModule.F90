@@ -930,7 +930,7 @@ MODULE GeosFpA3CldModule
 
     ! Variables for netCDF I/O
     INTEGER                 :: X,          Y,          Z,          T
-    INTEGER                 :: XNestAf,    YNestAf,    ZNestAf,    TNestAs
+    INTEGER                 :: XNestAf,    YNestAf,    ZNestAf,    TNestAf
     INTEGER                 :: XNestAs,    YNestAs,    ZNestAs,    TNestAs
     INTEGER                 :: XNestEu,    YNestEu,    ZNestEu,    TNestEu
     INTEGER                 :: XNestMe,    YNestMe,    ZNestMe,    TNestMe

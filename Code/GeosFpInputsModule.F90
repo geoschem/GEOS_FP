@@ -143,9 +143,14 @@ MODULE GeosFpInputsModule
   INTEGER                 :: yyyymmdd                 ! Today's date
 
   INTEGER                 :: fIn                      ! NC fId; input
+  INTEGER                 :: fOutNestAf               ! NC fId; output AF grid
   INTEGER                 :: fOutNestAs               ! NC fId; output AS grid
   INTEGER                 :: fOutNestEu               ! NC fId; output EU grid
+  INTEGER                 :: fOutNestMe               ! NC fId; output ME grid
   INTEGER                 :: fOutNestNa               ! NC fId; output NA grid
+  INTEGER                 :: fOutNestOc               ! NC fId; output OC grid
+  INTEGER                 :: fOutNestRu               ! NC fId; output RU grid
+  INTEGER                 :: fOutNestSa               ! NC fId; output SA grid
   INTEGER                 :: fOut05NestAs             ! NC fId; output AS grid
   INTEGER                 :: fOut05NestEu             ! NC fId; output EU grid
   INTEGER                 :: fOut05NestNa             ! NC fId; output NA grid
@@ -160,24 +165,39 @@ MODULE GeosFpInputsModule
 
   CHARACTER(LEN=8)        :: yyyymmdd_string          ! String for YYYYMMDD
   CHARACTER(LEN=MAX_CHAR) :: inputDataDir             ! netCDF data dir
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestAf           ! NstAf file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestAf        ! NstAf temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestAf        ! NstAf data dir
   CHARACTER(LEN=MAX_CHAR) :: dataTmplNestAs           ! NstAs file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestAs        ! NstAs temporary dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestAs        ! NstAs data dir
   CHARACTER(LEN=MAX_CHAR) :: dataTmplNestEu           ! NstEu file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestEu        ! NstEu temporary dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestEu        ! NstEu data dir
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestMe           ! NstMe file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestMe        ! NstMe temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestMe        ! NstMe data dir
   CHARACTER(LEN=MAX_CHAR) :: dataTmplNestNa           ! NstNa file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestNa        ! NstNa temporary dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestNa        ! NstNa data dir
-  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestAs05         ! NstAs file template
-  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestAs05      ! NstAs temporary dir
-  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestAs05      ! NstAs data dir
-  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestEu05         ! NstEu file template
-  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestEu05      ! NstEu temporary dir
-  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestEu05      ! NstEu data dir
-  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestNa05         ! NstNa file template
-  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestNa05      ! NstNa temporary dir
-  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestNa05      ! NstNa data dir
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestOc           ! NstOc file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestOc        ! NstOc temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestOc        ! NstOc data dir
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestRu           ! NstRu file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestRu        ! NstRu temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestRu        ! NstRu data dir
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestSa           ! NstSa file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestSa        ! NstSa temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestSa        ! NstSa data dir
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestAs05         ! NstAs05 file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestAs05      ! NstAs05 temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestAs05      ! NstAs05 data dir
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestEu05         ! NstEu05 file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestEu05      ! NstEu05 temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestEu05      ! NstEu05 data dir
+  CHARACTER(LEN=MAX_CHAR) :: dataTmplNestNa05         ! NstNa05 file template
+  CHARACTER(LEN=MAX_CHAR) :: tempDirTmplNestNa05      ! NstNa05 temporary dir
+  CHARACTER(LEN=MAX_CHAR) :: dataDirTmplNestNa05      ! NstNa05 data dir
   CHARACTER(LEN=MAX_CHAR) :: dataTmplGlobal05         ! Global05 file template
   CHARACTER(LEN=MAX_CHAR) :: tempDirTmplGlobal05      ! Global05 temporary dir
   CHARACTER(LEN=MAX_CHAR) :: dataDirTmplGlobal05      ! Global05 data dir
