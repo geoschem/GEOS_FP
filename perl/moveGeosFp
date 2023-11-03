@@ -245,7 +245,7 @@ sub getDirectories($) {
       $TEMP_DIR_NEST_EU  = $file[++$i];
       $DATA_DIR_NEST_EU  = $file[++$i];
 
-    if ( $file[$i] =~ "==> 0.25x0.3125 Nested ME output" ) {
+    } elsif ( $file[$i] =~ "==> 0.25x0.3125 Nested ME output" ) {
       $DO_NEST_ME        = $file[++$i];
       $DATA_FILE_NEST_ME = $file[++$i];
       $TEMP_DIR_NEST_ME  = $file[++$i];
@@ -257,19 +257,19 @@ sub getDirectories($) {
       $TEMP_DIR_NEST_NA  = $file[++$i];
       $DATA_DIR_NEST_NA  = $file[++$i];
 
-    if ( $file[$i] =~ "==> 0.25x0.3125 Nested OC output" ) {
+    } elsif ( $file[$i] =~ "==> 0.25x0.3125 Nested OC output" ) {
       $DO_NEST_OC        = $file[++$i];
       $DATA_FILE_NEST_OC = $file[++$i];
       $TEMP_DIR_NEST_OC  = $file[++$i];
       $DATA_DIR_NEST_OC  = $file[++$i];
 
-    if ( $file[$i] =~ "==> 0.25x0.3125 Nested RU output" ) {
+    } elsif ( $file[$i] =~ "==> 0.25x0.3125 Nested RU output" ) {
       $DO_NEST_RU        = $file[++$i];
       $DATA_FILE_NEST_RU = $file[++$i];
       $TEMP_DIR_NEST_RU  = $file[++$i];
       $DATA_DIR_NEST_RU  = $file[++$i];
 
-    if ( $file[$i] =~ "==> 0.25x0.3125 Nested SA output" ) {
+    } elsif ( $file[$i] =~ "==> 0.25x0.3125 Nested SA output" ) {
       $DO_NEST_SA        = $file[++$i];
       $DATA_FILE_NEST_SA = $file[++$i];
       $TEMP_DIR_NEST_SA  = $file[++$i];
@@ -293,14 +293,14 @@ sub getDirectories($) {
       $TEMP_DIR_NEST_NA_05  = $file[++$i];
       $DATA_DIR_NEST_NA_05  = $file[++$i];
 
-    if ( $file[$i] =~ "==> 0.25x0.3125 global output" ) {
+    } elsif ( $file[$i] =~ "==> 0.25x0.3125 global output" ) {
       $DO_025x03125        = $file[++$i];
       $DATA_FILE_025x03125 = $file[++$i];
       $TEMP_DIR_025x03125  = $file[++$i];
       $DATA_DIR_025x03125  = $file[++$i];
 
-    if ( $file[$i] =~ "==> 0.5x0.625 global output" ) {
-      $DO_05x06125        = $file[++$i];
+    } elsif ( $file[$i] =~ "==> 0.5x0.625 global output" ) {
+      $DO_05x0625        = $file[++$i];
       $DATA_FILE_05x0625 = $file[++$i];
       $TEMP_DIR_05x0625  = $file[++$i];
       $DATA_DIR_05x0625  = $file[++$i];

@@ -75,6 +75,7 @@ GEOS.fp.asm.inst3_3d_asm_Nv.YYYYMMDD_hhmm.V01.nc4
 PS,PV,QV,T
 
 ==> Local Raw Data Path
+# CHANGE the year and month folder in the following line
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/GEOS_FP-raw/2021/03/
 
 ==> 0.25x0.3125 Nested AF output
