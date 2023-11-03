@@ -29,6 +29,7 @@
 #
 
 ==> Raw Met Data Directory
+# CHANGE the year and month folder in the following line
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/GEOS_FP-raw/2021/03/
 
 ==> Code Directory
@@ -41,6 +42,7 @@
 ../logs
 
 ==> Temporary Directory
+# CHANGE the year and month folder in the following line
 /storage1/fs1/rvmartin/Active/GEOS-Chem-shared/MetFieldProcessing/scratch/GEOS_FP/2021/03/
 
 ==> Program Executable
