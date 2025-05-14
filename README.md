@@ -755,7 +755,7 @@ $ cd GEOS_FP/perl
 $ cleanJobs
 ```
 
-**18.  Removing “raw” data files once you no longer need them
+## 18.  Removing “raw” data files once you no longer need them
 
 As mentioned above, we recommend keeping the GEOS-FP “raw” met field files for a period of time so that you can reprocess them scratch if there is a problem in the regridded data files.  But when you are finally ready to delete these from your Raw Met Data Directory (i.e. the same path you specified in `doGeosFp.input`), you can use the `delGeosFp` script.  Type:
 
